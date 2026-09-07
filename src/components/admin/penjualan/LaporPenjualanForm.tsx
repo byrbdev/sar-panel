@@ -1,0 +1,144 @@
+'use client';
+import InputField from 'components/fields/InputField';
+
+export type LaporPenjualanValue = {
+  nama: string;
+  noHp: string;
+  alamat: string;
+  toko: string;
+  produk: string;
+  varian: string;
+  sku: string;
+  keterangan: string;
+};
+
+export const emptyLaporForm = (defaultToko = ''): LaporPenjualanValue => ({
+  nama: '',
+  noHp: '',
+  alamat: '',
+  toko: defaultToko,
+  produk: '',
+  varian: '',
+  sku: '',
+  keterangan: '',
+});
+
+const LaporPenjualanForm = (props: {
+  value: LaporPenjualanValue;
+  onChange: (value: LaporPenjualanValue) => void;
+  daftarToko: string[];
+}) => {
+  const { value, onChange, daftarToko } = props;
+
+  const handle =
+    (field: keyof LaporPenjualanValue) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      onChange({ ...value, [field]: e.target.value });
+    };
+
+  return (
+    <div className="flex flex-col gap-5">
+      <p className="rounded-xl bg-lightPrimary p-3 text-xs text-gray-600 dark:bg-navy-700 dark:text-gray-300">
+        Laporan ini akan masuk ke <b>Pesanan Masuk</b> Admin dengan status{' '}
+        <b>Menunggu</b>. Admin akan memproses & mengisi detail harga/pengiriman.
+      </p>
+
+      <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+        Info Pembeli
+      </p>
+      <InputField
+        id="lp_nama"
+        label="Nama"
+        placeholder="Nama pembeli"
+        type="text"
+        extra=""
+        value={value.nama}
+        onChange={handle('nama')}
+      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField
+          id="lp_noHp"
+          label="Nomor HP"
+          placeholder="081234567890"
+          type="text"
+          extra=""
+          value={value.noHp}
+          onChange={handle('noHp')}
+        />
+        <InputField
+          id="lp_alamat"
+          label="Alamat"
+          placeholder="Alamat lengkap"
+          type="text"
+          extra=""
+          value={value.alamat}
+          onChange={handle('alamat')}
+        />
+      </div>
+
+      <p className="mb-1 mt-2 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+        Info Pesanan
+      </p>
+      <div>
+        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+          Toko
+        </label>
+        <select
+          value={value.toko}
+          onChange={(e) => onChange({ ...value, toko: e.target.value })}
+          className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+        >
+          <option value="">Pilih toko...</option>
+          {daftarToko.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </div>
+      <InputField
+        id="lp_produk"
+        label="Produk"
+        placeholder="Nama produk"
+        type="text"
+        extra=""
+        value={value.produk}
+        onChange={handle('produk')}
+      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField
+          id="lp_varian"
+          label="Varian Produk"
+          placeholder="Contoh: Hitam, size L"
+          type="text"
+          extra=""
+          value={value.varian}
+          onChange={handle('varian')}
+        />
+        <InputField
+          id="lp_sku"
+          label="SKU"
+          placeholder="SKU-001"
+          type="text"
+          extra=""
+          value={value.sku}
+          onChange={handle('sku')}
+        />
+      </div>
+      <div>
+        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+          Keterangan (opsional)
+        </label>
+        <textarea
+          value={value.keterangan}
+          onChange={handle('keterangan')}
+          rows={3}
+          placeholder="Catatan tambahan untuk admin..."
+          className="w-full resize-none rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default LaporPenjualanForm;
