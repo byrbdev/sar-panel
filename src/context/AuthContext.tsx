@@ -32,6 +32,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .eq('id', userId)
       .single();
     if (error || !data) {
+      // eslint-disable-next-line no-console
+      console.error('Gagal memuat profile:', error?.message ?? 'data profile tidak ditemukan');
       setProfile(null);
       return;
     }
