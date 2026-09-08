@@ -16,7 +16,7 @@ export default function SignInPage() {
 
   React.useEffect(() => {
     if (!loading && profile) {
-      router.replace('/admin/default');
+      window.location.href = '/admin/default';
     }
   }, [loading, profile, router]);
 
@@ -30,7 +30,7 @@ export default function SignInPage() {
       setError(err);
       return;
     }
-    router.replace('/admin/default');
+    window.location.href = '/admin/default';
   };
 
   return (
@@ -41,7 +41,7 @@ export default function SignInPage() {
             <MdStorefront className="h-7 w-7 text-white" />
           </div>
           <h1 className="font-poppins text-2xl font-bold text-navy-700 dark:text-white">
-            Panel Dropship
+            SAR Panel
             <br />
             <span className="font-medium">By RB</span>
           </h1>

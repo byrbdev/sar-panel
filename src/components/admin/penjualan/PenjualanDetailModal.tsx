@@ -15,8 +15,9 @@ import {
 import {
   Penjualan,
   StatusPengiriman,
-  StatusAkunToko,
 } from 'variables/dropshipPenjualan';
+import { StatusAkunToko } from 'variables/dropshipPemulihan';
+import { useAppData } from 'context/AppDataContext';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -65,6 +66,10 @@ const SectionLabel = (props: { children: React.ReactNode }) => (
 
 const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
   const { penjualan } = props;
+  const { toko } = useAppData();
+  const statusAkunToko: StatusAkunToko =
+    toko.find((t) => t.namaToko === penjualan.namaToko)?.statusAkunToko ||
+    'Aktif';
   const profit = penjualan.hargaJual - penjualan.modalShopee;
 
   return (
@@ -90,9 +95,9 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
               {penjualan.statusPengiriman}
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-bold ${akunStatusStyle[penjualan.statusAkunToko]}`}
+              className={`rounded-full px-3 py-1 text-xs font-bold ${akunStatusStyle[statusAkunToko]}`}
             >
-              Toko: {penjualan.statusAkunToko}
+              Toko: {statusAkunToko}
             </span>
           </div>
         </div>

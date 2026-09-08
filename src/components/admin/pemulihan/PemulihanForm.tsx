@@ -13,6 +13,7 @@ const emptyForm: PemulihanFormValue = {
   denda: 0,
   pelanggaran: '',
   saldoIklan: 0,
+  statusAkunToko: 'Aktif',
 };
 
 export { emptyForm };
@@ -112,6 +113,24 @@ const PemulihanForm = (props: {
         value={value.pelanggaran}
         onChange={handle('pelanggaran')}
       />
+      <div>
+        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+          Status Akun Toko
+        </label>
+        <select
+          value={value.statusAkunToko}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              statusAkunToko: e.target.value as PemulihanRow['statusAkunToko'],
+            })
+          }
+          className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+        >
+          <option value="Aktif">Aktif</option>
+          <option value="Ban">Ban</option>
+        </select>
+      </div>
     </div>
   );
 };

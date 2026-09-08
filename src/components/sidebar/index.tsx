@@ -3,7 +3,6 @@
 import { HiX } from 'react-icons/hi';
 import Links from './components/Links';
 
-import SidebarCard from 'components/sidebar/components/SidebarCard';
 import { IRoute } from 'types/navigation';
 
 function SidebarHorizon(props: { routes: IRoute[]; [x: string]: any }) {
@@ -23,7 +22,7 @@ function SidebarHorizon(props: { routes: IRoute[]; [x: string]: any }) {
 
       <div className={`mx-[32px] mt-[50px] flex items-center`}>
         <div className="ml-1 mt-1 font-poppins text-[20px] font-bold uppercase leading-tight text-navy-700 dark:text-white">
-          Panel Dropship
+          SAR Panel
           <br />
           <span className="font-medium">By RB</span>
         </div>
@@ -34,11 +33,6 @@ function SidebarHorizon(props: { routes: IRoute[]; [x: string]: any }) {
       <ul className="mb-auto pt-1">
         <Links routes={routes} />
       </ul>
-
-      {/* Free Horizon Card */}
-      <div className="flex justify-center">
-        <SidebarCard />
-      </div>
 
       {/* Nav item end */}
     </div>

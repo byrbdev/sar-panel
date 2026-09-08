@@ -84,6 +84,15 @@ const TokoDetailModal = (props: { toko: PemulihanRow }) => {
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Akun Toko Dropship
           </p>
+          <span
+            className={`mt-1.5 inline-block rounded-full px-3 py-1 text-xs font-bold ${
+              toko.statusAkunToko === 'Ban'
+                ? 'bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300'
+                : 'bg-green-50 text-green-500 dark:bg-green-500/10 dark:text-green-300'
+            }`}
+          >
+            {toko.statusAkunToko}
+          </span>
         </div>
       </div>
 

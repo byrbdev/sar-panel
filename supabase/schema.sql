@@ -28,21 +28,30 @@ create table if not exists profiles (
 
 alter table profiles enable row level security;
 
+-- Helper function aman dari recursion (SECURITY DEFINER, bypass RLS saat
+-- dipanggil dari dalam policy tabel profiles itu sendiri).
+create or replace function public.is_super_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from profiles where id = auth.uid() and role = 'super_admin'
+  );
+$$;
+
 -- Semua user login boleh baca profile dirinya sendiri; super_admin boleh baca semua.
 drop policy if exists "profiles_select_self_or_superadmin" on profiles;
 create policy "profiles_select_self_or_superadmin" on profiles
   for select using (
     id = auth.uid()
-    or exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'super_admin')
+    or public.is_super_admin()
   );
 
 -- Hanya super_admin yang boleh insert/update/delete profile (buat akun member baru dsb).
 drop policy if exists "profiles_write_superadmin_only" on profiles;
 create policy "profiles_write_superadmin_only" on profiles
   for all using (
-    exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'super_admin')
+    public.is_super_admin()
   ) with check (
-    exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'super_admin')
+    public.is_super_admin()
   );
 
 -- ---------- 3. HELPER: current user role ----------
@@ -67,6 +76,7 @@ create table if not exists toko (
   denda numeric not null default 0,
   pelanggaran text default '-',
   saldo_iklan numeric not null default 0,
+  status_akun_toko text not null default 'Aktif', -- Aktif | Ban
   created_at timestamptz not null default now()
 );
 

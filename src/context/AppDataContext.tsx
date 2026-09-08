@@ -33,6 +33,7 @@ const tokoToDb = (t: PemulihanRow) => ({
   denda: t.denda,
   pelanggaran: t.pelanggaran,
   saldo_iklan: t.saldoIklan,
+  status_akun_toko: t.statusAkunToko,
 });
 const tokoFromDb = (r: any): PemulihanRow => ({
   id: r.id,
@@ -44,6 +45,7 @@ const tokoFromDb = (r: any): PemulihanRow => ({
   denda: Number(r.denda) || 0,
   pelanggaran: r.pelanggaran || '-',
   saldoIklan: Number(r.saldo_iklan) || 0,
+  statusAkunToko: r.status_akun_toko || 'Aktif',
 });
 
 /* ============== Mapper: Pesanan Masuk (orders) ============== */

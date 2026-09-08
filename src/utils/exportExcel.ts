@@ -15,7 +15,7 @@ export const exportAnalisaToExcel = async (params: {
   const { filtered, toko, fileNameSuffix } = params;
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Panel Dropship By RB';
+  wb.creator = 'SAR Panel By RB';
   wb.created = new Date();
 
   /* ================= Sheet 1: Penjualan ================= */

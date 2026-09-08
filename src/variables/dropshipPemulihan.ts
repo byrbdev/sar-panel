@@ -1,3 +1,5 @@
+export type StatusAkunToko = 'Aktif' | 'Ban';
+
 export type PemulihanRow = {
   id: number;
   ownerId?: string; // id Member pemilik toko (dari database Member)
@@ -8,6 +10,7 @@ export type PemulihanRow = {
   denda: number;
   pelanggaran: string;
   saldoIklan: number;
+  statusAkunToko: StatusAkunToko;
 };
 
 const tableDataPemulihan: PemulihanRow[] = [];

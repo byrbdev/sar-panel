@@ -292,46 +292,26 @@ const PenjualanForm = (props: {
       </div>
 
       {/* Status */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-            Status Pengiriman
-          </label>
-          <select
-            value={value.statusPengiriman}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                statusPengiriman: e.target.value as StatusPengiriman,
-              })
-            }
-            className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-          >
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-            Status Akun Toko
-          </label>
-          <select
-            value={value.statusAkunToko}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                statusAkunToko: e.target.value as StatusAkunToko,
-              })
-            }
-            className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-          >
-            <option value="Aktif">Aktif</option>
-            <option value="Ban">Ban</option>
-          </select>
-        </div>
+      <div>
+        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+          Status Pengiriman
+        </label>
+        <select
+          value={value.statusPengiriman}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              statusPengiriman: e.target.value as StatusPengiriman,
+            })
+          }
+          className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+        >
+          {statusOptions.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
