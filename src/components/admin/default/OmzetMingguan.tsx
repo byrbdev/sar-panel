@@ -1,12 +1,79 @@
+'use client';
+import React from 'react';
 import Card from 'components/card';
 import BarChart from 'components/charts/BarChart';
-import {
-  barChartDataOmzetMingguan,
-  barChartOptionsOmzetMingguan,
-} from 'variables/dropshipCharts';
+import { useAppData } from 'context/AppDataContext';
+import { omzetPerHariTerakhir } from 'utils/analisaHelpers';
+import { Penjualan } from 'variables/dropshipPenjualan';
 import { MdBarChart } from 'react-icons/md';
 
-const OmzetMingguan = () => {
+const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
+
+const OmzetMingguan = (props: { data?: Penjualan[] }) => {
+  const { penjualan: allPenjualan } = useAppData();
+  const penjualan = props.data ?? allPenjualan;
+
+  const harian = React.useMemo(() => omzetPerHariTerakhir(penjualan, 9), [
+    penjualan,
+  ]);
+
+  const maxProduk = Math.max(1, ...harian.map((h) => h.produkTerjual));
+  const maxProfit = Math.max(1, ...harian.map((h) => h.profit));
+
+  const chartData = [
+    {
+      name: 'Produk Terjual',
+      data: harian.map((h) => (h.produkTerjual / maxProduk) * 160),
+      color: '#6AD2FA',
+    },
+    {
+      name: 'Profit Bersih',
+      data: harian.map((h) => (h.profit / maxProfit) * 160),
+      color: '#4318FF',
+    },
+    {
+      name: 'Track',
+      data: harian.map((h) => {
+        const p1 = (h.produkTerjual / maxProduk) * 160;
+        const p2 = (h.profit / maxProfit) * 160;
+        return Math.max(320 - p1 - p2, 20);
+      }),
+      color: '#EFF4FB',
+    },
+  ];
+
+  const chartOptions: any = {
+    chart: { stacked: true, toolbar: { show: false } },
+    tooltip: {
+      style: { fontSize: '12px', backgroundColor: '#000000' },
+      theme: 'dark',
+      custom: ({ dataPointIndex }: { dataPointIndex: number }) => {
+        const h = harian[dataPointIndex];
+        if (!h) return '';
+        return `
+          <div style="padding:10px 14px;background:#000;color:#fff;border-radius:8px;min-width:170px;">
+            <div style="font-weight:600;margin-bottom:6px;">Tanggal ${h.tanggal}</div>
+            <div style="display:flex;justify-content:space-between;gap:12px;"><span>Produk Terjual</span><b>${h.produkTerjual}</b></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;"><span>Omzet</span><b>${formatRupiah(h.omzet)}</b></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;"><span>Profit Bersih</span><b>${formatRupiah(h.profit)}</b></div>
+          </div>`;
+      },
+    },
+    xaxis: {
+      categories: harian.map((h) => h.tanggal),
+      labels: { style: { colors: '#A3AED0', fontSize: '14px' } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: { show: false },
+    grid: { show: false },
+    fill: { type: 'solid', colors: ['#6AD2FA', '#4318FF', '#EFF4FB'] },
+    legend: { show: false },
+    colors: ['#6AD2FA', '#4318FF', '#EFF4FB'],
+    dataLabels: { enabled: false },
+    plotOptions: { bar: { borderRadius: 10, columnWidth: '20px' } },
+  };
+
   return (
     <Card extra="flex flex-col bg-white w-full rounded-3xl py-6 px-2 text-center">
       <div className="mb-auto flex items-center justify-between px-6">
@@ -35,10 +102,13 @@ const OmzetMingguan = () => {
 
       <div className="md:mt-16 lg:mt-0">
         <div className="h-[250px] w-full xl:h-[350px]">
-          <BarChart
-            chartData={barChartDataOmzetMingguan}
-            chartOptions={barChartOptionsOmzetMingguan}
-          />
+          {harian.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-xs text-gray-400">
+              Belum ada data penjualan
+            </div>
+          ) : (
+            <BarChart chartData={chartData} chartOptions={chartOptions} />
+          )}
         </div>
       </div>
 

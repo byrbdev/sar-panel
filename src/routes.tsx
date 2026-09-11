@@ -40,7 +40,7 @@ const routes = [
     layout: '/admin',
     path: 'refund',
     icon: <MdAssignmentReturn className="h-6 w-6" />,
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin', 'admin', 'member'],
   },
   {
     name: 'Data Buyer',

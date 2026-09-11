@@ -20,6 +20,7 @@ const emptyForm: PenjualanFormValue = {
   alamatPembeli: '',
   namaProduk: '',
   skuProduk: '',
+  noPesananAL: '',
   hargaJual: 0,
   modalShopee: 0,
   noResi: '',
@@ -221,6 +222,16 @@ const PenjualanForm = (props: {
           onChange={handle('skuProduk')}
         />
       </div>
+
+      <InputField
+        id="noPesananAL"
+        label="No Pesanan AL"
+        placeholder="AL-20260101-001"
+        type="text"
+        extra=""
+        value={value.noPesananAL}
+        onChange={handle('noPesananAL')}
+      />
 
       {/* Harga */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

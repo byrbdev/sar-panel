@@ -1,16 +1,55 @@
+'use client';
+import React from 'react';
 import {
   MdArrowDropUp,
+  MdArrowDropDown,
   MdOutlineCalendarToday,
   MdBarChart,
 } from 'react-icons/md';
 import Card from 'components/card';
-import {
-  lineChartDataPenjualan,
-  lineChartOptionsPenjualan,
-} from 'variables/dropshipCharts';
+import { lineChartOptionsPenjualan } from 'variables/dropshipCharts';
 import LineChart from 'components/charts/LineChart';
+import { useAppData } from 'context/AppDataContext';
+import { omzetPerBulan } from 'utils/analisaHelpers';
+import { Penjualan } from 'variables/dropshipPenjualan';
 
-const PenjualanChart = () => {
+const formatRupiahSingkat = (n: number) => {
+  if (n >= 1000000) return `Rp${(n / 1000000).toFixed(1).replace('.', ',')} Jt`;
+  if (n >= 1000) return `Rp${(n / 1000).toFixed(0)} Rb`;
+  return `Rp${n.toLocaleString('id-ID')}`;
+};
+
+const PenjualanChart = (props: { data?: Penjualan[] }) => {
+  const { penjualan: allPenjualan } = useAppData();
+  const penjualan = props.data ?? allPenjualan;
+
+  const trend = React.useMemo(() => omzetPerBulan(penjualan).slice(-6), [
+    penjualan,
+  ]);
+
+  const totalOmzet = trend.reduce((a, b) => a + b.omzet, 0);
+  const bulanIniOmzet = trend[trend.length - 1]?.omzet || 0;
+  const bulanLaluOmzet = trend[trend.length - 2]?.omzet || 0;
+  const growth =
+    bulanLaluOmzet > 0
+      ? ((bulanIniOmzet - bulanLaluOmzet) / bulanLaluOmzet) * 100
+      : bulanIniOmzet > 0
+        ? 100
+        : 0;
+
+  const chartData = [
+    {
+      name: 'Omzet',
+      data: trend.map((t) => t.omzet),
+      color: '#4318FF',
+    },
+    {
+      name: 'Profit',
+      data: trend.map((t) => t.profit),
+      color: '#6AD2FF',
+    },
+  ];
+
   return (
     <Card extra="!p-[20px] text-center">
       <div className="flex justify-between">
@@ -28,21 +67,43 @@ const PenjualanChart = () => {
       <div className="flex h-full w-full flex-row justify-between sm:flex-wrap lg:flex-nowrap 2xl:overflow-hidden">
         <div className="flex flex-col">
           <p className="mt-[20px] whitespace-nowrap text-3xl font-bold text-navy-700 dark:text-white">
-            Rp27,1 Jt
+            {formatRupiahSingkat(totalOmzet)}
           </p>
           <div className="flex flex-col items-start">
-            <p className="mt-2 text-sm text-gray-600">Total Penjualan</p>
+            <p className="mt-2 text-sm text-gray-600">Total Penjualan (6 Bulan)</p>
             <div className="flex flex-row items-center justify-center">
-              <MdArrowDropUp className="font-medium text-green-500" />
-              <p className="text-sm font-bold text-green-500"> +12,8% </p>
+              {growth >= 0 ? (
+                <MdArrowDropUp className="font-medium text-green-500" />
+              ) : (
+                <MdArrowDropDown className="font-medium text-red-500" />
+              )}
+              <p
+                className={`text-sm font-bold ${growth >= 0 ? 'text-green-500' : 'text-red-500'}`}
+              >
+                {' '}
+                {growth >= 0 ? '+' : ''}
+                {growth.toFixed(1)}%{' '}
+              </p>
             </div>
           </div>
         </div>
         <div className="h-full w-full">
-          <LineChart
-            chartOptions={lineChartOptionsPenjualan}
-            chartData={lineChartDataPenjualan}
-          />
+          {trend.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-xs text-gray-400">
+              Belum ada data penjualan
+            </div>
+          ) : (
+            <LineChart
+              chartOptions={{
+                ...lineChartOptionsPenjualan,
+                xaxis: {
+                  ...lineChartOptionsPenjualan.xaxis,
+                  categories: trend.map((t) => t.label),
+                },
+              }}
+              chartData={chartData}
+            />
+          )}
         </div>
       </div>
 

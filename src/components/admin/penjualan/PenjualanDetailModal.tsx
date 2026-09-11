@@ -181,9 +181,16 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
           <SectionLabel>Pengiriman</SectionLabel>
           <Row
             icon={<MdTag className="h-3.5 w-3.5" />}
-            label="Nomor Resi"
-            value={penjualan.noResi}
+            label="No Pesanan AL"
+            value={penjualan.noPesananAL}
           />
+          <div className="mt-3.5">
+            <Row
+              icon={<MdTag className="h-3.5 w-3.5" />}
+              label="Nomor Resi"
+              value={penjualan.noResi}
+            />
+          </div>
           <div className="mt-3.5">
             <Row
               icon={<MdLocalShipping className="h-3.5 w-3.5" />}

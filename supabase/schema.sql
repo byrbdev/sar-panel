@@ -107,6 +107,7 @@ create table if not exists pesanan_masuk (
   no_hp text,
   alamat text,
   keterangan text,
+  no_pesanan_al text,
   harga_jual numeric default 0, -- estimasi awal dari member, bisa 0/null
   modal numeric default 0,
   status text not null default 'Menunggu', -- Menunggu | Diproses | Terkirim(hapus setelah diproses) | Refund
@@ -146,6 +147,7 @@ create table if not exists penjualan (
   alamat_pembeli text,
   nama_produk text,
   sku_produk text,
+  no_pesanan_al text,
   harga_jual numeric not null default 0,
   modal_shopee numeric not null default 0,
   no_resi text,
@@ -264,7 +266,39 @@ create policy "data_buyer_all_admin_super" on data_buyer for all using (
   is_admin_or_super()
 );
 
--- ---------- 10. INDEX untuk performa query mapping toko -> pemilik ----------
+-- ---------- 10. REALTIME — WAJIB supaya data baru muncul otomatis tanpa refresh ----------
+-- Tanpa ini, perubahan data TIDAK akan ter-broadcast ke browser lain meskipun
+-- RLS sudah benar. Aman dijalankan ulang (ON CONFLICT DO NOTHING via exception).
+do $$
+begin
+  alter publication supabase_realtime add table toko;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table pesanan_masuk;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table penjualan;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table refund;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table brutal_items;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table data_buyer;
+exception when duplicate_object then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table profiles;
+exception when duplicate_object then null; end $$;
+
+-- ---------- 11. INDEX untuk performa query mapping toko -> pemilik ----------
 create index if not exists idx_toko_owner on toko(owner_id);
 create index if not exists idx_penjualan_owner on penjualan(owner_id);
 create index if not exists idx_refund_owner on refund(owner_id);

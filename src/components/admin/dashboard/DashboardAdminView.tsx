@@ -2,6 +2,7 @@
 import TabelMasukRealtime from 'components/admin/default/TabelMasukRealtime';
 import Widget from 'components/widget/Widget';
 import { useAppData } from 'context/AppDataContext';
+import { isBulanIni } from 'utils/analisaHelpers';
 import {
   MdMoveToInbox,
   MdOutlineAutorenew,
@@ -10,11 +11,14 @@ import {
 
 const DashboardAdminView = () => {
   const { refund, orders } = useAppData();
-  const jumlahProsesRefund = refund.filter((r) => r.status === 'Proses').length;
+  const refundBulanIni = refund.filter((r) => isBulanIni(r.tanggal));
+  const jumlahProsesRefund = refundBulanIni.filter(
+    (r) => r.status === 'Proses',
+  ).length;
 
   return (
     <div>
-      {/* Sesuai tugas Admin: hanya ringkasan Pesanan Masuk & Refund */}
+      {/* Sesuai tugas Admin: hanya ringkasan Pesanan Masuk & Refund bulan ini */}
       <div className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-3">
         <Widget
           icon={<MdMoveToInbox className="h-6 w-6" />}
@@ -29,7 +33,7 @@ const DashboardAdminView = () => {
         <Widget
           icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
           title={'Refund'}
-          subtitle={`${refund.length} pesanan`}
+          subtitle={`${refundBulanIni.length} pesanan`}
         />
       </div>
 

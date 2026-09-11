@@ -186,6 +186,46 @@ export const omzetPerBulan = (data: Penjualan[]): OmzetBulanan[] => {
   return Array.from(map.values()).sort((a, b) => (a.key > b.key ? 1 : -1));
 };
 
+export type OmzetHarian = {
+  tanggal: string; // '17', '18', dst (hanya nomor hari)
+  produkTerjual: number;
+  omzet: number;
+  profit: number;
+};
+
+/** Agregasi 9 hari terakhir (dari data yang ada) untuk chart Omzet Mingguan */
+export const omzetPerHariTerakhir = (
+  data: Penjualan[],
+  jumlahHari = 9,
+): OmzetHarian[] => {
+  const map = new Map<string, OmzetHarian>();
+  data.forEach((row) => {
+    const d = parseTanggalIndo(row.tanggalTransaksi);
+    if (!d) return;
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const existing = map.get(key) || {
+      tanggal: String(d.getDate()),
+      produkTerjual: 0,
+      omzet: 0,
+      profit: 0,
+      _sort: d.getTime(),
+    };
+    existing.produkTerjual += 1;
+    existing.omzet += row.hargaJual;
+    existing.profit += row.hargaJual - row.modalShopee;
+    map.set(key, existing as any);
+  });
+  return Array.from(map.values())
+    .sort((a: any, b: any) => a._sort - b._sort)
+    .slice(-jumlahHari)
+    .map(({ tanggal, produkTerjual, omzet, profit }) => ({
+      tanggal,
+      produkTerjual,
+      omzet,
+      profit,
+    }));
+};
+
 export type BrutalAnalisa = BrutalItem & {
   realOrderan: number;
   perluDioptimasi: boolean;

@@ -77,6 +77,7 @@ const PesananMasukPage = () => {
       alamatPembeli: order.alamat,
       namaProduk: order.produk,
       skuProduk: order.sku,
+      noPesananAL: order.noPesananAL || '',
       hargaJual: order.hargaJual,
       modalShopee: order.modal,
       noResi: '',
@@ -119,6 +120,7 @@ const PesananMasukPage = () => {
       emailToko: getTokoEmail(order.toko),
       noHp: order.noHp,
       sku: order.sku,
+      noPesananAL: order.noPesananAL || '-',
     });
     setRefundOpen(true);
   };

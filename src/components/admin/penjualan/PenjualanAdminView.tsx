@@ -114,6 +114,7 @@ const PenjualanAdminView = () => {
       emailToko: getTokoEmail(row.namaToko),
       noHp: row.noHp,
       sku: row.skuProduk,
+      noPesananAL: row.noPesananAL || '-',
       namaProduk: row.namaProduk,
       omzet: row.hargaJual,
       profit: row.hargaJual - row.modalShopee,

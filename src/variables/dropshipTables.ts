@@ -9,6 +9,7 @@ export type OrderRow = {
   noHp: string;
   alamat: string;
   keterangan?: string;
+  noPesananAL?: string;
   hargaJual: number;
   modal: number;
   tanggal: string;

@@ -2,6 +2,7 @@
 import React from 'react';
 import Card from 'components/card';
 import ModalOverlay from 'components/modal/ModalOverlay';
+import PenjualanDetailModal from 'components/admin/penjualan/PenjualanDetailModal';
 import LaporPenjualanForm, {
   emptyLaporForm,
   LaporPenjualanValue,
@@ -10,7 +11,7 @@ import { useAppData } from 'context/AppDataContext';
 import { useAuth } from 'context/AuthContext';
 import { useScopedData } from 'hooks/useScopedData';
 import { useUI } from 'context/UIContext';
-import { StatusPengiriman } from 'variables/dropshipPenjualan';
+import { StatusPengiriman, Penjualan } from 'variables/dropshipPenjualan';
 import { MdAdd, MdSearch, MdSend } from 'react-icons/md';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
@@ -32,6 +33,7 @@ const PenjualanMemberView = () => {
   const daftarTokoSaya = toko.map((t) => t.namaToko);
 
   const [formOpen, setFormOpen] = React.useState(false);
+  const [selected, setSelected] = React.useState<Penjualan | null>(null);
   const [form, setForm] = React.useState<LaporPenjualanValue>(
     emptyLaporForm(daftarTokoSaya[0] || ''),
   );
@@ -59,6 +61,7 @@ const PenjualanMemberView = () => {
         noHp: form.noHp,
         alamat: form.alamat,
         keterangan: form.keterangan,
+        noPesananAL: form.noPesananAL,
         hargaJual: 0,
         modal: 0,
         tanggal: new Date().toLocaleDateString('id-ID', {
@@ -202,7 +205,11 @@ const PenjualanMemberView = () => {
                 filteredPenjualan.map((row) => {
                   const profit = row.hargaJual - row.modalShopee;
                   return (
-                    <tr key={row.id} className="hover:bg-lightPrimary dark:hover:bg-navy-700">
+                    <tr
+                      key={row.id}
+                      onClick={() => setSelected(row)}
+                      className="cursor-pointer hover:bg-lightPrimary dark:hover:bg-navy-700"
+                    >
                       <td className="border-white/0 py-3 pr-2">
                         <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                           {row.namaProduk}
@@ -270,6 +277,15 @@ const PenjualanMemberView = () => {
             Kirim ke Admin
           </button>
         </div>
+      </ModalOverlay>
+
+      <ModalOverlay
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title="Detail Penjualan"
+        maxWidthClass="max-w-[640px]"
+      >
+        {selected && <PenjualanDetailModal penjualan={selected} />}
       </ModalOverlay>
     </div>
   );

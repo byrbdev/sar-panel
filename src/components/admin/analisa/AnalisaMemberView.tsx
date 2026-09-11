@@ -7,6 +7,7 @@ import { useBrutal } from 'context/BrutalContext';
 import { useScopedData } from 'hooks/useScopedData';
 import {
   analisaBrutal,
+  produkTeroptimasi,
   omzetPerBulan,
   topProdukTerlaris,
 } from 'utils/analisaHelpers';
@@ -16,6 +17,7 @@ import {
   MdShoppingCart,
   MdEmojiEvents,
   MdWarningAmber,
+  MdCheckCircle,
   MdBarChart,
 } from 'react-icons/md';
 
@@ -53,6 +55,10 @@ const AnalisaMemberView = () => {
     [brutalSaya, penjualan, profile],
   );
   const perluOptimasi = analisaBrutalSaya.filter((b) => b.perluDioptimasi);
+  const teroptimasi = React.useMemo(
+    () => produkTeroptimasi(analisaBrutalSaya),
+    [analisaBrutalSaya],
+  );
 
   const lineChartData = [
     { name: 'Omzet', data: trendBulanan.map((b) => b.omzet), color: '#4318FF' },
@@ -244,6 +250,59 @@ const AnalisaMemberView = () => {
                       </span>
                     </td>
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{b.realOrderan}x</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card extra="p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <MdCheckCircle className="h-5 w-5 text-green-500" />
+          <h2 className="text-lg font-bold text-navy-700 dark:text-white">
+            Produk Brutal yang Sudah Teroptimasi
+          </h2>
+        </div>
+        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          Status Muncul & sedang beriklan, diurutkan dari orderan real tertinggi.
+        </p>
+        <div className="w-full overflow-hidden">
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-white/10">
+                {['TOKO', 'PRODUK', 'SKU', 'STATUS', 'IKLAN', 'ORDERAN REAL'].map((h) => (
+                  <th key={h} className="pb-2 pr-2 pt-2 text-start text-xs font-bold text-gray-600 dark:text-white sm:text-sm">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {teroptimasi.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Belum ada produk yang tercatat sudah teroptimasi.
+                  </td>
+                </tr>
+              ) : (
+                teroptimasi.map((b) => (
+                  <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
+                    <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{b.namaToko}</td>
+                    <td className="truncate py-3 pr-2 text-xs text-navy-700 dark:text-white sm:text-sm">{b.produk}</td>
+                    <td className="truncate py-3 pr-2 font-mono text-xs text-gray-600 dark:text-gray-300">{b.sku || '-'}</td>
+                    <td className="py-3 pr-2">
+                      <span className="rounded-full bg-green-50 px-2 py-1 text-[10px] font-bold text-green-500">
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-2">
+                      <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-500">
+                        {b.iklan}
+                      </span>
+                    </td>
+                    <td className="truncate py-3 pr-2 text-xs font-bold text-green-500 sm:text-sm">{b.realOrderan}x</td>
                   </tr>
                 ))
               )}

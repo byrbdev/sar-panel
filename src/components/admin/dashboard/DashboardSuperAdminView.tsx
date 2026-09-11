@@ -21,12 +21,15 @@ const DashboardSuperAdminView = () => {
   const penjualanBulanIni = penjualan.filter((p) =>
     isBulanIni(p.tanggalTransaksi),
   );
+  const refundBulanIni = refund.filter((r) => isBulanIni(r.tanggal));
   const omzetBulanIni = penjualanBulanIni.reduce((a, p) => a + p.hargaJual, 0);
   const profitBulanIni = penjualanBulanIni.reduce(
     (a, p) => a + (p.hargaJual - p.modalShopee),
     0,
   );
-  const jumlahProsesRefund = refund.filter((r) => r.status === 'Proses').length;
+  const jumlahProsesRefund = refundBulanIni.filter(
+    (r) => r.status === 'Proses',
+  ).length;
 
   return (
     <div>
@@ -60,7 +63,7 @@ const DashboardSuperAdminView = () => {
         <Widget
           icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
           title={'Refund'}
-          subtitle={`${refund.length} pesanan`}
+          subtitle={`${refundBulanIni.length} pesanan`}
         />
       </div>
 

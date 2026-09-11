@@ -1,4 +1,5 @@
 'use client';
+import { useMemo } from 'react';
 import { useAppData } from 'context/AppDataContext';
 import { useAuth } from 'context/AuthContext';
 
@@ -11,6 +12,9 @@ import { useAuth } from 'context/AuthContext';
  * Catatan: filter ini juga akan dicerminkan di Row Level Security Supabase,
  * jadi walau logic di sini "dilewati" secara manual, database tetap menolak
  * baris yang bukan miliknya.
+ *
+ * Semua filter di-memoize (useMemo) supaya tidak menghitung ulang di setiap
+ * render — penting untuk performa saat data sudah banyak.
  */
 export const useScopedData = () => {
   const { toko, orders, penjualan, refund, ...rest } = useAppData();
@@ -19,16 +23,22 @@ export const useScopedData = () => {
   const isMember = profile?.role === 'member';
   const myId = profile?.id;
 
-  const scopedToko = isMember ? toko.filter((t) => t.ownerId === myId) : toko;
-  const scopedOrders = isMember
-    ? orders.filter((o) => o.reporterId === myId)
-    : orders;
-  const scopedPenjualan = isMember
-    ? penjualan.filter((p) => p.ownerId === myId)
-    : penjualan;
-  const scopedRefund = isMember
-    ? refund.filter((r) => r.ownerId === myId)
-    : refund;
+  const scopedToko = useMemo(
+    () => (isMember ? toko.filter((t) => t.ownerId === myId) : toko),
+    [isMember, myId, toko],
+  );
+  const scopedOrders = useMemo(
+    () => (isMember ? orders.filter((o) => o.reporterId === myId) : orders),
+    [isMember, myId, orders],
+  );
+  const scopedPenjualan = useMemo(
+    () => (isMember ? penjualan.filter((p) => p.ownerId === myId) : penjualan),
+    [isMember, myId, penjualan],
+  );
+  const scopedRefund = useMemo(
+    () => (isMember ? refund.filter((r) => r.ownerId === myId) : refund),
+    [isMember, myId, refund],
+  );
 
   return {
     ...rest,

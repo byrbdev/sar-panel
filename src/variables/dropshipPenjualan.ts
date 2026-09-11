@@ -21,6 +21,7 @@ export type Penjualan = {
   alamatPembeli: string;
   namaProduk: string;
   skuProduk: string;
+  noPesananAL: string;
   hargaJual: number;
   modalShopee: number;
   noResi: string;
