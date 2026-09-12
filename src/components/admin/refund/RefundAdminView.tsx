@@ -6,6 +6,8 @@ import RefundDetailModal from 'components/admin/refund/RefundDetailModal';
 import RefundForm, { RefundFormValue } from 'components/admin/refund/RefundForm';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
+import { usePagination } from 'hooks/usePagination';
+import PaginationControl from 'components/pagination/PaginationControl';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
 import { MdSearch, MdDelete, MdEdit } from 'react-icons/md';
 
@@ -57,7 +59,10 @@ const RefundAdminView = () => {
       r.noPesananSHP.toLowerCase().includes(term)
     );
   });
-
+  const { page, totalPages, pageData, next, prev } = usePagination(
+    filtered,
+    10,
+  );
   const updateStatus = (id: string, status: RefundStatus) => {
     setData(data.map((r) => (r.id === id ? { ...r, status } : r)));
     notify('Status refund berhasil diperbarui.', 'success');
@@ -133,7 +138,7 @@ const RefundAdminView = () => {
                   </td>
                 </tr>
               ) : (
-                filtered.map((row) => (
+                pageData.map((row) => (
                   <tr
                     key={row.id}
                     onClick={() => setSelected(row)}
@@ -200,6 +205,12 @@ const RefundAdminView = () => {
             </tbody>
           </table>
         </div>
+        <PaginationControl
+          page={page}
+          totalPages={totalPages}
+          onPrev={prev}
+          onNext={next}
+        />
       </Card>
 
       <ModalOverlay

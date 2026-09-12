@@ -11,6 +11,8 @@ import { PemulihanRow } from 'variables/dropshipPemulihan';
 import { MdAdd, MdSearch, MdEdit, MdDelete } from 'react-icons/md';
 import { useUI } from 'context/UIContext';
 import { useAppData } from 'context/AppDataContext';
+import { usePagination } from 'hooks/usePagination';
+import PaginationControl from 'components/pagination/PaginationControl';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -21,6 +23,10 @@ const PemulihanPage = () => {
 
   const filteredData = data.filter((row) =>
     row.nama.toLowerCase().includes(search.toLowerCase()),
+  );
+  const { page, totalPages, pageData, next, prev } = usePagination(
+    filteredData,
+    10,
   );
 
   // Tambah data
@@ -150,7 +156,7 @@ const PemulihanPage = () => {
                   </td>
                 </tr>
               ) : (
-                filteredData.map((row) => (
+                pageData.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => setSelected(row)}
@@ -219,6 +225,12 @@ const PemulihanPage = () => {
             </tbody>
           </table>
         </div>
+        <PaginationControl
+          page={page}
+          totalPages={totalPages}
+          onPrev={prev}
+          onNext={next}
+        />
       </Card>
 
       {/* Modal Tambah Data */}

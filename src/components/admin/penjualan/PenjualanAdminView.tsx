@@ -14,6 +14,8 @@ import RefundForm, {
 import { Penjualan, StatusPengiriman } from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
+import { usePagination } from 'hooks/usePagination';
+import PaginationControl from 'components/pagination/PaginationControl';
 import {
   MdAdd,
   MdSearch,
@@ -77,6 +79,10 @@ const PenjualanAdminView = () => {
       row.statusPengiriman.toLowerCase().includes(term)
     );
   });
+  const { page, totalPages, pageData, next, prev } = usePagination(
+    filteredData,
+    10,
+  );
 
   const summary = React.useMemo(
     () => ({
@@ -304,7 +310,7 @@ const PenjualanAdminView = () => {
                   </td>
                 </tr>
               ) : (
-                filteredData.map((row) => {
+                pageData.map((row) => {
                   const profit = row.hargaJual - row.modalShopee;
                   return (
                     <tr
@@ -389,6 +395,12 @@ const PenjualanAdminView = () => {
             </tbody>
           </table>
         </div>
+        <PaginationControl
+          page={page}
+          totalPages={totalPages}
+          onPrev={prev}
+          onNext={next}
+        />
       </Card>
 
       {/* Modal Tambah / Edit */}

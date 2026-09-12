@@ -10,6 +10,8 @@ import BuyerDetailModal from 'components/admin/buyer/BuyerDetailModal';
 import { BuyerRow, BuyerStatus } from 'variables/dropshipBuyer';
 import { useUI } from 'context/UIContext';
 import { useSyncedTable } from 'hooks/useSyncedTable';
+import { usePagination } from 'hooks/usePagination';
+import PaginationControl from 'components/pagination/PaginationControl';
 import { MdAdd, MdSearch, MdEdit, MdDelete } from 'react-icons/md';
 
 const statusStyle: Record<BuyerStatus, string> = {
@@ -69,7 +71,10 @@ const DataBuyerPage = () => {
       row.akunAL.toLowerCase().includes(term)
     );
   });
-
+  const { page, totalPages, pageData, next, prev } = usePagination(
+    filteredData,
+    10,
+  );
   const openAdd = () => {
     setEditId(null);
     setForm(emptyBuyerForm());
@@ -181,7 +186,7 @@ const DataBuyerPage = () => {
                   </td>
                 </tr>
               ) : (
-                filteredData.map((row) => (
+                pageData.map((row) => (
                   <tr
                     key={row.id}
                     onClick={() => setSelected(row)}
@@ -237,6 +242,12 @@ const DataBuyerPage = () => {
             </tbody>
           </table>
         </div>
+        <PaginationControl
+          page={page}
+          totalPages={totalPages}
+          onPrev={prev}
+          onNext={next}
+        />
       </Card>
 
       {/* Modal Tambah / Edit */}
