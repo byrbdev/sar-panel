@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppData } from 'context/AppDataContext';
 import { useAuth } from 'context/AuthContext';
 
@@ -78,7 +78,13 @@ export const useGlobalSearch = (term: string) => {
   const notifications: ShippingNotif[] = useMemo(() => {
     if (profile?.role !== 'member') return [];
     return penjualan
-      .filter((p) => p.ownerId === profile.id && p.noResi)
+      .filter(
+        (p) =>
+          p.ownerId === profile.id &&
+          p.noResi &&
+          p.noResi.trim() !== '' &&
+          p.noResi.trim() !== '-',
+      )
       .slice(0, 10)
       .map((p) => ({
         id: p.id,
@@ -89,5 +95,40 @@ export const useGlobalSearch = (term: string) => {
       }));
   }, [penjualan, profile]);
 
-  return { results, notifications, selectedNotif, setSelectedNotif };
+  // Tandai sudah dibaca — disimpan per-user di localStorage supaya titik
+  // merah tidak muncul lagi setelah notifikasi dibuka.
+  const storageKey = `notif_read_${profile?.id || 'anon'}`;
+  const [readIds, setReadIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      setReadIds(raw ? JSON.parse(raw) : []);
+    } catch {
+      setReadIds([]);
+    }
+  }, [storageKey]);
+
+  const unreadCount = notifications.filter(
+    (n) => !readIds.includes(n.id),
+  ).length;
+
+  const markAllRead = useCallback(() => {
+    const ids = notifications.map((n) => n.id);
+    setReadIds(ids);
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(ids));
+    } catch {
+      /* abaikan bila localStorage tidak tersedia */
+    }
+  }, [notifications, storageKey]);
+
+  return {
+    results,
+    notifications,
+    unreadCount,
+    markAllRead,
+    selectedNotif,
+    setSelectedNotif,
+  };
 };

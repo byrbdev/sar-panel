@@ -8,8 +8,11 @@ import {
   MdCalendarToday,
   MdStyle,
   MdQrCode2,
+  MdBadge,
+  MdReceiptLong,
 } from 'react-icons/md';
 import { OrderRow } from 'variables/dropshipTables';
+import { useMemberName } from 'hooks/useMemberName';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -45,6 +48,7 @@ const SectionLabel = (props: { children: React.ReactNode }) => (
 
 const OrderDetailModal = (props: { order: OrderRow }) => {
   const { order } = props;
+  const { resolve: resolveMember } = useMemberName();
   return (
     <div>
       <div className="mb-5 flex items-start gap-3 border-b border-gray-200 pb-4 dark:border-white/10">
@@ -91,10 +95,24 @@ const OrderDetailModal = (props: { order: OrderRow }) => {
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
           <SectionLabel>Info Pesanan</SectionLabel>
           <Row
-            icon={<MdStorefront className="h-3.5 w-3.5" />}
-            label="Toko"
-            value={order.toko}
+            icon={<MdBadge className="h-3.5 w-3.5" />}
+            label="Member"
+            value={resolveMember(order.reporterId, order.toko)}
           />
+          <div className="mt-3.5">
+            <Row
+              icon={<MdStorefront className="h-3.5 w-3.5" />}
+              label="Toko"
+              value={order.toko}
+            />
+          </div>
+          <div className="mt-3.5">
+            <Row
+              icon={<MdReceiptLong className="h-3.5 w-3.5" />}
+              label="No Pesanan AL"
+              value={order.noPesananAL || '-'}
+            />
+          </div>
           <div className="mt-3.5">
             <Row
               icon={<MdStyle className="h-3.5 w-3.5" />}

@@ -14,6 +14,7 @@ import RefundForm, {
 import { Penjualan, StatusPengiriman } from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
+import { useMemberName } from 'hooks/useMemberName';
 import { usePagination } from 'hooks/usePagination';
 import PaginationControl from 'components/pagination/PaginationControl';
 import {
@@ -46,6 +47,7 @@ const PenjualanAdminView = () => {
     toko,
   } = useAppData();
   const { notify, confirm } = useUI();
+  const { resolve: resolveMember } = useMemberName();
   const [search, setSearch] = React.useState('');
 
   const getOwnerId = (namaToko: string) =>
@@ -74,6 +76,7 @@ const PenjualanAdminView = () => {
       row.namaPembeli.toLowerCase().includes(term) ||
       row.namaProduk.toLowerCase().includes(term) ||
       row.noResi.toLowerCase().includes(term) ||
+      (row.noPesananAL || '').toLowerCase().includes(term) ||
       row.namaToko.toLowerCase().includes(term) ||
       row.statusAkunToko.toLowerCase().includes(term) ||
       row.statusPengiriman.toLowerCase().includes(term)
@@ -134,7 +137,7 @@ const PenjualanAdminView = () => {
     const targetRow = data.find((r) => r.id === refundTargetId);
     const newId = 'RF-' + Date.now();
     setRefund([
-      { id: newId, ownerId: targetRow?.ownerId, ...refundForm },
+      { ...refundForm, id: newId, ownerId: targetRow?.ownerId },
       ...refund,
     ]);
     // Nolkan Omzet & Profit transaksi ini dan ubah statusnya jadi Refund
@@ -261,7 +264,7 @@ const PenjualanAdminView = () => {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari pembeli, produk, toko, status (Aktif/Ban)..."
+                placeholder="Cari pembeli, produk, toko, no pesanan, resi..."
                 className="h-full w-full bg-transparent text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:text-white dark:placeholder:text-gray-400"
               />
             </div>
@@ -280,6 +283,7 @@ const PenjualanAdminView = () => {
             <thead>
               <tr className="!border-px !border-gray-400">
                 {[
+                  { label: 'MEMBER', hide: 'hidden xl:table-cell' },
                   { label: 'PRODUK', hide: '' },
                   { label: 'TOKO', hide: 'hidden md:table-cell' },
                   { label: 'PEMBELI', hide: 'hidden lg:table-cell' },
@@ -303,7 +307,7 @@ const PenjualanAdminView = () => {
               {filteredData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="py-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400"
                   >
                     Tidak ada data penjualan yang cocok.
@@ -318,6 +322,11 @@ const PenjualanAdminView = () => {
                       onClick={() => setSelected(row)}
                       className="cursor-pointer transition duration-150 hover:bg-lightPrimary dark:hover:bg-navy-700"
                     >
+                      <td className="hidden border-white/0 py-3 pr-2 xl:table-cell">
+                        <p className="truncate text-xs font-bold text-brand-500 dark:text-white sm:text-sm">
+                          {resolveMember(row.ownerId, row.namaToko)}
+                        </p>
+                      </td>
                       <td className="border-white/0 py-3 pr-2">
                         <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                           {row.namaProduk}

@@ -18,6 +18,7 @@ import {
 } from 'variables/dropshipPenjualan';
 import { StatusAkunToko } from 'variables/dropshipPemulihan';
 import { useAppData } from 'context/AppDataContext';
+import { useMemberName } from 'hooks/useMemberName';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -67,6 +68,7 @@ const SectionLabel = (props: { children: React.ReactNode }) => (
 const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
   const { penjualan } = props;
   const { toko } = useAppData();
+  const { resolve: resolveMember } = useMemberName();
   const statusAkunToko: StatusAkunToko =
     toko.find((t) => t.namaToko === penjualan.namaToko)?.statusAkunToko ||
     'Aktif';
@@ -130,10 +132,17 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
           <SectionLabel>Info Transaksi</SectionLabel>
           <Row
-            icon={<MdStorefront className="h-3.5 w-3.5" />}
-            label="Toko"
-            value={penjualan.namaToko}
+            icon={<MdPerson className="h-3.5 w-3.5" />}
+            label="Member"
+            value={resolveMember(penjualan.ownerId, penjualan.namaToko)}
           />
+          <div className="mt-3.5">
+            <Row
+              icon={<MdStorefront className="h-3.5 w-3.5" />}
+              label="Toko"
+              value={penjualan.namaToko}
+            />
+          </div>
           <div className="mt-3.5">
             <Row
               icon={<MdCalendarToday className="h-3.5 w-3.5" />}

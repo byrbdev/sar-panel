@@ -213,13 +213,13 @@ const AnalisaMemberView = () => {
           </h2>
         </div>
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-          Status Tidak Muncul atau Tidak Iklan, disandingkan dengan orderan real.
+          Produk yang belum muncul di pencarian atau iklannya belum aktif — perlu dioptimasi.
         </p>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
-                {['TOKO', 'PRODUK', 'SKU', 'STATUS', 'IKLAN', 'ORDERAN REAL'].map((h) => (
+                {['TOKO', 'PRODUK', 'SKU', 'STATUS', 'IKLAN'].map((h) => (
                   <th key={h} className="pb-2 pr-2 pt-2 text-start text-xs font-bold text-gray-600 dark:text-white sm:text-sm">
                     {h}
                   </th>
@@ -229,7 +229,7 @@ const AnalisaMemberView = () => {
             <tbody>
               {perluOptimasi.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     Tidak ada produk yang perlu dioptimasi saat ini. 🎉
                   </td>
                 </tr>
@@ -249,8 +249,7 @@ const AnalisaMemberView = () => {
                         {b.iklan}
                       </span>
                     </td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{b.realOrderan}x</td>
-                  </tr>
+                                      </tr>
                 ))
               )}
             </tbody>
@@ -266,13 +265,13 @@ const AnalisaMemberView = () => {
           </h2>
         </div>
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-          Status Muncul & sedang beriklan, diurutkan dari orderan real tertinggi.
+          Produk sudah muncul di pencarian dan iklannya aktif — performanya sudah baik.
         </p>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
-                {['TOKO', 'PRODUK', 'SKU', 'STATUS', 'IKLAN', 'ORDERAN REAL'].map((h) => (
+                {['TOKO', 'PRODUK', 'SKU', 'STATUS', 'IKLAN'].map((h) => (
                   <th key={h} className="pb-2 pr-2 pt-2 text-start text-xs font-bold text-gray-600 dark:text-white sm:text-sm">
                     {h}
                   </th>
@@ -282,7 +281,7 @@ const AnalisaMemberView = () => {
             <tbody>
               {teroptimasi.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     Belum ada produk yang tercatat sudah teroptimasi.
                   </td>
                 </tr>
@@ -302,8 +301,7 @@ const AnalisaMemberView = () => {
                         {b.iklan}
                       </span>
                     </td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-green-500 sm:text-sm">{b.realOrderan}x</td>
-                  </tr>
+                                      </tr>
                 ))
               )}
             </tbody>

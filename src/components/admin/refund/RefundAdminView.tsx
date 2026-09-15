@@ -6,6 +6,7 @@ import RefundDetailModal from 'components/admin/refund/RefundDetailModal';
 import RefundForm, { RefundFormValue } from 'components/admin/refund/RefundForm';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
+import { useMemberName } from 'hooks/useMemberName';
 import { usePagination } from 'hooks/usePagination';
 import PaginationControl from 'components/pagination/PaginationControl';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
@@ -28,6 +29,7 @@ const statusLabel: Record<RefundStatus, string> = {
 const RefundAdminView = () => {
   const { refund: data, setRefund: setData } = useAppData();
   const { notify, confirm } = useUI();
+  const { resolve: resolveMember } = useMemberName();
   const [search, setSearch] = React.useState('');
   const [selected, setSelected] = React.useState<RefundRow | null>(null);
   const [editOpen, setEditOpen] = React.useState(false);
@@ -108,6 +110,7 @@ const RefundAdminView = () => {
             <thead>
               <tr className="!border-px !border-gray-400">
                 {[
+                  { label: 'MEMBER', hide: 'hidden xl:table-cell' },
                   { label: 'NAMA', hide: '' },
                   { label: 'NAMA TOKO', hide: 'hidden sm:table-cell' },
                   { label: 'NO PESANAN AL', hide: 'hidden md:table-cell' },
@@ -131,7 +134,7 @@ const RefundAdminView = () => {
               {filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="py-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400"
                   >
                     Belum ada data refund.
@@ -144,6 +147,11 @@ const RefundAdminView = () => {
                     onClick={() => setSelected(row)}
                     className="cursor-pointer transition duration-150 hover:bg-lightPrimary dark:hover:bg-navy-700"
                   >
+                    <td className="hidden border-white/0 py-3 pr-2 xl:table-cell">
+                      <p className="truncate text-xs font-bold text-brand-500 dark:text-white sm:text-sm">
+                        {resolveMember(row.ownerId, row.namaToko)}
+                      </p>
+                    </td>
                     <td className="border-white/0 py-3 pr-2">
                       <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                         {row.nama}
@@ -170,18 +178,11 @@ const RefundAdminView = () => {
                       </p>
                     </td>
                     <td className="border-white/0 py-3 pr-2 text-center">
-                      <select
-                        value={row.status}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) =>
-                          updateStatus(row.id, e.target.value as RefundStatus)
-                        }
-                        className={`rounded-full border-none px-2 py-1.5 text-[10px] font-bold outline-none sm:px-3 sm:text-xs ${statusStyle[row.status]}`}
+                      <span
+                        className={`rounded-full px-2 py-1 text-[10px] font-bold sm:px-3 sm:text-xs ${statusStyle[row.status]}`}
                       >
-                        <option value="Belum">Belum</option>
-                        <option value="Proses">Proses</option>
-                        <option value="Selesai">Selesai</option>
-                      </select>
+                        {row.status}
+                      </span>
                     </td>
                     <td className="border-white/0 py-3 pr-2">
                       <div className="flex flex-nowrap items-center justify-center gap-1">

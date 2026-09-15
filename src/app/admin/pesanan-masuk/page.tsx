@@ -101,7 +101,7 @@ const PesananMasukPage = () => {
         : 1,
     );
     setPenjualan([
-      { id: newId, ownerId: getOwnerId(finalForm.namaToko), ...finalForm },
+      { ...finalForm, id: newId, ownerId: getOwnerId(finalForm.namaToko) },
       ...penjualan,
     ]);
     setOrders(orders.filter((o) => o.id !== prosesOrder.id));
@@ -129,7 +129,7 @@ const PesananMasukPage = () => {
     if (!refundOrderData) return;
     const newId = 'RF-' + Date.now();
     setRefund([
-      { id: newId, ownerId: getOwnerId(refundForm.namaToko), ...refundForm },
+      { ...refundForm, id: newId, ownerId: getOwnerId(refundForm.namaToko) },
       ...refund,
     ]);
     setOrders(orders.filter((o) => o.id !== refundOrderData.id));

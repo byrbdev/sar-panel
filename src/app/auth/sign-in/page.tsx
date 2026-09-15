@@ -40,10 +40,8 @@ export default function SignInPage() {
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600">
             <MdStorefront className="h-7 w-7 text-white" />
           </div>
-          <h1 className="font-poppins text-2xl font-bold text-navy-700 dark:text-white">
-            SAR Panel
-            <br />
-            <span className="font-medium">By RB</span>
+          <h1 className="whitespace-nowrap font-poppins text-2xl font-bold text-navy-700 dark:text-white">
+            SAR Panel <span className="font-medium">By RB</span>
           </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Masuk untuk mengelola bisnis dropship kamu

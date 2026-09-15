@@ -478,14 +478,14 @@ const AnalisaSuperAdminView = () => {
           </h2>
         </div>
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-          Produk dengan status Tidak Muncul atau Tidak Iklan, disandingkan
-          dengan jumlah orderan real (dicocokkan via SKU pada data Penjualan).
+          Produk yang belum muncul di pencarian atau iklannya belum aktif —
+          perlu dioptimasi agar penjualannya naik.
         </p>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
-                {['TOKO', 'PRODUK', 'SKU', 'ANGGOTA', 'STATUS', 'IKLAN', 'ORDERAN REAL'].map(
+                {['TOKO', 'PRODUK', 'SKU', 'ANGGOTA', 'STATUS', 'IKLAN'].map(
                   (h) => (
                     <th
                       key={h}
@@ -500,7 +500,7 @@ const AnalisaSuperAdminView = () => {
             <tbody>
               {perluOptimasi.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     Tidak ada produk yang perlu dioptimasi saat ini. 🎉
                   </td>
                 </tr>
@@ -533,9 +533,6 @@ const AnalisaSuperAdminView = () => {
                         {b.iklan}
                       </span>
                     </td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
-                      {b.realOrderan}x
-                    </td>
                   </tr>
                 ))
               )}
@@ -554,13 +551,13 @@ const AnalisaSuperAdminView = () => {
         </div>
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
           Kebalikan dari tabel di atas — produk dengan status Muncul dan
-          sedang beriklan, diurutkan dari orderan real tertinggi.
+          iklannya aktif. Performa produk ini sudah berjalan baik.
         </p>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
-                {['TOKO', 'PRODUK', 'SKU', 'ANGGOTA', 'STATUS', 'IKLAN', 'ORDERAN REAL'].map(
+                {['TOKO', 'PRODUK', 'SKU', 'ANGGOTA', 'STATUS', 'IKLAN'].map(
                   (h) => (
                     <th
                       key={h}
@@ -575,7 +572,7 @@ const AnalisaSuperAdminView = () => {
             <tbody>
               {teroptimasi.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     Belum ada produk yang tercatat sudah teroptimasi.
                   </td>
                 </tr>
@@ -603,9 +600,6 @@ const AnalisaSuperAdminView = () => {
                       <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-500">
                         {b.iklan}
                       </span>
-                    </td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-green-500 sm:text-sm">
-                      {b.realOrderan}x
                     </td>
                   </tr>
                 ))

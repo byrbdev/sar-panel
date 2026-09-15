@@ -13,6 +13,7 @@ import RefundForm, {
 } from 'components/admin/refund/RefundForm';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
+import { useMemberName } from 'hooks/useMemberName';
 import { OrderRow } from 'variables/dropshipTables';
 import { MdAssignmentReturn, MdShoppingCartCheckout } from 'react-icons/md';
 
@@ -28,6 +29,7 @@ export default function TabelMasukRealtime() {
     toko,
   } = useAppData();
   const { notify, confirm } = useUI();
+  const { resolve: resolveMember } = useMemberName();
 
   const getOwnerId = (namaToko: string) =>
     toko.find((t) => t.namaToko === namaToko)?.ownerId;
@@ -80,9 +82,9 @@ export default function TabelMasukRealtime() {
     );
     setPenjualan([
       {
+        ...finalForm,
         id: newId,
         ownerId: getOwnerId(finalForm.namaToko),
-        ...finalForm,
       },
       ...penjualan,
     ]);
@@ -112,7 +114,7 @@ export default function TabelMasukRealtime() {
     if (!refundOrderData) return;
     const newId = 'RF-' + Date.now();
     setRefund([
-      { id: newId, ownerId: getOwnerId(refundForm.namaToko), ...refundForm },
+      { ...refundForm, id: newId, ownerId: getOwnerId(refundForm.namaToko) },
       ...refund,
     ]);
     setOrders(orders.filter((o) => o.id !== refundOrderData.id));
@@ -145,6 +147,7 @@ export default function TabelMasukRealtime() {
           <thead>
             <tr className="!border-px !border-gray-400">
               {[
+                { label: 'MEMBER', hide: 'hidden lg:table-cell' },
                 { label: 'NAMA', hide: '' },
                 { label: 'TOKO', hide: 'hidden sm:table-cell' },
                 { label: 'PRODUK', hide: '' },
@@ -167,7 +170,7 @@ export default function TabelMasukRealtime() {
             {displayed.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400"
                 >
                   Tidak ada pesanan masuk saat ini.
@@ -180,6 +183,11 @@ export default function TabelMasukRealtime() {
                   onClick={() => setSelected(row)}
                   className="cursor-pointer transition duration-150 hover:bg-lightPrimary dark:hover:bg-navy-700"
                 >
+                  <td className="hidden border-white/0 py-3 pr-2 lg:table-cell">
+                    <p className="truncate text-xs font-bold text-brand-500 dark:text-white sm:text-sm">
+                      {resolveMember(row.reporterId, row.toko)}
+                    </p>
+                  </td>
                   <td className="border-white/0 py-3 pr-2">
                     <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {row.nama}

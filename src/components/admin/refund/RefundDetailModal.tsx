@@ -14,6 +14,7 @@ import {
   MdWarningAmber,
 } from 'react-icons/md';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
+import { useMemberName } from 'hooks/useMemberName';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -63,6 +64,7 @@ const SectionLabel = (props: { children: React.ReactNode }) => (
 
 const RefundDetailModal = (props: { refund: RefundRow }) => {
   const { refund } = props;
+  const { resolve: resolveMember } = useMemberName();
   const fromPenjualan = !!refund.namaProduk;
 
   return (
@@ -138,7 +140,14 @@ const RefundDetailModal = (props: { refund: RefundRow }) => {
 
       <div className="space-y-3.5">
         <SectionLabel>Info Pembeli & Toko</SectionLabel>
-        <Row icon={<MdPerson className="h-3.5 w-3.5" />} label="Nama" value={refund.nama} />
+        <Row
+          icon={<MdPerson className="h-3.5 w-3.5" />}
+          label="Member"
+          value={resolveMember(refund.ownerId, refund.namaToko)}
+        />
+        <div className="mt-3.5">
+          <Row icon={<MdPerson className="h-3.5 w-3.5" />} label="Nama" value={refund.nama} />
+        </div>
         <div className="mt-3.5">
           <Row
             icon={<MdPhone className="h-3.5 w-3.5" />}

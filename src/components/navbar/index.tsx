@@ -31,8 +31,14 @@ const Navbar = (props: {
   }, []);
 
   const [searchTerm, setSearchTerm] = React.useState('');
-  const { results, notifications, selectedNotif, setSelectedNotif } =
-    useGlobalSearch(searchTerm);
+  const {
+    results,
+    notifications,
+    unreadCount,
+    markAllRead,
+    selectedNotif,
+    setSelectedNotif,
+  } = useGlobalSearch(searchTerm);
 
   const greetingName =
     profile?.role === 'member'
@@ -116,11 +122,11 @@ const Navbar = (props: {
         {/* Notifikasi */}
         <Dropdown
           button={
-            <p className="relative cursor-pointer">
+            <p className="relative cursor-pointer" onClick={markAllRead}>
               <IoMdNotificationsOutline className="h-4 w-4 text-gray-600 dark:text-white" />
-              {notifications.length > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
-                  {notifications.length}
+                  {unreadCount}
                 </span>
               )}
             </p>

@@ -17,26 +17,31 @@ const OmzetMingguan = (props: { data?: Penjualan[] }) => {
     penjualan,
   ]);
 
+  // Kedua metrik punya satuan berbeda (pcs vs rupiah), jadi masing-masing
+  // dinormalisasi ke skala yang sama supaya tingginya tetap proporsional
+  // terhadap nilai tertingginya sendiri. Nilai asli tetap ditampilkan utuh
+  // di tooltip saat di-hover.
   const maxProduk = Math.max(1, ...harian.map((h) => h.produkTerjual));
   const maxProfit = Math.max(1, ...harian.map((h) => h.profit));
+  const SKALA = 140;
 
   const chartData = [
     {
       name: 'Produk Terjual',
-      data: harian.map((h) => (h.produkTerjual / maxProduk) * 160),
+      data: harian.map((h) => (h.produkTerjual / maxProduk) * SKALA),
       color: '#6AD2FA',
     },
     {
       name: 'Profit Bersih',
-      data: harian.map((h) => (h.profit / maxProfit) * 160),
+      data: harian.map((h) => (h.profit / maxProfit) * SKALA),
       color: '#4318FF',
     },
     {
       name: 'Track',
       data: harian.map((h) => {
-        const p1 = (h.produkTerjual / maxProduk) * 160;
-        const p2 = (h.profit / maxProfit) * 160;
-        return Math.max(320 - p1 - p2, 20);
+        const p1 = (h.produkTerjual / maxProduk) * SKALA;
+        const p2 = (h.profit / maxProfit) * SKALA;
+        return Math.max(SKALA * 2 + 40 - p1 - p2, 20);
       }),
       color: '#EFF4FB',
     },

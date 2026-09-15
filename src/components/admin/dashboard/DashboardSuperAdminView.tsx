@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import PenjualanChart from 'components/admin/default/PenjualanChart';
 import OmzetMingguan from 'components/admin/default/OmzetMingguan';
 import TabelMasukRealtime from 'components/admin/default/TabelMasukRealtime';
@@ -50,21 +51,27 @@ const DashboardSuperAdminView = () => {
           title={'Produk Terjual'}
           subtitle={`${penjualanBulanIni.length} pcs`}
         />
-        <Widget
-          icon={<MdMoveToInbox className="h-6 w-6" />}
-          title={'Masuk'}
-          subtitle={`${orders.length} pesanan`}
-        />
-        <Widget
-          icon={<MdOutlineAutorenew className="h-7 w-7" />}
-          title={'Proses Refund'}
-          subtitle={`${jumlahProsesRefund} pesanan`}
-        />
-        <Widget
-          icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
-          title={'Refund'}
-          subtitle={`${refundBulanIni.length} pesanan`}
-        />
+        <Link href="/admin/pesanan-masuk">
+          <Widget
+            icon={<MdMoveToInbox className="h-6 w-6" />}
+            title={'Masuk'}
+            subtitle={`${orders.length} pesanan`}
+          />
+        </Link>
+        <Link href="/admin/refund">
+          <Widget
+            icon={<MdOutlineAutorenew className="h-7 w-7" />}
+            title={'Proses Refund'}
+            subtitle={`${jumlahProsesRefund} pesanan`}
+          />
+        </Link>
+        <Link href="/admin/refund">
+          <Widget
+            icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
+            title={'Refund'}
+            subtitle={`${refundBulanIni.length} pesanan`}
+          />
+        </Link>
       </div>
 
       {/* Charts */}

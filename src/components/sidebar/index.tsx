@@ -20,11 +20,9 @@ function SidebarHorizon(props: { routes: IRoute[]; [x: string]: any }) {
         <HiX />
       </span>
 
-      <div className={`mx-[32px] mt-[50px] flex items-center`}>
-        <div className="ml-1 mt-1 font-poppins text-[20px] font-bold uppercase leading-tight text-navy-700 dark:text-white">
-          SAR Panel
-          <br />
-          <span className="font-medium">By RB</span>
+      <div className={`mx-[56px] mt-[50px] flex items-center`}>
+        <div className="ml-1 mt-1 whitespace-nowrap font-poppins text-[18px] font-bold uppercase leading-tight text-navy-700 dark:text-white">
+          SAR Panel <span className="font-medium">By RB</span>
         </div>
       </div>
       <div className="mb-7 mt-[58px] h-px bg-gray-300 dark:bg-white/30" />

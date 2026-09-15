@@ -100,8 +100,6 @@ export function useSyncedTable<T extends { id: string | number }>(
     // Insert baru / update yang berubah
     next.forEach((n) => {
       const before = prev.find((p) => String(p.id) === String(n.id));
-      const looksTemporaryId =
-        numericId && typeof n.id === 'string' && !/^\d+$/.test(n.id);
 
       if (!before) {
         const payload = toDb(n);
@@ -112,15 +110,38 @@ export function useSyncedTable<T extends { id: string | number }>(
           .select()
           .single()
           .then(({ data: inserted, error }) => {
-            if (error || !inserted) return;
+            if (error || !inserted) {
+              console.error(`[${table}] insert gagal:`, error);
+              return;
+            }
             const realRow = fromDb(inserted);
             // ganti id sementara (client-side) dengan id asli dari DB
             setDataRaw((cur) =>
               cur.map((c) => (String(c.id) === String(n.id) ? realRow : c)),
             );
           });
-      } else if (JSON.stringify(before) !== JSON.stringify(n)) {
-        supabase.from(table).update(toDb(n)).eq('id', n.id).then();
+      } else {
+        // Bandingkan bentuk payload DB-nya (bukan objek mentah), supaya
+        // urutan key tidak memengaruhi hasil perbandingan.
+        const beforePayload = toDb(before);
+        const nextPayload = toDb(n);
+        if (
+          JSON.stringify(beforePayload) !== JSON.stringify(nextPayload)
+        ) {
+          // PENTING: kolom `id` adalah GENERATED ALWAYS AS IDENTITY —
+          // Postgres akan MENOLAK update kalau kolom ini ikut dikirim.
+          // Inilah penyebab semua perubahan edit tidak tersimpan.
+          const updatePayload = { ...nextPayload };
+          delete (updatePayload as any).id;
+
+          supabase
+            .from(table)
+            .update(updatePayload)
+            .eq('id', n.id)
+            .then(({ error }) => {
+              if (error) console.error(`[${table}] update gagal:`, error);
+            });
+        }
       }
     });
   };
