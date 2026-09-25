@@ -40,6 +40,7 @@ const Navbar = (props: {
     setSelectedNotif,
   } = useGlobalSearch(searchTerm);
 
+  const [notifOpen, setNotifOpen] = React.useState(false);
   const greetingName =
     profile?.role === 'member'
       ? profile?.nama
@@ -121,8 +122,13 @@ const Navbar = (props: {
 
         {/* Notifikasi */}
         <Dropdown
+          open={notifOpen}
+          onOpenChange={setNotifOpen}
           button={
-            <p className="relative cursor-pointer" onClick={markAllRead}>
+            <p
+              className="relative cursor-pointer"
+              onClick={markAllRead}
+            >
               <IoMdNotificationsOutline className="h-4 w-4 text-gray-600 dark:text-white" />
               {unreadCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
@@ -143,25 +149,32 @@ const Navbar = (props: {
                 Belum ada notifikasi.
               </p>
             ) : (
-              notifications.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => setSelectedNotif(n)}
-                  className="flex w-full items-start gap-2 rounded-lg p-2 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800"
-                >
-                  <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-navy-800">
-                    <MdReceiptLong className="h-4 w-4" />
-                  </div>
-                  <div className="text-xs">
-                    <p className="font-bold text-navy-700 dark:text-white">
-                      {n.produk}
-                    </p>
-                    <p className="text-gray-500 dark:text-gray-400">
-                      {n.namaToko} • Resi: {n.noResi}
-                    </p>
-                  </div>
-                </button>
-              ))
+              <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto pr-1">
+                {notifications.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => {
+                      // Tutup dropdown-nya dulu supaya tidak "numpuk" di
+                      // belakang modal detail yang baru dibuka.
+                      setNotifOpen(false);
+                      setSelectedNotif(n);
+                    }}
+                    className="flex w-full items-start gap-2 rounded-lg p-2 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800"
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-navy-800">
+                      <MdReceiptLong className="h-4 w-4" />
+                    </div>
+                    <div className="text-xs">
+                      <p className="font-bold text-navy-700 dark:text-white">
+                        {n.produk}
+                      </p>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        {n.namaToko} • Resi: {n.noResi}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </Dropdown>
@@ -224,6 +237,9 @@ const Navbar = (props: {
           <div className="space-y-3 text-sm">
             <p className="text-navy-700 dark:text-white">
               <b>Produk:</b> {selectedNotif.produk}
+            </p>
+            <p className="text-navy-700 dark:text-white">
+              <b>No Pesanan AL:</b> {selectedNotif.noPesananAL || '-'}
             </p>
             <p className="text-navy-700 dark:text-white">
               <b>No Resi:</b> {selectedNotif.noResi || '-'}

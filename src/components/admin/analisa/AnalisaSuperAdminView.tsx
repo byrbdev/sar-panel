@@ -13,6 +13,7 @@ import {
   getBulanKey,
   isBulanIni,
   omzetPerBulan,
+  padOmzetBulanan,
   produkTeroptimasi,
   topProdukTerlaris,
 } from 'utils/analisaHelpers';
@@ -89,7 +90,7 @@ const AnalisaSuperAdminView = () => {
     [dataPenjualan],
   );
   const trendBulanan = React.useMemo(
-    () => omzetPerBulan(penjualan), // trend selalu full history
+    () => padOmzetBulanan(omzetPerBulan(penjualan)), // trend selalu full history
     [penjualan],
   );
   const brutalAnalisa = React.useMemo(
@@ -120,7 +121,7 @@ const AnalisaSuperAdminView = () => {
   ];
 
   const lineChartOptions: any = {
-    chart: { toolbar: { show: false } },
+    chart: { toolbar: { show: false }, background: 'transparent' },
     legend: { show: true, position: 'top', horizontalAlign: 'right' },
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 3 },

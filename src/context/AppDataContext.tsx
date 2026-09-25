@@ -4,17 +4,17 @@ import { OrderRow } from 'variables/dropshipTables';
 import { Penjualan } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
-import { useSyncedTable } from 'hooks/useSyncedTable';
+import { useSyncedTable, SyncedSetter } from 'hooks/useSyncedTable';
 
 type AppDataContextType = {
   toko: PemulihanRow[];
-  setToko: React.Dispatch<React.SetStateAction<PemulihanRow[]>>;
+  setToko: SyncedSetter<PemulihanRow>;
   orders: OrderRow[];
-  setOrders: React.Dispatch<React.SetStateAction<OrderRow[]>>;
+  setOrders: SyncedSetter<OrderRow>;
   penjualan: Penjualan[];
-  setPenjualan: React.Dispatch<React.SetStateAction<Penjualan[]>>;
+  setPenjualan: SyncedSetter<Penjualan>;
   refund: RefundRow[];
-  setRefund: React.Dispatch<React.SetStateAction<RefundRow[]>>;
+  setRefund: SyncedSetter<RefundRow>;
   addPenjualanFromOrder: (order: OrderRow) => void;
   getTokoEmail: (namaToko: string) => string;
   getTokoOwner: (namaToko: string) => string;
@@ -118,6 +118,7 @@ const penjualanFromDb = (r: any): Penjualan => ({
   hargaJual: Number(r.harga_jual) || 0,
   modalShopee: Number(r.modal_shopee) || 0,
   noResi: r.no_resi || '',
+  resiUpdatedAt: r.resi_updated_at || undefined,
   jasaPengiriman: r.jasa_pengiriman || '',
   statusPengiriman: r.status_pengiriman || 'Terkirim',
   statusAkunToko: r.status_akun_toko || 'Aktif',

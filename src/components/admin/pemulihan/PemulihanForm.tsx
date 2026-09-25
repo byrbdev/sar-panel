@@ -1,5 +1,6 @@
 'use client';
 import InputField from 'components/fields/InputField';
+import RupiahInput from 'components/fields/RupiahInput';
 import { useMember } from 'context/MemberContext';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
 
@@ -86,23 +87,17 @@ const PemulihanForm = (props: {
         value={value.namaToko}
         onChange={handle('namaToko')}
       />
-      <InputField
+      <RupiahInput
         id="denda"
         label="Denda (Rp)"
-        placeholder="0"
-        type="text"
-        extra=""
-        value={String(value.denda)}
-        onChange={handle('denda', true)}
+        value={value.denda}
+        onChange={(v) => onChange({ ...value, denda: v })}
       />
-      <InputField
+      <RupiahInput
         id="saldoIklan"
         label="Saldo Iklan (Rp)"
-        placeholder="0"
-        type="text"
-        extra=""
-        value={String(value.saldoIklan)}
-        onChange={handle('saldoIklan', true)}
+        value={value.saldoIklan}
+        onChange={(v) => onChange({ ...value, saldoIklan: v })}
       />
       <InputField
         id="pelanggaran"

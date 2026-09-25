@@ -58,13 +58,17 @@ const TokoListPerMemberContent = (props: {
     setAddOpen(true);
   };
 
-  const saveAdd = () => {
+  const saveAdd = async () => {
     const newId = allData.length
       ? Math.max(...allData.map((d) => d.id)) + 1
       : 1;
-    setData([...allData, { id: newId, ...addForm }]);
-    setAddOpen(false);
-    notify('Data toko berhasil ditambahkan.', 'success');
+    const result = await setData([...allData, { id: newId, ...addForm }]);
+    if (result.ok) {
+      setAddOpen(false);
+      notify('Data toko berhasil ditambahkan.', 'success');
+    } else {
+      notify(`Gagal menambahkan data toko: ${result.errors[0]}`, 'error');
+    }
   };
 
   const openEdit = (e: React.MouseEvent, row: PemulihanRow) => {
@@ -75,16 +79,20 @@ const TokoListPerMemberContent = (props: {
     setEditOpen(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editId === null) return;
-    setData(
+    const result = await setData(
       allData.map((row) =>
         row.id === editId ? { id: editId, ...editForm } : row,
       ),
     );
-    setEditOpen(false);
-    setEditId(null);
-    notify('Perubahan data toko berhasil disimpan.', 'success');
+    if (result.ok) {
+      setEditOpen(false);
+      setEditId(null);
+      notify('Perubahan data toko berhasil disimpan.', 'success');
+    } else {
+      notify(`Gagal menyimpan perubahan data toko: ${result.errors[0]}`, 'error');
+    }
   };
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {

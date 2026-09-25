@@ -25,6 +25,9 @@ export type Penjualan = {
   hargaJual: number;
   modalShopee: number;
   noResi: string;
+  /** Kapan no_resi terakhir diisi/diubah (diisi otomatis oleh trigger DB).
+   * Dipakai untuk notifikasi "resi masuk" yang otomatis kedaluwarsa setelah 3 hari. */
+  resiUpdatedAt?: string;
   jasaPengiriman: string;
   statusPengiriman: StatusPengiriman;
   statusAkunToko: StatusAkunToko;

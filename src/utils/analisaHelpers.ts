@@ -186,6 +186,42 @@ export const omzetPerBulan = (data: Penjualan[]): OmzetBulanan[] => {
   return Array.from(map.values()).sort((a, b) => (a.key > b.key ? 1 : -1));
 };
 
+/**
+ * ApexCharts merender line chart dengan hanya 1 titik data sebagai satu
+ * garis vertikal tunggal (terlihat seperti bar, bukan garis tren). Fungsi
+ * ini memastikan selalu ada minimal `minPoints` bulan berurutan (dipadatkan
+ * dengan nilai 0 untuk bulan yang belum ada transaksi) supaya grafik selalu
+ * tampil sebagai garis tren yang wajar, persis seperti bawaan Horizon.
+ */
+export const padOmzetBulanan = (
+  trend: OmzetBulanan[],
+  minPoints = 6,
+): OmzetBulanan[] => {
+  if (trend.length >= minPoints) return trend;
+
+  const now = new Date();
+  const endKey = trend.length
+    ? trend[trend.length - 1].key
+    : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [endYear, endMonth] = endKey.split('-').map((v) => parseInt(v, 10));
+  const existing = new Map(trend.map((t) => [t.key, t]));
+
+  const result: OmzetBulanan[] = [];
+  for (let i = minPoints - 1; i >= 0; i--) {
+    const d = new Date(endYear, endMonth - 1 - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    result.push(
+      existing.get(key) || {
+        key,
+        label: formatBulanLabel(key),
+        omzet: 0,
+        profit: 0,
+      },
+    );
+  }
+  return result;
+};
+
 export type OmzetHarian = {
   tanggal: string; // '17', '18', dst (hanya nomor hari)
   produkTerjual: number;

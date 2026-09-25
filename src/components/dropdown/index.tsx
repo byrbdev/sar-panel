@@ -25,10 +25,23 @@ const Dropdown = (props: {
   children: JSX.Element;
   classNames: string;
   animation?: string;
+  /** Mode controlled (opsional): kalau diberikan, buka/tutup dropdown
+   * dikendalikan dari komponen induk (mis. Navbar perlu menutup dropdown
+   * notifikasi begitu salah satu notifikasi diklik supaya tidak "numpuk"
+   * dengan modal detail yang muncul di atasnya). Kalau tidak diberikan,
+   * perilakunya persis seperti sebelumnya (uncontrolled). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
-  const { button, children, classNames, animation } = props;
+  const { button, children, classNames, animation, open, onOpenChange } =
+    props;
   const wrapperRef = React.useRef(null);
-  const [openWrapper, setOpenWrapper] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const isControlled = open !== undefined;
+  const openWrapper = isControlled ? open : internalOpen;
+  const setOpenWrapper = isControlled
+    ? (v: boolean) => onOpenChange?.(v)
+    : setInternalOpen;
   useOutsideAlerter(wrapperRef, setOpenWrapper);
 
   return (

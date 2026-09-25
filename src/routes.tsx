@@ -26,7 +26,7 @@ const routes = [
     layout: '/admin',
     path: 'pemulihan',
     icon: <MdStorefront className="h-6 w-6" />,
-    roles: ['super_admin'],
+    roles: ['super_admin', 'admin'],
   },
   {
     name: 'Penjualan',
@@ -61,7 +61,7 @@ const routes = [
     layout: '/admin',
     path: 'brutal',
     icon: <MdWhatshot className="h-6 w-6" />,
-    roles: ['super_admin', 'member'],
+    roles: ['super_admin', 'admin', 'member'],
   },
   {
     name: 'Member',
@@ -83,6 +83,20 @@ const routes = [
 export const getRoutesForRole = (role?: string) => {
   if (!role || role === 'super_admin') return routes;
   return routes.filter((r) => r.roles.includes(role as any));
+};
+
+/**
+ * Guard akses di LEVEL HALAMAN (bukan cuma sembunyikan menu di sidebar).
+ * Tanpa ini, role yang tidak berhak (mis. "admin") tetap bisa membuka
+ * halaman seperti /admin/pemulihan (Toko) atau /admin/brutal langsung lewat
+ * URL meskipun menunya sudah disembunyikan dari sidebar.
+ */
+export const isRouteAllowed = (pathname: string, role?: string): boolean => {
+  if (!pathname) return true;
+  if (!role || role === 'super_admin') return true;
+  const matched = routes.find((r) => pathname.startsWith(`${r.layout}/${r.path}`));
+  if (!matched) return true; // halaman di luar daftar (profile, pesanan-masuk, dll) tidak dibatasi di sini
+  return matched.roles.includes(role as any);
 };
 
 export default routes;

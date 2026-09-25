@@ -2,7 +2,7 @@
 // Layout components
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import routes, { getRoutesForRole } from 'routes';
+import routes, { getRoutesForRole, isRouteAllowed } from 'routes';
 import {
   getActiveNavbar,
   getActiveRoute,
@@ -33,6 +33,21 @@ export default function Admin({ children }: { children: React.ReactNode }) {
     }
   }, [loading, profile, router]);
 
+  // Guard akses per-halaman: kalau role tidak berhak (mis. "admin" mencoba
+  // buka /admin/pemulihan atau /admin/brutal langsung lewat URL), tendang
+  // balik ke Dashboard. Sidebar saja tidak cukup karena URL tetap bisa diakses
+  // manual.
+  React.useEffect(() => {
+    if (
+      isSupabaseConfigured &&
+      !loading &&
+      profile &&
+      !isRouteAllowed(pathname, profile.role)
+    ) {
+      router.replace('/admin/default');
+    }
+  }, [loading, profile, pathname, router]);
+
   // Selama Supabase belum dikonfigurasi (mode pengembangan lokal), tampilkan
   // semua menu apa adanya (perilaku super admin) supaya tetap bisa dites.
   const visibleRoutes = isSupabaseConfigured
@@ -49,6 +64,14 @@ export default function Admin({ children }: { children: React.ReactNode }) {
 
   if (isSupabaseConfigured && !profile) {
     return null; // sedang redirect ke /auth/sign-in
+  }
+
+  if (
+    isSupabaseConfigured &&
+    profile &&
+    !isRouteAllowed(pathname, profile.role)
+  ) {
+    return null; // sedang redirect ke /admin/default (tidak berhak akses halaman ini)
   }
 
   return (

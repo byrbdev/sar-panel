@@ -10,7 +10,11 @@ export type ShippingNotif = {
   namaToko: string;
   noResi: string;
   jasaPengiriman: string;
+  noPesananAL: string;
+  resiUpdatedAt?: string;
 };
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 /**
  * Search multi-field (no pesanan/resi, nama toko, produk, pembeli) di
@@ -77,21 +81,35 @@ export const useGlobalSearch = (term: string) => {
 
   const notifications: ShippingNotif[] = useMemo(() => {
     if (profile?.role !== 'member') return [];
+    const now = Date.now();
     return penjualan
-      .filter(
-        (p) =>
-          p.ownerId === profile.id &&
-          p.noResi &&
-          p.noResi.trim() !== '' &&
-          p.noResi.trim() !== '-',
-      )
-      .slice(0, 10)
+      .filter((p) => {
+        if (p.ownerId !== profile.id) return false;
+        if (!p.noResi || p.noResi.trim() === '' || p.noResi.trim() === '-')
+          return false;
+        // Notifikasi otomatis "kedaluwarsa" 3 hari setelah resi diisi —
+        // ini beneran dihitung dari `resi_updated_at` yang tersimpan di
+        // database (diisi otomatis lewat trigger), bukan cuma state di
+        // browser, jadi tetap konsisten walau di-refresh atau dibuka dari
+        // perangkat lain.
+        if (!p.resiUpdatedAt) return true; // data lama sebelum migrasi, tetap tampilkan
+        const updatedAt = new Date(p.resiUpdatedAt).getTime();
+        if (Number.isNaN(updatedAt)) return true;
+        return now - updatedAt <= THREE_DAYS_MS;
+      })
+      .sort((a, b) => {
+        const ta = a.resiUpdatedAt ? new Date(a.resiUpdatedAt).getTime() : 0;
+        const tb = b.resiUpdatedAt ? new Date(b.resiUpdatedAt).getTime() : 0;
+        return tb - ta; // terbaru dulu
+      })
       .map((p) => ({
         id: p.id,
         produk: p.namaProduk,
         namaToko: p.namaToko,
         noResi: p.noResi,
         jasaPengiriman: p.jasaPengiriman,
+        noPesananAL: p.noPesananAL,
+        resiUpdatedAt: p.resiUpdatedAt,
       }));
   }, [penjualan, profile]);
 

@@ -20,11 +20,9 @@ export const lineChartOptionsPenjualan: ApexGeneric = {
   legend: {
     show: false,
   },
-  theme: {
-    mode: 'light',
-  },
   chart: {
     type: 'line',
+    background: 'transparent',
     toolbar: {
       show: false,
     },

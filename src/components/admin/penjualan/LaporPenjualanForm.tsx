@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import InputField from 'components/fields/InputField';
+import SearchableSelect from 'components/fields/SearchableSelect';
 import { MdContentPaste } from 'react-icons/md';
 
 export type LaporPenjualanValue = {
@@ -183,23 +184,13 @@ const LaporPenjualanForm = (props: {
       <p className="mb-1 mt-2 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
         Info Pesanan
       </p>
-      <div>
-        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-          Toko
-        </label>
-        <select
-          value={value.toko}
-          onChange={(e) => onChange({ ...value, toko: e.target.value })}
-          className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-        >
-          <option value="">Pilih toko...</option>
-          {daftarToko.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        label="Toko"
+        options={daftarToko}
+        value={value.toko}
+        onChange={(v) => onChange({ ...value, toko: v })}
+        placeholder="Pilih toko..."
+      />
       <InputField
         id="lp_produk"
         label="Produk"

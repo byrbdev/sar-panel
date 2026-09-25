@@ -2,6 +2,7 @@
 import React from 'react';
 import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
+import RupiahInput from 'components/fields/RupiahInput';
 import { MdContentPaste } from 'react-icons/md';
 import {
   JASA_PENGIRIMAN,
@@ -74,8 +75,15 @@ const PenjualanForm = (props: {
   value: PenjualanFormValue;
   onChange: (value: PenjualanFormValue) => void;
   statusOptions?: StatusPengiriman[];
+  /** true saat mode edit data yang sudah ada: No Pesanan AL dikunci (read-only) supaya identitas pesanan dari Akulaku tidak berubah tidak sengaja. */
+  lockNoPesananAL?: boolean;
 }) => {
-  const { value, onChange, statusOptions = ['Terkirim', 'Refund'] } = props;
+  const {
+    value,
+    onChange,
+    statusOptions = ['Terkirim', 'Refund'],
+    lockNoPesananAL,
+  } = props;
   const { toko } = useAppData();
   const daftarToko = toko.map((t) => t.namaToko);
   const [pasteText, setPasteText] = React.useState('');
@@ -225,33 +233,28 @@ const PenjualanForm = (props: {
 
       <InputField
         id="noPesananAL"
-        label="No Pesanan AL"
+        label={lockNoPesananAL ? 'No Pesanan AL (read-only)' : 'No Pesanan AL'}
         placeholder="AL-20260101-001"
         type="text"
         extra=""
+        disabled={lockNoPesananAL}
         value={value.noPesananAL}
         onChange={handle('noPesananAL')}
       />
 
       {/* Harga */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField
+        <RupiahInput
           id="hargaJual"
           label="Penghasilan / Omzet (Rp)"
-          placeholder="0"
-          type="text"
-          extra=""
-          value={String(value.hargaJual)}
-          onChange={handle('hargaJual', true)}
+          value={value.hargaJual}
+          onChange={(v) => onChange({ ...value, hargaJual: v })}
         />
-        <InputField
+        <RupiahInput
           id="modalShopee"
           label="Modal (Rp)"
-          placeholder="0"
-          type="text"
-          extra=""
-          value={String(value.modalShopee)}
-          onChange={handle('modalShopee', true)}
+          value={value.modalShopee}
+          onChange={(v) => onChange({ ...value, modalShopee: v })}
         />
       </div>
 

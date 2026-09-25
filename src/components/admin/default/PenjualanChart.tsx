@@ -10,7 +10,7 @@ import Card from 'components/card';
 import { lineChartOptionsPenjualan } from 'variables/dropshipCharts';
 import LineChart from 'components/charts/LineChart';
 import { useAppData } from 'context/AppDataContext';
-import { omzetPerBulan } from 'utils/analisaHelpers';
+import { omzetPerBulan, padOmzetBulanan } from 'utils/analisaHelpers';
 import { Penjualan } from 'variables/dropshipPenjualan';
 
 const formatRupiahSingkat = (n: number) => {
@@ -23,9 +23,10 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
   const { penjualan: allPenjualan } = useAppData();
   const penjualan = props.data ?? allPenjualan;
 
-  const trend = React.useMemo(() => omzetPerBulan(penjualan).slice(-6), [
-    penjualan,
-  ]);
+  const trend = React.useMemo(
+    () => padOmzetBulanan(omzetPerBulan(penjualan).slice(-6), 6),
+    [penjualan],
+  );
 
   const totalOmzet = trend.reduce((a, b) => a + b.omzet, 0);
   const bulanIniOmzet = trend[trend.length - 1]?.omzet || 0;

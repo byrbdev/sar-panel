@@ -20,6 +20,16 @@ import { supabase, isSupabaseConfigured } from 'lib/supabaseClient';
  * Kalau Supabase belum dikonfigurasi, hook ini berperilaku persis seperti
  * useState biasa (fallback untuk pengembangan/demo lokal).
  */
+export type SyncResult = { ok: boolean; errors: string[] };
+/** Setter yang kompatibel dengan `React.Dispatch<SetStateAction<T[]>>` (jadi
+ * semua pemanggilan lama `setData([...])` tetap valid tanpa diubah), TAPI
+ * juga mengembalikan Promise<SyncResult> supaya pemanggil yang butuh
+ * kepastian (mis. sebelum menampilkan toast "berhasil disimpan") bisa
+ * `await` hasilnya. */
+export type SyncedSetter<T> = (
+  action: T[] | ((prev: T[]) => T[]),
+) => Promise<SyncResult>;
+
 export function useSyncedTable<T extends { id: string | number }>(
   table: string,
   initial: T[],
@@ -85,15 +95,33 @@ export function useSyncedTable<T extends { id: string | number }>(
     const prev = dataRef.current;
     const next = typeof action === 'function' ? (action as any)(prev) : action;
     setDataRaw(next);
+    // Update ref SEGERA (bukan menunggu render berikutnya) supaya kalau
+    // setData dipanggil dua kali beruntun sebelum React sempat re-render,
+    // panggilan kedua tetap diff dari state TERBARU, bukan yang basi (stale).
+    // Tanpa ini, perubahan dari panggilan pertama bisa ketimpa/hilang.
+    dataRef.current = next;
 
-    if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured) return Promise.resolve({ ok: true, errors: [] as string[] });
 
     const nextIds = new Set(next.map((n) => String(n.id)));
+    const pending: PromiseLike<string | null>[] = [];
 
     // Hapus baris yang tidak ada lagi
     prev.forEach((p) => {
       if (!nextIds.has(String(p.id))) {
-        supabase.from(table).delete().eq('id', p.id).then();
+        pending.push(
+          supabase
+            .from(table)
+            .delete()
+            .eq('id', p.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error(`[${table}] delete gagal:`, error);
+                return `Gagal menghapus data (${error.message})`;
+              }
+              return null;
+            }),
+        );
       }
     });
 
@@ -104,22 +132,28 @@ export function useSyncedTable<T extends { id: string | number }>(
       if (!before) {
         const payload = toDb(n);
         if (numericId) delete (payload as any).id; // biarkan DB generate id
-        supabase
-          .from(table)
-          .insert(payload)
-          .select()
-          .single()
-          .then(({ data: inserted, error }) => {
-            if (error || !inserted) {
-              console.error(`[${table}] insert gagal:`, error);
-              return;
-            }
-            const realRow = fromDb(inserted);
-            // ganti id sementara (client-side) dengan id asli dari DB
-            setDataRaw((cur) =>
-              cur.map((c) => (String(c.id) === String(n.id) ? realRow : c)),
-            );
-          });
+        pending.push(
+          supabase
+            .from(table)
+            .insert(payload)
+            .select()
+            .single()
+            .then(({ data: inserted, error }) => {
+              if (error || !inserted) {
+                console.error(`[${table}] insert gagal:`, error);
+                return `Gagal menyimpan data baru (${error?.message || 'tidak diketahui'})`;
+              }
+              const realRow = fromDb(inserted);
+              // ganti id sementara (client-side) dengan id asli dari DB
+              setDataRaw((cur) =>
+                cur.map((c) => (String(c.id) === String(n.id) ? realRow : c)),
+              );
+              dataRef.current = dataRef.current.map((c) =>
+                String(c.id) === String(n.id) ? realRow : c,
+              );
+              return null;
+            }),
+        );
       } else {
         // Bandingkan bentuk payload DB-nya (bukan objek mentah), supaya
         // urutan key tidak memengaruhi hasil perbandingan.
@@ -134,17 +168,32 @@ export function useSyncedTable<T extends { id: string | number }>(
           const updatePayload = { ...nextPayload };
           delete (updatePayload as any).id;
 
-          supabase
-            .from(table)
-            .update(updatePayload)
-            .eq('id', n.id)
-            .then(({ error }) => {
-              if (error) console.error(`[${table}] update gagal:`, error);
-            });
+          pending.push(
+            supabase
+              .from(table)
+              .update(updatePayload)
+              .eq('id', n.id)
+              .then(({ error }) => {
+                if (error) {
+                  console.error(`[${table}] update gagal:`, error);
+                  return `Gagal menyimpan perubahan (${error.message})`;
+                }
+                return null;
+              }),
+          );
         }
       }
     });
+
+    // Dikembalikan supaya pemanggil BISA `await` dan baru menampilkan toast
+    // "berhasil disimpan" setelah benar-benar tersimpan di Supabase — bukan
+    // langsung optimis sebelum tahu hasilnya (penyebab "edit kadang tidak
+    // tersimpan tapi tetap muncul notifikasi sukses").
+    return Promise.all(pending).then((results) => {
+      const errors = results.filter((r): r is string => !!r);
+      return { ok: errors.length === 0, errors };
+    });
   };
 
-  return [data, setData as React.Dispatch<React.SetStateAction<T[]>>] as const;
+  return [data, setData as unknown as SyncedSetter<T>] as const;
 }

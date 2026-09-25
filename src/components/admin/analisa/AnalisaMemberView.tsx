@@ -9,6 +9,7 @@ import {
   analisaBrutal,
   produkTeroptimasi,
   omzetPerBulan,
+  padOmzetBulanan,
   topProdukTerlaris,
 } from 'utils/analisaHelpers';
 import {
@@ -39,7 +40,7 @@ const AnalisaMemberView = () => {
   );
 
   const trendBulanan = React.useMemo(
-    () => omzetPerBulan(penjualan),
+    () => padOmzetBulanan(omzetPerBulan(penjualan)),
     [penjualan],
   );
   const top10Produk = React.useMemo(
@@ -66,7 +67,7 @@ const AnalisaMemberView = () => {
   ];
 
   const lineChartOptions: any = {
-    chart: { toolbar: { show: false } },
+    chart: { toolbar: { show: false }, background: 'transparent' },
     legend: { show: true, position: 'top', horizontalAlign: 'right' },
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 3 },

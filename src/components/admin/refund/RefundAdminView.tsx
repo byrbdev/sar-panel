@@ -44,12 +44,18 @@ const RefundAdminView = () => {
     setEditOpen(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editId || !editForm) return;
-    setData(data.map((r) => (r.id === editId ? { id: editId, ...editForm } : r)));
-    notify('Perubahan data refund berhasil disimpan.', 'success');
-    setEditOpen(false);
-    setEditId(null);
+    const result = await setData(
+      data.map((r) => (r.id === editId ? { id: editId, ...editForm } : r)),
+    );
+    if (result.ok) {
+      notify('Perubahan data refund berhasil disimpan.', 'success');
+      setEditOpen(false);
+      setEditId(null);
+    } else {
+      notify(`Gagal menyimpan perubahan: ${result.errors[0]}`, 'error');
+    }
   };
 
   const filtered = data.filter((r) => {

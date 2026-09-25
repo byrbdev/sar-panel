@@ -156,7 +156,7 @@ const PenjualanAdminView = () => {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Jika status diganti jadi Refund, Omzet & Profit (hargaJual & modalShopee) dihapus/dinolkan
     const finalForm: PenjualanFormValue =
       form.statusPengiriman === 'Refund'
@@ -164,23 +164,39 @@ const PenjualanAdminView = () => {
         : form;
 
     if (editId) {
-      setData(
+      const result = await setData(
         data.map((row) =>
           row.id === editId
             ? { ...finalForm, id: editId, ownerId: getOwnerId(finalForm.namaToko) }
             : row,
         ),
       );
-      notify('Perubahan data penjualan berhasil disimpan.', 'success');
+      if (result.ok) {
+        notify('Perubahan data penjualan berhasil disimpan.', 'success');
+      } else {
+        notify(
+          `Sebagian perubahan gagal disimpan ke server: ${result.errors[0]}`,
+          'error',
+        );
+        return; // biarkan modal tetap terbuka supaya user bisa coba simpan lagi
+      }
     } else {
       const newId = String(
         data.length ? Math.max(...data.map((d) => Number(d.id))) + 1 : 1,
       );
-      setData([
+      const result = await setData([
         { ...finalForm, id: newId, ownerId: getOwnerId(finalForm.namaToko) },
         ...data,
       ]);
-      notify('Penjualan baru berhasil ditambahkan.', 'success');
+      if (result.ok) {
+        notify('Penjualan baru berhasil ditambahkan.', 'success');
+      } else {
+        notify(
+          `Gagal menambahkan data ke server: ${result.errors[0]}`,
+          'error',
+        );
+        return;
+      }
     }
     setFormOpen(false);
     setEditId(null);
@@ -419,7 +435,7 @@ const PenjualanAdminView = () => {
         title={editId ? 'Edit Penjualan' : 'Tambah Penjualan'}
         maxWidthClass="max-w-[640px]"
       >
-        <PenjualanForm value={form} onChange={setForm} />
+        <PenjualanForm value={form} onChange={setForm} lockNoPesananAL={!!editId} />
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => setFormOpen(false)}
