@@ -49,14 +49,14 @@ const SearchableSelect = (props: {
 
       {open && (
         <div className="absolute z-[110] mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-700 dark:shadow-none">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5 dark:border-white/10">
+          <div className="flex items-center gap-2 border-b border-gray-100 bg-white px-3 py-2.5 dark:!bg-navy-700 dark:border-white/10">
             <MdSearch className="h-4 w-4 text-gray-400" />
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari toko..."
-              className="w-full bg-transparent text-sm text-navy-700 outline-none placeholder:text-gray-400 dark:text-white"
+              className="w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-400 dark:!bg-navy-700 dark:text-white"
             />
           </div>
           <div className="max-h-[220px] overflow-y-auto py-1">

@@ -40,13 +40,13 @@ const RefundMemberView = () => {
               Klik baris untuk detail (read-only)
             </p>
           </div>
-          <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:bg-navy-700 sm:w-[260px]">
+          <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[260px]">
             <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama, toko..."
-              className="h-full w-full bg-transparent text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:text-white dark:placeholder:text-gray-400"
+              className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
             />
           </div>
         </div>

@@ -1,11 +1,11 @@
 'use client';
 import React, { createContext, useContext } from 'react';
 import { BrutalItem } from 'variables/dropshipBrutal';
-import { useSyncedTable } from 'hooks/useSyncedTable';
+import { useSyncedTable, SyncedSetter } from 'hooks/useSyncedTable';
 
 type BrutalContextType = {
   items: BrutalItem[];
-  setItems: React.Dispatch<React.SetStateAction<BrutalItem[]>>;
+  setItems: SyncedSetter<BrutalItem>;
 };
 
 const BrutalContext = createContext<BrutalContextType | null>(null);

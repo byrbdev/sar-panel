@@ -4,6 +4,7 @@ import SearchableSelect from 'components/fields/SearchableSelect';
 import CreatableSelect from 'components/fields/CreatableSelect';
 import { useAppData } from 'context/AppDataContext';
 import { useBrutal } from 'context/BrutalContext';
+import { useUI } from 'context/UIContext';
 import { BrutalIklan, BrutalItem, BrutalStatus } from 'variables/dropshipBrutal';
 
 export type BrutalFormValue = Omit<BrutalItem, 'id' | 'anggotaId'>;
@@ -36,8 +37,37 @@ const BrutalForm = (props: {
   const { value, onChange } = props;
   const { toko } = useAppData();
   const daftarToko = toko.map((t) => t.namaToko);
-  const { items } = useBrutal();
+  const { items, setItems } = useBrutal();
+  const { notify, confirm } = useUI();
   const daftarKategori = items.map((it) => it.kategoriToko).filter(Boolean);
+
+  const handleDeleteKategori = async (kategori: string) => {
+    const jumlahDipakai = items.filter(
+      (it) => it.kategoriToko === kategori,
+    ).length;
+    const ok = await confirm(
+      jumlahDipakai > 0
+        ? `Kategori "${kategori}" dipakai di ${jumlahDipakai} data Brutal. Menghapusnya akan mengosongkan kategori toko pada data-data tersebut.`
+        : `Hapus kategori "${kategori}" dari database?`,
+      { title: 'Hapus Kategori Toko?', confirmText: 'Ya, Hapus', danger: true },
+    );
+    if (!ok) return;
+
+    const result = await setItems(
+      items.map((it) =>
+        it.kategoriToko === kategori ? { ...it, kategoriToko: '' } : it,
+      ),
+    );
+    if (result.ok) {
+      // Kalau kategori yang lagi dipilih di form ini juga yang dihapus, kosongkan
+      if (value.kategoriToko === kategori) {
+        onChange({ ...value, kategoriToko: '' });
+      }
+      notify(`Kategori "${kategori}" berhasil dihapus.`, 'info');
+    } else {
+      notify(`Gagal menghapus kategori: ${result.errors[0]}`, 'error');
+    }
+  };
 
   const handle =
     (field: keyof BrutalFormValue) =>
@@ -63,6 +93,7 @@ const BrutalForm = (props: {
           onChange={(v) => onChange({ ...value, kategoriToko: v })}
           placeholder="Fashion, Elektronik, Perabotan Rumah, dll"
           searchPlaceholder="Cari atau ketik kategori baru..."
+          onDeleteOption={handleDeleteKategori}
         />
         <InputField
           id="br_produk"

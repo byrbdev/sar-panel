@@ -10,6 +10,7 @@ import TokoDetailModal from 'components/admin/pemulihan/TokoDetailModal';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
 import { MdAdd, MdSearch, MdEdit, MdDelete } from 'react-icons/md';
 import { useUI } from 'context/UIContext';
+import { useAuth } from 'context/AuthContext';
 import { useAppData } from 'context/AppDataContext';
 import { usePagination } from 'hooks/usePagination';
 import PaginationControl from 'components/pagination/PaginationControl';
@@ -22,6 +23,12 @@ const TokoListPerMemberContent = (props: {
 }) => {
   const { ownerId, ownerNama } = props;
   const { notify, confirm } = useUI();
+  const { profile } = useAuth();
+  // Admin cuma boleh LIHAT database Toko (dipakai buat bantu proses
+  // pesanan/refund) -- dia tidak "punya" data toko ini, jadi tombol
+  // Tambah/Edit/Hapus disembunyikan untuk role admin. Super admin tetap
+  // full akses (CRUD) karena dialah yang mengelola data toko seluruh member.
+  const canManage = profile?.role === 'super_admin';
   const { toko: allData, setToko: setData } = useAppData();
   const [search, setSearch] = React.useState('');
 
@@ -121,22 +128,24 @@ const TokoListPerMemberContent = (props: {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:bg-navy-700 sm:w-[240px]">
+            <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[240px]">
               <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari berdasarkan nama..."
-                className="h-full w-full bg-transparent text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:text-white dark:placeholder:text-gray-400"
+                className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
               />
             </div>
-            <button
-              onClick={openAdd}
-              className="linear flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300 dark:active:bg-brand-200"
-            >
-              <MdAdd className="h-5 w-5" />
-              Tambah Data
-            </button>
+            {canManage && (
+              <button
+                onClick={openAdd}
+                className="linear flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300 dark:active:bg-brand-200"
+              >
+                <MdAdd className="h-5 w-5" />
+                Tambah Data
+              </button>
+            )}
           </div>
         </div>
 
@@ -152,7 +161,7 @@ const TokoListPerMemberContent = (props: {
                   { label: 'DENDA', hide: 'hidden sm:table-cell' },
                   { label: 'PELANGGARAN', hide: 'hidden lg:table-cell' },
                   { label: 'SALDO IKLAN', hide: 'hidden md:table-cell' },
-                  { label: 'AKSI', hide: '' },
+                  ...(canManage ? [{ label: 'AKSI', hide: '' }] : []),
                 ].map(({ label: h, hide }) => (
                   <th
                     key={h}
@@ -169,7 +178,7 @@ const TokoListPerMemberContent = (props: {
               {filteredData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={canManage ? 8 : 7}
                     className="py-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400"
                   >
                     Tidak ada data dengan nama tersebut.
@@ -223,22 +232,24 @@ const TokoListPerMemberContent = (props: {
                       {formatRupiah(row.saldoIklan)}
                     </p>
                   </td>
-                  <td className="border-white/0 py-3 pr-4">
-                    <div className="flex flex-nowrap items-center justify-center gap-1">
-                      <button
-                        onClick={(e) => openEdit(e, row)}
-                        className="rounded-lg p-2 text-gray-600 transition duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
-                      >
-                        <MdEdit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(e, row.id)}
-                        className="rounded-lg p-2 text-red-500 transition duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
-                      >
-                        <MdDelete className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
+                  {canManage && (
+                    <td className="border-white/0 py-3 pr-4">
+                      <div className="flex flex-nowrap items-center justify-center gap-1">
+                        <button
+                          onClick={(e) => openEdit(e, row)}
+                          className="rounded-lg p-2 text-gray-600 transition duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                        >
+                          <MdEdit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(e, row.id)}
+                          className="rounded-lg p-2 text-red-500 transition duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        >
+                          <MdDelete className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
                 ))
               )}

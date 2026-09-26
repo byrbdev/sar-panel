@@ -20,9 +20,19 @@ const CreatableSelect = (props: {
   onChange: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
+  /** Kalau diberikan, tiap opsi yang sudah ada dapat tombol "X" untuk
+   * menghapus kategori itu dari database (dipakai di Kategori Toko Brutal). */
+  onDeleteOption?: (option: string) => void;
 }) => {
-  const { label, options, value, onChange, placeholder, searchPlaceholder } =
-    props;
+  const {
+    label,
+    options,
+    value,
+    onChange,
+    placeholder,
+    searchPlaceholder,
+    onDeleteOption,
+  } = props;
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const ref = React.useRef<HTMLDivElement>(null);
@@ -81,14 +91,14 @@ const CreatableSelect = (props: {
 
       {open && (
         <div className="absolute z-[110] mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-700 dark:shadow-none">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5 dark:border-white/10">
+          <div className="flex items-center gap-2 border-b border-gray-100 bg-white px-3 py-2.5 dark:!bg-navy-700 dark:border-white/10">
             <MdSearch className="h-4 w-4 flex-shrink-0 text-gray-400" />
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder || 'Cari atau ketik kategori baru...'}
-              className="w-full bg-transparent text-sm text-navy-700 outline-none placeholder:text-gray-400 dark:text-white"
+              className="w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-400 dark:!bg-navy-700 dark:text-white"
             />
           </div>
           <div className="max-h-[220px] overflow-y-auto py-1">
@@ -98,17 +108,36 @@ const CreatableSelect = (props: {
               </p>
             )}
             {filtered.map((opt) => (
-              <button
+              <div
                 key={opt}
-                type="button"
-                onClick={() => commit(opt)}
-                className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm text-navy-700 transition duration-100 hover:bg-lightPrimary dark:text-white dark:hover:bg-white/10"
+                className="group flex w-full items-center justify-between rounded-lg hover:bg-lightPrimary dark:hover:bg-white/10"
               >
-                {opt}
-                {opt === value && (
-                  <MdCheck className="h-4 w-4 text-brand-500 dark:text-white" />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => commit(opt)}
+                  className="flex-1 truncate px-4 py-2.5 text-left text-sm text-navy-700 dark:text-white"
+                >
+                  {opt}
+                </button>
+                <div className="flex flex-shrink-0 items-center gap-1 pr-2">
+                  {opt === value && (
+                    <MdCheck className="h-4 w-4 text-brand-500 dark:text-white" />
+                  )}
+                  {onDeleteOption && (
+                    <button
+                      type="button"
+                      title={`Hapus kategori "${opt}" dari database`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteOption(opt);
+                      }}
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-red-500/10"
+                    >
+                      <MdClose className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
 
