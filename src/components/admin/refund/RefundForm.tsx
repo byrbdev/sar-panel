@@ -31,12 +31,18 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 const RefundForm = (props: {
   value: RefundFormValue;
   onChange: (value: RefundFormValue) => void;
-  /** true bila refund berasal dari transaksi yang sudah diproses di Penjualan */
+  /** true bila refund berasal dari transaksi yang sudah diproses di Penjualan
+   * (menampilkan kotak ringkasan produk/omzet/profit dari transaksi asal) */
   fromPenjualan?: boolean;
   /** true bila field No Pesanan AL/SHP/Update disembunyikan (refund langsung dari Pesanan Masuk) */
   hideOrderNumbers?: boolean;
+  /** true bila nama pembeli sudah otomatis terisi dari data pesanan/transaksi
+   * asal -- field "Nama" ditampilkan sebagai teks read-only (nama pembeli),
+   * BUKAN dropdown pilih anggota, supaya tidak tertukar dengan nama member. */
+  buyerNameKnown?: boolean;
 }) => {
-  const { value, onChange, fromPenjualan, hideOrderNumbers } = props;
+  const { value, onChange, fromPenjualan, hideOrderNumbers, buyerNameKnown } =
+    props;
   const { namaOptions } = useMember();
   const { toko } = useAppData();
   const daftarToko = toko.map((t) => t.namaToko);
@@ -90,23 +96,36 @@ const RefundForm = (props: {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-            Nama
-          </label>
-          <select
+        {fromPenjualan || buyerNameKnown ? (
+          <InputField
+            id="r_namaPembeli"
+            label="Nama Pembeli"
+            placeholder="Nama pembeli"
+            type="text"
+            extra=""
+            disabled
             value={value.nama}
-            onChange={(e) => onChange({ ...value, nama: e.target.value })}
-            className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-          >
-            <option value="">Pilih anggota...</option>
-            {namaOptions.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </div>
+            onChange={handle('nama')}
+          />
+        ) : (
+          <div>
+            <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+              Nama
+            </label>
+            <select
+              value={value.nama}
+              onChange={(e) => onChange({ ...value, nama: e.target.value })}
+              className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+            >
+              <option value="">Pilih anggota...</option>
+              {namaOptions.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <SearchableSelect
           label="Nama Toko"
           options={daftarToko}

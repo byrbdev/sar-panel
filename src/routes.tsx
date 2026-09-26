@@ -26,7 +26,7 @@ const routes = [
     layout: '/admin',
     path: 'pemulihan',
     icon: <MdStorefront className="h-6 w-6" />,
-    roles: ['super_admin', 'admin'],
+    roles: ['super_admin'],
   },
   {
     name: 'Penjualan',
@@ -61,7 +61,7 @@ const routes = [
     layout: '/admin',
     path: 'brutal',
     icon: <MdWhatshot className="h-6 w-6" />,
-    roles: ['super_admin', 'admin', 'member'],
+    roles: ['super_admin', 'member'],
   },
   {
     name: 'Member',
@@ -75,7 +75,7 @@ const routes = [
     layout: '/admin',
     path: 'setting',
     icon: <MdSettings className="h-6 w-6" />,
-    roles: ['super_admin'],
+    roles: ['super_admin', 'admin', 'member'],
   },
 ];
 

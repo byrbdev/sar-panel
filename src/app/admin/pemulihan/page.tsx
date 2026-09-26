@@ -11,7 +11,7 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const TokoPage = () => {
   const { toko } = useAppData();
-  const { member } = useMember();
+  const { memberOnly: member } = useMember();
   const router = useRouter();
 
   const tokoMilik = (id: string) => toko.filter((t) => t.ownerId === id);

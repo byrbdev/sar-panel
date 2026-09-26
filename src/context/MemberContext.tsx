@@ -7,6 +7,10 @@ type ProfileRow = MemberRow & { role?: string };
 
 type MemberContextType = {
   member: MemberRow[];
+  /** HANYA akun dengan role 'member' (dropshipper) -- dipakai di halaman
+   * yang datanya (Toko, Brutal, dst) memang cuma boleh dimiliki member,
+   * supaya akun "admin" tidak ikut nongol seolah-olah dia punya toko. */
+  memberOnly: MemberRow[];
   setMember: React.Dispatch<React.SetStateAction<MemberRow[]>>;
   namaOptions: string[];
 };
@@ -45,6 +49,9 @@ export const MemberProvider = ({
   // Sembunyikan super_admin dari daftar Member (yang dikelola di sini
   // hanya akun admin & member).
   const member = profiles.filter((p) => p.role !== 'super_admin');
+  // Khusus akun role 'member' saja (bukan admin) -- karena cuma member yang
+  // "punya" data Toko & Brutal.
+  const memberOnly = profiles.filter((p) => (p.role || 'member') === 'member');
 
   const setMember: React.Dispatch<React.SetStateAction<MemberRow[]>> = (
     action,
@@ -60,10 +67,12 @@ export const MemberProvider = ({
     });
   };
 
-  const namaOptions = member.map((m) => m.nama);
+  const namaOptions = memberOnly.map((m) => m.nama);
 
   return (
-    <MemberContext.Provider value={{ member, setMember, namaOptions }}>
+    <MemberContext.Provider
+      value={{ member, memberOnly, setMember, namaOptions }}
+    >
       {children}
     </MemberContext.Provider>
   );

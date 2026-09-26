@@ -59,11 +59,13 @@ const DashboardMemberView = () => {
             subtitle={`${orders.length} laporan`}
           />
         </Link>
-        <Widget
-          icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
-          title={'Refund'}
-          subtitle={`${refundBulanIni.length} pesanan`}
-        />
+        <Link href="/admin/refund">
+          <Widget
+            icon={<MdOutlineAssignmentReturn className="h-6 w-6" />}
+            title={'Refund'}
+            subtitle={`${refundBulanIni.length} pesanan`}
+          />
+        </Link>
       </div>
 
       {toko.length === 0 && (

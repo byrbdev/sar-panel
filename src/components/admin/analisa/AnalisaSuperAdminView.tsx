@@ -129,7 +129,7 @@ const AnalisaSuperAdminView = () => {
 
   const lineChartOptions: any = {
     chart: { toolbar: { show: false }, background: 'transparent' },
-    legend: { show: true, position: 'top', horizontalAlign: 'right' },
+    legend: { show: true, position: 'top', horizontalAlign: 'right', labels: { colors: '#A3AED0' }, markers: { size: 6 }, itemMargin: { horizontal: 10 } },
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 3 },
     grid: { show: true, borderColor: 'rgba(163, 174, 208, 0.2)' },

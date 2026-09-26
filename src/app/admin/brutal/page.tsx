@@ -11,7 +11,7 @@ import { MdWhatshot, MdPeople } from 'react-icons/md';
 
 const BrutalPage = () => {
   const { items } = useBrutal();
-  const { member } = useMember();
+  const { memberOnly: member } = useMember();
   const { profile } = useAuth();
   const router = useRouter();
 

@@ -35,7 +35,7 @@ const Navbar = (props: {
     results,
     notifications,
     unreadCount,
-    markAllRead,
+    markOneRead,
     selectedNotif,
     setSelectedNotif,
   } = useGlobalSearch(searchTerm);
@@ -127,7 +127,6 @@ const Navbar = (props: {
           button={
             <p
               className="relative cursor-pointer"
-              onClick={markAllRead}
             >
               <IoMdNotificationsOutline className="h-4 w-4 text-gray-600 dark:text-white" />
               {unreadCount > 0 && (
@@ -158,6 +157,9 @@ const Navbar = (props: {
                       // belakang modal detail yang baru dibuka.
                       setNotifOpen(false);
                       setSelectedNotif(n);
+                      // Cuma notifikasi INI yang ditandai sudah dibaca --
+                      // badge merah berkurang satu, bukan langsung nol semua.
+                      markOneRead(n.id);
                     }}
                     className="flex w-full items-start gap-2 rounded-lg p-2 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800"
                   >

@@ -141,11 +141,31 @@ export const useGlobalSearch = (term: string) => {
     }
   }, [notifications, storageKey]);
 
+  // Tandai SATU notifikasi saja sudah dibaca (dipanggil saat notifikasi itu
+  // diklik). Badge merah berkurang satu-satu sesuai notifikasi mana yang
+  // sudah dibuka, bukan langsung nol semua begitu dropdown dibuka.
+  const markOneRead = useCallback(
+    (id: string) => {
+      setReadIds((prev) => {
+        if (prev.includes(id)) return prev;
+        const next = [...prev, id];
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch {
+          /* abaikan bila localStorage tidak tersedia */
+        }
+        return next;
+      });
+    },
+    [storageKey],
+  );
+
   return {
     results,
     notifications,
     unreadCount,
     markAllRead,
+    markOneRead,
     selectedNotif,
     setSelectedNotif,
   };
