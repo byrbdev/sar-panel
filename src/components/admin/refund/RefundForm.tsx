@@ -1,6 +1,8 @@
 'use client';
 import InputField from 'components/fields/InputField';
+import SearchableSelect from 'components/fields/SearchableSelect';
 import { useMember } from 'context/MemberContext';
+import { useAppData } from 'context/AppDataContext';
 import { RefundAlasan, RefundRow, RefundStatus } from 'variables/dropshipRefund';
 
 export type RefundFormValue = Omit<RefundRow, 'id'>;
@@ -36,6 +38,8 @@ const RefundForm = (props: {
 }) => {
   const { value, onChange, fromPenjualan, hideOrderNumbers } = props;
   const { namaOptions } = useMember();
+  const { toko } = useAppData();
+  const daftarToko = toko.map((t) => t.namaToko);
 
   const handle =
     (field: keyof RefundFormValue) =>
@@ -103,14 +107,12 @@ const RefundForm = (props: {
             ))}
           </select>
         </div>
-        <InputField
-          id="r_namaToko"
+        <SearchableSelect
           label="Nama Toko"
-          placeholder="Nama toko"
-          type="text"
-          extra=""
+          options={daftarToko}
           value={value.namaToko}
-          onChange={handle('namaToko')}
+          onChange={(v) => onChange({ ...value, namaToko: v })}
+          placeholder="Pilih toko..."
         />
       </div>
 

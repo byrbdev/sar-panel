@@ -66,12 +66,14 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
       </div>
 
       <div className="flex h-full w-full flex-row justify-between sm:flex-wrap lg:flex-nowrap 2xl:overflow-hidden">
-        <div className="flex flex-col">
+        <div className="flex w-[150px] flex-shrink-0 flex-col">
           <p className="mt-[20px] whitespace-nowrap text-3xl font-bold text-navy-700 dark:text-white">
             {formatRupiahSingkat(totalOmzet)}
           </p>
           <div className="flex flex-col items-start">
-            <p className="mt-2 text-sm text-gray-600">Total Penjualan (6 Bulan)</p>
+            <p className="mt-2 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+              Total Penjualan (6 Bulan)
+            </p>
             <div className="flex flex-row items-center justify-center">
               {growth >= 0 ? (
                 <MdArrowDropUp className="font-medium text-green-500" />
@@ -79,7 +81,7 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
                 <MdArrowDropDown className="font-medium text-red-500" />
               )}
               <p
-                className={`text-sm font-bold ${growth >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                className={`whitespace-nowrap text-sm font-bold ${growth >= 0 ? 'text-green-500' : 'text-red-500'}`}
               >
                 {' '}
                 {growth >= 0 ? '+' : ''}
@@ -88,7 +90,7 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
             </div>
           </div>
         </div>
-        <div className="h-full w-full">
+        <div className="h-full min-w-0 flex-1">
           {trend.length === 0 ? (
             <div className="flex h-full items-center justify-center text-xs text-gray-400">
               Belum ada data penjualan

@@ -184,9 +184,13 @@ const Navbar = (props: {
           onClick={() => {
             if (darkmode) {
               document.body.classList.remove('dark');
+              document.documentElement.classList.remove('dark');
+              localStorage.setItem('theme', 'light');
               setDarkmode(false);
             } else {
               document.body.classList.add('dark');
+              document.documentElement.classList.add('dark');
+              localStorage.setItem('theme', 'dark');
               setDarkmode(true);
             }
           }}

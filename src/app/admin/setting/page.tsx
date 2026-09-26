@@ -4,6 +4,7 @@ import Card from 'components/card';
 import { useUI } from 'context/UIContext';
 import { supabase, isSupabaseConfigured } from 'lib/supabaseClient';
 import { MdBackup, MdCloudDone, MdOutlineTableChart } from 'react-icons/md';
+import ChangePasswordCard from 'components/admin/profile/ChangePasswordCard';
 
 const SettingPage = () => {
   const { notify } = useUI();
@@ -51,6 +52,8 @@ const SettingPage = () => {
 
   return (
     <div className="mt-3 flex flex-col gap-5">
+      <ChangePasswordCard />
+
       <Card extra="p-6">
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-lightPrimary dark:bg-navy-700">

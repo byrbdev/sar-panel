@@ -18,6 +18,7 @@ import {
   topProdukTerlaris,
 } from 'utils/analisaHelpers';
 import { exportAnalisaToExcel } from 'utils/exportExcel';
+import { usePagedSlice, AnalisaPager, SkuCell } from './AnalisaPagination';
 import {
   MdAttachMoney,
   MdTrendingUp,
@@ -106,6 +107,12 @@ const AnalisaSuperAdminView = () => {
     () => analisaProdukRefund(dataRefund),
     [dataRefund],
   );
+
+  // Paginasi 10 baris/halaman, masing-masing tabel punya tombol
+  // "Selanjutnya" & state halaman sendiri-sendiri (tidak saling pengaruh).
+  const perluOptimasiPage = usePagedSlice(perluOptimasi, 10);
+  const teroptimasiPage = usePagedSlice(teroptimasi, 10);
+  const refundProdukPage = usePagedSlice(refundProduk, 10);
 
   const lineChartData = [
     {
@@ -506,7 +513,7 @@ const AnalisaSuperAdminView = () => {
                   </td>
                 </tr>
               ) : (
-                perluOptimasi.map((b) => (
+                perluOptimasiPage.paged.map((b) => (
                   <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {b.namaToko}
@@ -515,7 +522,7 @@ const AnalisaSuperAdminView = () => {
                       {b.produk}
                     </td>
                     <td className="truncate py-3 pr-2 font-mono text-xs text-gray-600 dark:text-gray-300">
-                      {b.sku || '-'}
+                      <SkuCell sku={b.sku} />
                     </td>
                     <td className="truncate py-3 pr-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
                       {b.namaAnggota}
@@ -540,6 +547,13 @@ const AnalisaSuperAdminView = () => {
             </tbody>
           </table>
         </div>
+        <AnalisaPager
+          page={perluOptimasiPage.page}
+          totalPages={perluOptimasiPage.totalPages}
+          total={perluOptimasiPage.total}
+          pageSize={perluOptimasiPage.pageSize}
+          onChange={perluOptimasiPage.setPage}
+        />
       </Card>
 
       {/* Produk yang Teroptimasi (kebalikan) */}
@@ -578,7 +592,7 @@ const AnalisaSuperAdminView = () => {
                   </td>
                 </tr>
               ) : (
-                teroptimasi.map((b) => (
+                teroptimasiPage.paged.map((b) => (
                   <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {b.namaToko}
@@ -587,7 +601,7 @@ const AnalisaSuperAdminView = () => {
                       {b.produk}
                     </td>
                     <td className="truncate py-3 pr-2 font-mono text-xs text-gray-600 dark:text-gray-300">
-                      {b.sku || '-'}
+                      <SkuCell sku={b.sku} />
                     </td>
                     <td className="truncate py-3 pr-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
                       {b.namaAnggota}
@@ -598,7 +612,9 @@ const AnalisaSuperAdminView = () => {
                       </span>
                     </td>
                     <td className="py-3 pr-2">
-                      <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-500">
+                      <span
+                        className={`rounded-full px-2 py-1 text-[10px] font-bold ${b.iklan === 'Iklan' ? 'bg-blue-50 text-blue-500' : 'bg-gray-100 text-gray-500'}`}
+                      >
                         {b.iklan}
                       </span>
                     </td>
@@ -608,6 +624,13 @@ const AnalisaSuperAdminView = () => {
             </tbody>
           </table>
         </div>
+        <AnalisaPager
+          page={teroptimasiPage.page}
+          totalPages={teroptimasiPage.totalPages}
+          total={teroptimasiPage.total}
+          pageSize={teroptimasiPage.pageSize}
+          onChange={teroptimasiPage.setPage}
+        />
       </Card>
 
       {/* Analisa Produk Refund */}
@@ -642,7 +665,7 @@ const AnalisaSuperAdminView = () => {
                   </td>
                 </tr>
               ) : (
-                refundProduk.map((r) => (
+                refundProdukPage.paged.map((r) => (
                   <tr
                     key={r.namaProduk + r.namaToko}
                     className="border-b border-gray-100 dark:border-white/5"
@@ -665,6 +688,13 @@ const AnalisaSuperAdminView = () => {
             </tbody>
           </table>
         </div>
+        <AnalisaPager
+          page={refundProdukPage.page}
+          totalPages={refundProdukPage.totalPages}
+          total={refundProdukPage.total}
+          pageSize={refundProdukPage.pageSize}
+          onChange={refundProdukPage.setPage}
+        />
       </Card>
     </div>
   );

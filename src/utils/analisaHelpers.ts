@@ -281,7 +281,17 @@ export const analisaBrutal = (
           item.sku &&
           p.skuProduk.trim().toLowerCase() === item.sku.trim().toLowerCase(),
       ).length;
-      const perluDioptimasi = item.status === 'Tidak' || item.iklan === 'Tidak';
+      // Mapping utamanya cuma dari kolom STATUS: "Muncul" = sudah
+      // teroptimasi, "Tidak" = perlu dioptimasi. Supaya kedua tabel di
+      // Analisa (Perlu Dioptimasi vs Sudah Teroptimasi) saling melengkapi
+      // 1:1 tanpa ada produk yang "hilang" di antara keduanya (sebelumnya
+      // ikut mempertimbangkan status Iklan juga, jadi ada produk berstatus
+      // "Muncul" tapi Iklan "Tidak" yang malah nyasar ke tabel "Perlu
+      // Dioptimasi" walau badge Status-nya sendiri sudah hijau/"Muncul" —
+      // membingungkan). Status Iklan tetap ditampilkan di kolom IKLAN
+      // sebagai info tambahan, cuma tidak lagi dipakai untuk menentukan
+      // masuk tabel yang mana.
+      const perluDioptimasi = item.status !== 'Muncul';
       return {
         ...item,
         realOrderan,
@@ -297,7 +307,7 @@ export const produkTeroptimasi = (
   analisa: BrutalAnalisa[],
 ): BrutalAnalisa[] => {
   return analisa
-    .filter((b) => b.status === 'Muncul' && b.iklan === 'Iklan')
+    .filter((b) => !b.perluDioptimasi) // status === 'Muncul'
     .sort((a, b) => b.realOrderan - a.realOrderan);
 };
 

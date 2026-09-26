@@ -1,5 +1,6 @@
 'use client';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MdClose } from 'react-icons/md';
 
 const ModalOverlay = (props: {
@@ -10,6 +11,17 @@ const ModalOverlay = (props: {
   maxWidthClass?: string;
 }) => {
   const { open, onClose, title, children, maxWidthClass } = props;
+
+  // Render lewat portal ke document.body. WAJIB, jangan dihapus: kalau
+  // komponen ini dirender di dalam elemen yang punya `backdrop-filter`,
+  // `filter`, atau `transform` (mis. Navbar pakai class `backdrop-blur-xl`),
+  // elemen tsb otomatis jadi "containing block" baru buat descendant
+  // `position: fixed` -- akibatnya modal ini jadi kejebak/gepeng cuma di
+  // area elemen itu (kelihatan seperti nempel di navbar, bukan menutupi
+  // layar penuh). Render ke document.body lewat portal membuat modal ini
+  // SELALU relatif ke viewport asli, apapun ancestor-nya nanti.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -24,9 +36,9 @@ const ModalOverlay = (props: {
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -49,7 +61,8 @@ const ModalOverlay = (props: {
         </div>
         <div className="overflow-y-auto px-7 pb-7">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

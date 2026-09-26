@@ -1,6 +1,9 @@
 'use client';
 import InputField from 'components/fields/InputField';
+import SearchableSelect from 'components/fields/SearchableSelect';
+import CreatableSelect from 'components/fields/CreatableSelect';
 import { useAppData } from 'context/AppDataContext';
+import { useBrutal } from 'context/BrutalContext';
 import { BrutalIklan, BrutalItem, BrutalStatus } from 'variables/dropshipBrutal';
 
 export type BrutalFormValue = Omit<BrutalItem, 'id' | 'anggotaId'>;
@@ -33,6 +36,8 @@ const BrutalForm = (props: {
   const { value, onChange } = props;
   const { toko } = useAppData();
   const daftarToko = toko.map((t) => t.namaToko);
+  const { items } = useBrutal();
+  const daftarKategori = items.map((it) => it.kategoriToko).filter(Boolean);
 
   const handle =
     (field: keyof BrutalFormValue) =>
@@ -42,33 +47,22 @@ const BrutalForm = (props: {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-          Nama Toko
-        </label>
-        <select
-          value={value.namaToko}
-          onChange={(e) => onChange({ ...value, namaToko: e.target.value })}
-          className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-        >
-          <option value="">Pilih toko...</option>
-          {daftarToko.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </div>
+      <SearchableSelect
+        label="Nama Toko"
+        options={daftarToko}
+        value={value.namaToko}
+        onChange={(v) => onChange({ ...value, namaToko: v })}
+        placeholder="Pilih toko..."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField
-          id="br_kategoriToko"
+        <CreatableSelect
           label="Kategori Toko"
-          placeholder="Fashion, Elektronik, dll"
-          type="text"
-          extra=""
+          options={daftarKategori}
           value={value.kategoriToko}
-          onChange={handle('kategoriToko')}
+          onChange={(v) => onChange({ ...value, kategoriToko: v })}
+          placeholder="Fashion, Elektronik, Perabotan Rumah, dll"
+          searchPlaceholder="Cari atau ketik kategori baru..."
         />
         <InputField
           id="br_produk"

@@ -1,41 +1,39 @@
 'use client';
-import Banner from 'components/admin/profile/Banner';
-import General from 'components/admin/profile/General';
-import Notification from 'components/admin/profile/Notification';
-import Project from 'components/admin/profile/Project';
-import Storage from 'components/admin/profile/Storage';
-import Upload from 'components/admin/profile/Upload';
+import Card from 'components/card';
+import ChangePasswordCard from 'components/admin/profile/ChangePasswordCard';
+import { useAuth } from 'context/AuthContext';
+import { MdPerson } from 'react-icons/md';
+
+const roleLabel: Record<string, string> = {
+  super_admin: 'Super Admin',
+  admin: 'Admin',
+  member: 'Member',
+};
 
 const ProfileOverview = () => {
+  const { profile } = useAuth();
+
   return (
-    <div className="flex w-full flex-col gap-5 lg:gap-5">
-      <div className="w-ful mt-3 flex h-fit flex-col gap-5 lg:grid lg:grid-cols-12">
-        <div className="col-span-4 lg:!mb-0">
-          <Banner />
+    <div className="mt-3 flex w-full flex-col gap-5">
+      <Card extra="p-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-xl font-bold text-white dark:bg-brand-400">
+            {profile?.nama?.charAt(0)?.toUpperCase() || (
+              <MdPerson className="h-7 w-7" />
+            )}
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-navy-700 dark:text-white">
+              {profile?.nama || 'Pengguna'}
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {roleLabel[profile?.role || ''] || profile?.role}
+            </p>
+          </div>
         </div>
+      </Card>
 
-        <div className="col-span-3 lg:!mb-0">
-          <Storage />
-        </div>
-
-        <div className="z-0 col-span-5 lg:!mb-0">
-          <Upload />
-        </div>
-      </div>
-      {/* all project & ... */}
-
-      <div className="mb-4 grid h-full grid-cols-1 gap-5 lg:!grid-cols-12">
-        <div className="col-span-5 lg:col-span-6 lg:mb-0 3xl:col-span-4">
-          <Project />
-        </div>
-        <div className="col-span-5 lg:col-span-6 lg:mb-0 3xl:col-span-5">
-          <General />
-        </div>
-
-        <div className="col-span-5 lg:col-span-12 lg:mb-0 3xl:!col-span-3">
-          <Notification />
-        </div>
-      </div>
+      <ChangePasswordCard />
     </div>
   );
 };
