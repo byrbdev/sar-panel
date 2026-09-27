@@ -20,11 +20,11 @@ alter table public.penjualan
 alter table public.penjualan
   add column if not exists produk_list jsonb;
 
--- Tabel orders (Pesanan Masuk / Lapor Penjualan dari member)
-alter table public.orders
+-- Tabel pesanan_masuk (Pesanan Masuk / Lapor Penjualan dari member)
+alter table public.pesanan_masuk
   add column if not exists produk_list jsonb;
 
 comment on column public.penjualan.produk_list is
   'Array produk TAMBAHAN dalam invoice/No Pesanan AL yang sama, di luar produk utama (nama_produk/varian/sku_produk). Format: [{"id","namaProduk","varian","skuProduk"}]';
-comment on column public.orders.produk_list is
+comment on column public.pesanan_masuk.produk_list is
   'Array produk TAMBAHAN dalam invoice/No Pesanan AL yang sama, di luar produk utama (produk/varian/sku). Format: [{"id","namaProduk","varian","skuProduk"}]';
