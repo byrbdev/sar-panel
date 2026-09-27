@@ -3,6 +3,7 @@ import React from 'react';
 import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
 import RupiahInput from 'components/fields/RupiahInput';
+import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
 import { MdContentPaste } from 'react-icons/md';
 import {
   JASA_PENGIRIMAN,
@@ -20,7 +21,9 @@ const emptyForm: PenjualanFormValue = {
   noHp: '',
   alamatPembeli: '',
   namaProduk: '',
+  varian: '',
   skuProduk: '',
+  produkList: [],
   noPesananAL: '',
   hargaJual: 0,
   modalShopee: 0,
@@ -210,15 +213,24 @@ const PenjualanForm = (props: {
       />
 
       {/* Produk */}
+      <InputField
+        id="namaProduk"
+        label="Nama Produk"
+        placeholder="Nama produk"
+        type="text"
+        extra=""
+        value={value.namaProduk}
+        onChange={handle('namaProduk')}
+      />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InputField
-          id="namaProduk"
-          label="Nama Produk"
-          placeholder="Nama produk"
+          id="varian"
+          label="Varian Produk"
+          placeholder="Contoh: Hitam, size L"
           type="text"
           extra=""
-          value={value.namaProduk}
-          onChange={handle('namaProduk')}
+          value={value.varian}
+          onChange={handle('varian')}
         />
         <InputField
           id="skuProduk"
@@ -230,6 +242,11 @@ const PenjualanForm = (props: {
           onChange={handle('skuProduk')}
         />
       </div>
+
+      <ProdukTambahan
+        produkList={value.produkList || []}
+        onChange={(list) => onChange({ ...value, produkList: list })}
+      />
 
       <InputField
         id="noPesananAL"

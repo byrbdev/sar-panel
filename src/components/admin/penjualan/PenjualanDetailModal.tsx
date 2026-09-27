@@ -85,9 +85,16 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
           <p className="font-semibold leading-tight text-navy-700 dark:text-white">
             {penjualan.namaProduk}
           </p>
-          {penjualan.skuProduk && (
+          {(penjualan.varian || penjualan.skuProduk) && (
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              SKU: {penjualan.skuProduk}
+              {penjualan.varian && <>Varian: {penjualan.varian}</>}
+              {penjualan.varian && penjualan.skuProduk && ' · '}
+              {penjualan.skuProduk && <>SKU: {penjualan.skuProduk}</>}
+            </p>
+          )}
+          {penjualan.produkList && penjualan.produkList.length > 0 && (
+            <p className="mt-0.5 text-xs font-medium text-brand-500 dark:text-brand-300">
+              +{penjualan.produkList.length} produk lain dalam invoice ini
             </p>
           )}
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -127,6 +134,44 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
             value={penjualan.alamatPembeli}
           />
         </div>
+
+        {/* Daftar Produk (kalau ada lebih dari 1 produk dalam invoice ini) */}
+        {penjualan.produkList && penjualan.produkList.length > 0 && (
+          <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
+            <SectionLabel>
+              Produk dalam Invoice Ini ({penjualan.produkList.length + 1})
+            </SectionLabel>
+            <div className="space-y-2">
+              <div className="rounded-xl bg-lightPrimary p-3 dark:bg-navy-700">
+                <p className="text-sm font-semibold text-navy-700 dark:text-white">
+                  1. {penjualan.namaProduk}
+                </p>
+                {(penjualan.varian || penjualan.skuProduk) && (
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    {[penjualan.varian, penjualan.skuProduk]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                )}
+              </div>
+              {penjualan.produkList.map((p, idx) => (
+                <div
+                  key={p.id}
+                  className="rounded-xl bg-lightPrimary p-3 dark:bg-navy-700"
+                >
+                  <p className="text-sm font-semibold text-navy-700 dark:text-white">
+                    {idx + 2}. {p.namaProduk || '(tanpa nama)'}
+                  </p>
+                  {(p.varian || p.skuProduk) && (
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      {[p.varian, p.skuProduk].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Info Transaksi */}
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">

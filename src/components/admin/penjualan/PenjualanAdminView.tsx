@@ -116,15 +116,23 @@ const PenjualanAdminView = () => {
   const openRefund = (e: React.MouseEvent, row: Penjualan) => {
     e.stopPropagation();
     setRefundTargetId(row.id);
+    const semuaProduk = [
+      row.namaProduk,
+      ...(row.produkList || []).map((p) => p.namaProduk),
+    ].filter(Boolean);
+    const semuaSku = [
+      row.skuProduk,
+      ...(row.produkList || []).map((p) => p.skuProduk),
+    ].filter(Boolean);
     setRefundForm({
       ...emptyRefundForm(),
       nama: row.namaPembeli,
       namaToko: row.namaToko,
       emailToko: getTokoEmail(row.namaToko),
       noHp: row.noHp,
-      sku: row.skuProduk,
+      sku: semuaSku.join(', '),
       noPesananAL: row.noPesananAL || '-',
-      namaProduk: row.namaProduk,
+      namaProduk: semuaProduk.join(', '),
       omzet: row.hargaJual,
       profit: row.hargaJual - row.modalShopee,
       alamat: row.alamatPembeli,
@@ -350,6 +358,11 @@ const PenjualanAdminView = () => {
                         {row.skuProduk && (
                           <p className="truncate text-[11px] text-gray-500 dark:text-gray-400">
                             SKU: {row.skuProduk}
+                          </p>
+                        )}
+                        {row.produkList && row.produkList.length > 0 && (
+                          <p className="truncate text-[11px] font-medium text-brand-500 dark:text-brand-300">
+                            +{row.produkList.length} produk lain
                           </p>
                         )}
                       </td>

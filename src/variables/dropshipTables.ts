@@ -1,3 +1,5 @@
+import { ProdukItem } from './dropshipPenjualan';
+
 export type OrderRow = {
   id: string;
   reporterId?: string; // id Member yang melapor penjualan ini
@@ -6,6 +8,8 @@ export type OrderRow = {
   produk: string;
   varian: string;
   sku: string;
+  /** Produk tambahan di invoice/No Pesanan AL yang sama (lihat ProdukItem) */
+  produkList?: ProdukItem[];
   noHp: string;
   alamat: string;
   keterangan?: string;

@@ -189,7 +189,7 @@ const AnalisaMemberView = () => {
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
-                {['#', 'PRODUK', 'TOKO', 'TERJUAL', 'OMZET'].map((h) => (
+                {['#', 'PRODUK', 'TOKO', 'TERJUAL'].map((h) => (
                   <th key={h} className="pb-2 pr-2 pt-2 text-start text-xs font-bold text-gray-600 dark:text-white sm:text-sm">
                     {h}
                   </th>
@@ -199,7 +199,7 @@ const AnalisaMemberView = () => {
             <tbody>
               {top10Produk.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={4} className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     Belum ada data.
                   </td>
                 </tr>
@@ -210,7 +210,6 @@ const AnalisaMemberView = () => {
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{p.namaProduk}</td>
                     <td className="truncate py-3 pr-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{p.namaToko}</td>
                     <td className="truncate py-3 pr-2 text-xs text-navy-700 dark:text-white sm:text-sm">{p.jumlahTerjual}x</td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{formatRupiah(p.omzet)}</td>
                   </tr>
                 ))
               )}

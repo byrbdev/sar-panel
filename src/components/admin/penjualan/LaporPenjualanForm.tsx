@@ -2,7 +2,9 @@
 import React from 'react';
 import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
+import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
 import { MdContentPaste } from 'react-icons/md';
+import { ProdukItem } from 'variables/dropshipPenjualan';
 
 export type LaporPenjualanValue = {
   nama: string;
@@ -12,6 +14,7 @@ export type LaporPenjualanValue = {
   produk: string;
   varian: string;
   sku: string;
+  produkList: ProdukItem[];
   noPesananAL: string;
   keterangan: string;
 };
@@ -24,6 +27,7 @@ export const emptyLaporForm = (defaultToko = ''): LaporPenjualanValue => ({
   produk: '',
   varian: '',
   sku: '',
+  produkList: [],
   noPesananAL: '',
   keterangan: '',
 });
@@ -220,6 +224,12 @@ const LaporPenjualanForm = (props: {
           onChange={handle('sku')}
         />
       </div>
+
+      <ProdukTambahan
+        produkList={value.produkList}
+        onChange={(list) => onChange({ ...value, produkList: list })}
+      />
+
       <InputField
         id="lp_noPesananAL"
         label="No Pesanan AL"

@@ -12,6 +12,16 @@ export const JASA_PENGIRIMAN = [
 export type StatusPengiriman = 'Masuk' | 'Terkirim' | 'Refund';
 export type StatusAkunToko = 'Aktif' | 'Ban';
 
+/** Satu baris produk dalam satu invoice/No Pesanan AL. Satu pembeli/satu
+ * checkout bisa punya beberapa produk berbeda (Produk + Varian + SKU),
+ * makanya disimpan sebagai list -- lihat field `produkList` di bawah. */
+export type ProdukItem = {
+  id: string;
+  namaProduk: string;
+  varian: string;
+  skuProduk: string;
+};
+
 export type Penjualan = {
   id: string;
   ownerId?: string; // id Member pemilik toko (untuk isolasi dashboard)
@@ -20,7 +30,12 @@ export type Penjualan = {
   noHp: string;
   alamatPembeli: string;
   namaProduk: string;
+  varian: string;
   skuProduk: string;
+  /** Produk TAMBAHAN di invoice/No Pesanan AL yang sama (di luar produk utama
+   * di atas). Kosong/undefined = cuma 1 produk. Finansial (harga/modal) TETAP
+   * satu untuk seluruh invoice, tidak dipecah per produk. */
+  produkList?: ProdukItem[];
   noPesananAL: string;
   hargaJual: number;
   modalShopee: number;

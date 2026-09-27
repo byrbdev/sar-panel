@@ -66,8 +66,8 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
       </div>
 
       <div className="flex h-full w-full flex-row justify-between sm:flex-wrap lg:flex-nowrap 2xl:overflow-hidden">
-        <div className="flex w-[150px] flex-shrink-0 flex-col">
-          <p className="mt-[20px] whitespace-nowrap text-3xl font-bold text-navy-700 dark:text-white">
+        <div className="flex w-[150px] flex-shrink-0 flex-col items-start">
+          <p className="mt-[20px] whitespace-nowrap text-left text-3xl font-bold text-navy-700 dark:text-white">
             {formatRupiahSingkat(totalOmzet)}
           </p>
           <div className="flex flex-col items-start">

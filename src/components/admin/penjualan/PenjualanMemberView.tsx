@@ -58,6 +58,7 @@ const PenjualanMemberView = () => {
         produk: form.produk,
         varian: form.varian,
         sku: form.sku,
+        produkList: form.produkList,
         noHp: form.noHp,
         alamat: form.alamat,
         keterangan: form.keterangan,
@@ -214,6 +215,11 @@ const PenjualanMemberView = () => {
                         <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                           {row.namaProduk}
                         </p>
+                        {row.produkList && row.produkList.length > 0 && (
+                          <p className="truncate text-[11px] font-medium text-brand-500 dark:text-brand-300">
+                            +{row.produkList.length} produk lain
+                          </p>
+                        )}
                       </td>
                       <td className="border-white/0 py-3 pr-2">
                         <p className="truncate text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
