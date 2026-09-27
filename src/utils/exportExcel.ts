@@ -18,14 +18,16 @@ export const exportAnalisaToExcel = async (params: {
   wb.creator = 'SAR Panel By RB';
   wb.created = new Date();
 
-  /* ================= Sheet 1: Penjualan ================= */
+  /* ================= Sheet 1: Penjualan (per invoice/No Pesanan AL) ================= */
   const wsPenjualan = wb.addWorksheet('Penjualan');
   wsPenjualan.columns = [
     { header: 'Tanggal', key: 'tanggal', width: 14 },
+    { header: 'No Pesanan AL', key: 'noPesananAL', width: 22 },
     { header: 'Toko', key: 'toko', width: 22 },
     { header: 'Pembeli', key: 'pembeli', width: 20 },
-    { header: 'Produk', key: 'produk', width: 26 },
-    { header: 'SKU', key: 'sku', width: 16 },
+    { header: 'Jumlah Produk', key: 'jumlahProduk', width: 13 },
+    { header: 'Produk', key: 'produk', width: 34 },
+    { header: 'SKU', key: 'sku', width: 26 },
     { header: 'Omzet', key: 'omzet', width: 16 },
     { header: 'Modal', key: 'modal', width: 16 },
     { header: 'Profit', key: 'profit', width: 16 },
@@ -34,12 +36,25 @@ export const exportAnalisaToExcel = async (params: {
   ];
 
   filtered.forEach((p) => {
+    // Satu invoice/No Pesanan AL bisa punya beberapa produk (produk utama +
+    // produkList) -- semuanya digabung dalam satu baris per invoice, karena
+    // omzet/modal/profit memang tersimpan per invoice, bukan per produk.
+    const semuaProduk = [
+      p.namaProduk,
+      ...(p.produkList || []).map((x) => x.namaProduk),
+    ].filter(Boolean);
+    const semuaSku = [
+      p.skuProduk,
+      ...(p.produkList || []).map((x) => x.skuProduk),
+    ].filter(Boolean);
     wsPenjualan.addRow({
       tanggal: p.tanggalTransaksi,
+      noPesananAL: p.noPesananAL || '-',
       toko: p.namaToko,
       pembeli: p.namaPembeli,
-      produk: p.namaProduk,
-      sku: p.skuProduk,
+      jumlahProduk: semuaProduk.length,
+      produk: semuaProduk.join(', '),
+      sku: semuaSku.join(', '),
       omzet: p.hargaJual,
       modal: p.modalShopee,
       profit: p.hargaJual - p.modalShopee,
@@ -54,8 +69,10 @@ export const exportAnalisaToExcel = async (params: {
 
   const totalRowPenjualan = wsPenjualan.addRow({
     tanggal: '',
+    noPesananAL: '',
     toko: '',
     pembeli: '',
+    jumlahProduk: '',
     produk: '',
     sku: 'TOTAL',
     omzet: totalOmzet,
@@ -115,7 +132,6 @@ export const exportAnalisaToExcel = async (params: {
     { header: 'Produk', key: 'produk', width: 28 },
     { header: 'Toko', key: 'toko', width: 22 },
     { header: 'Jumlah Terjual', key: 'jumlahTerjual', width: 15 },
-    { header: 'Omzet', key: 'omzet', width: 16 },
   ];
 
   const topProduk = topProdukTerlaris(filtered, 10);
@@ -125,11 +141,9 @@ export const exportAnalisaToExcel = async (params: {
       produk: p.namaProduk,
       toko: p.namaToko,
       jumlahTerjual: p.jumlahTerjual,
-      omzet: p.omzet,
     });
   });
 
-  const totalOmzetProduk = topProduk.reduce((a, p) => a + p.omzet, 0);
   const totalTerjualProduk = topProduk.reduce((a, p) => a + p.jumlahTerjual, 0);
 
   const totalRowProduk = wsProduk.addRow({
@@ -137,10 +151,9 @@ export const exportAnalisaToExcel = async (params: {
     produk: 'TOTAL',
     toko: '',
     jumlahTerjual: totalTerjualProduk,
-    omzet: totalOmzetProduk,
   });
 
-  styleSheet(wsProduk, ['omzet'], totalRowProduk.number);
+  styleSheet(wsProduk, [], totalRowProduk.number);
 
   /* ================= Download ================= */
   const buffer = await wb.xlsx.writeBuffer();

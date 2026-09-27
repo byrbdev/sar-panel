@@ -82,9 +82,16 @@ const PenjualanMemberView = () => {
 
   const filteredPenjualan = penjualan.filter((p) => {
     const term = search.toLowerCase();
+    if (!term) return true;
+    const semuaNamaProduk = [
+      p.namaProduk,
+      ...(p.produkList || []).map((x) => x.namaProduk),
+    ]
+      .join(' ')
+      .toLowerCase();
     return (
       p.namaPembeli.toLowerCase().includes(term) ||
-      p.namaProduk.toLowerCase().includes(term) ||
+      semuaNamaProduk.includes(term) ||
       p.namaToko.toLowerCase().includes(term)
     );
   });

@@ -72,9 +72,26 @@ const PenjualanAdminView = () => {
 
   const filteredData = data.filter((row) => {
     const term = search.toLowerCase();
+    if (!term) return true;
+    // Cari juga di produk tambahan (produkList) & SKU-nya, bukan cuma
+    // produk utama -- supaya invoice dengan beberapa produk tetap ketemu
+    // walau yang dicari produk ke-2/ke-3-nya.
+    const semuaNamaProduk = [
+      row.namaProduk,
+      ...(row.produkList || []).map((p) => p.namaProduk),
+    ]
+      .join(' ')
+      .toLowerCase();
+    const semuaSku = [
+      row.skuProduk,
+      ...(row.produkList || []).map((p) => p.skuProduk),
+    ]
+      .join(' ')
+      .toLowerCase();
     return (
       row.namaPembeli.toLowerCase().includes(term) ||
-      row.namaProduk.toLowerCase().includes(term) ||
+      semuaNamaProduk.includes(term) ||
+      semuaSku.includes(term) ||
       row.noResi.toLowerCase().includes(term) ||
       (row.noPesananAL || '').toLowerCase().includes(term) ||
       row.namaToko.toLowerCase().includes(term) ||

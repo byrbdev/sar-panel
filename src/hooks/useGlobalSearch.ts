@@ -41,12 +41,16 @@ export const useGlobalSearch = (term: string) => {
         p.namaPembeli,
         p.noResi,
         p.skuProduk,
+        p.noPesananAL,
+        ...(p.produkList || []).map((x) => x.namaProduk),
+        ...(p.produkList || []).map((x) => x.skuProduk),
       ]
         .join(' ')
         .toLowerCase();
       if (haystack.includes(t)) {
+        const jumlahProduk = 1 + (p.produkList?.length || 0);
         out.push({
-          title: `${p.namaProduk} — ${p.namaToko}`,
+          title: `${p.namaProduk}${jumlahProduk > 1 ? ` +${jumlahProduk - 1} lainnya` : ''} — ${p.namaToko}`,
           subtitle: `Penjualan • ${p.namaPembeli} • Resi: ${p.noResi || '-'}`,
         });
       }

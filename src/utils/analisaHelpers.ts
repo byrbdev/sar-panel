@@ -137,25 +137,39 @@ export type ProdukAnalisa = {
   namaProduk: string;
   namaToko: string;
   jumlahTerjual: number;
-  omzet: number;
 };
 
+/**
+ * Satu invoice/No Pesanan AL bisa punya beberapa produk berbeda (produk
+ * utama + `produkList`). Supaya "Produk Terlaris" akurat, tiap produk di
+ * dalam invoice dihitung TERJUAL SENDIRI-SENDIRI berdasarkan nama produknya
+ * -- Produk A tetap dihitung sebagai Produk A meskipun satu invoice dengan
+ * Produk B & C, bukan digabung jadi satu baris per invoice.
+ *
+ * Omzet sengaja TIDAK dihitung di sini: harga jual tersimpan per INVOICE
+ * (bukan per produk), jadi kalau satu invoice ada 3 produk, tidak ada cara
+ * akurat membagi omzetnya ke masing-masing produk -- daripada menampilkan
+ * angka yang menyesatkan, kolom omzet dihapus dari analisa produk terlaris.
+ */
 export const topProdukTerlaris = (
   data: Penjualan[],
   limit = 10,
 ): ProdukAnalisa[] => {
   const map = new Map<string, ProdukAnalisa>();
-  data.forEach((row) => {
-    const key = row.namaProduk + '||' + row.namaToko;
+  const tambah = (namaProduk: string, namaToko: string) => {
+    if (!namaProduk) return;
+    const key = namaProduk + '||' + namaToko;
     const existing = map.get(key) || {
-      namaProduk: row.namaProduk,
-      namaToko: row.namaToko,
+      namaProduk,
+      namaToko,
       jumlahTerjual: 0,
-      omzet: 0,
     };
     existing.jumlahTerjual += 1;
-    existing.omzet += row.hargaJual;
     map.set(key, existing);
+  };
+  data.forEach((row) => {
+    tambah(row.namaProduk, row.namaToko);
+    (row.produkList || []).forEach((p) => tambah(p.namaProduk, row.namaToko));
   });
   return Array.from(map.values())
     .sort((a, b) => b.jumlahTerjual - a.jumlahTerjual)

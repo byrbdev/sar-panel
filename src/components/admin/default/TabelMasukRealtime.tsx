@@ -204,6 +204,11 @@ export default function TabelMasukRealtime() {
                     <p className="truncate text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {row.produk}
                     </p>
+                    {row.produkList && row.produkList.length > 0 && (
+                      <p className="truncate text-[11px] font-medium text-brand-500 dark:text-brand-300">
+                        +{row.produkList.length} produk lain
+                      </p>
+                    )}
                   </td>
                   <td className="hidden border-white/0 py-3 pr-2 md:table-cell">
                     <p className="truncate text-sm text-gray-600 dark:text-gray-300">
