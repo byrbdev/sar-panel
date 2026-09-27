@@ -14,6 +14,9 @@ import {
   topProdukTerlaris,
 } from 'utils/analisaHelpers';
 import { usePagedSlice, AnalisaPager, SkuCell } from './AnalisaPagination';
+import ModalOverlay from 'components/modal/ModalOverlay';
+import BrutalDetailModal from 'components/admin/brutal/BrutalDetailModal';
+import { BrutalAnalisa } from 'utils/analisaHelpers';
 import {
   MdAttachMoney,
   MdTrendingUp,
@@ -72,6 +75,7 @@ const AnalisaMemberView = () => {
   // "Selanjutnya" & state halaman sendiri-sendiri (tidak saling pengaruh).
   const perluOptimasiPage = usePagedSlice(perluOptimasi, 10);
   const teroptimasiPage = usePagedSlice(teroptimasi, 10);
+  const [selectedBrutal, setSelectedBrutal] = React.useState<BrutalAnalisa | null>(null);
   const refundProdukPage = usePagedSlice(refundProduk, 10);
 
   const lineChartData = [
@@ -248,7 +252,7 @@ const AnalisaMemberView = () => {
                 </tr>
               ) : (
                 perluOptimasiPage.paged.map((b) => (
-                  <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
+                  <tr key={b.id} onClick={() => setSelectedBrutal(b)} className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700">
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{b.namaToko}</td>
                     <td className="truncate py-3 pr-2 text-xs text-navy-700 dark:text-white sm:text-sm">{b.produk}</td>
                     <td className="truncate py-3 pr-2 font-mono text-xs text-gray-600 dark:text-gray-300">
@@ -309,7 +313,7 @@ const AnalisaMemberView = () => {
                 </tr>
               ) : (
                 teroptimasiPage.paged.map((b) => (
-                  <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
+                  <tr key={b.id} onClick={() => setSelectedBrutal(b)} className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700">
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{b.namaToko}</td>
                     <td className="truncate py-3 pr-2 text-xs text-navy-700 dark:text-white sm:text-sm">{b.produk}</td>
                     <td className="truncate py-3 pr-2 font-mono text-xs text-gray-600 dark:text-gray-300">
@@ -388,6 +392,16 @@ const AnalisaMemberView = () => {
           onChange={refundProdukPage.setPage}
         />
       </Card>
+
+      {selectedBrutal && (
+        <ModalOverlay
+          open={!!selectedBrutal}
+          onClose={() => setSelectedBrutal(null)}
+          title="Detail Produk Brutal"
+        >
+          <BrutalDetailModal item={selectedBrutal} />
+        </ModalOverlay>
+      )}
     </div>
   );
 };

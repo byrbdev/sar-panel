@@ -269,7 +269,6 @@ const TokoListPerMemberContent = (props: {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         title="Tambah Data Toko"
-        maxWidthClass="max-w-[640px]"
       >
         <PemulihanForm value={addForm} onChange={setAddForm} />
         <div className="mt-6 flex justify-end gap-3">
@@ -293,7 +292,6 @@ const TokoListPerMemberContent = (props: {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         title="Edit Data Toko"
-        maxWidthClass="max-w-[640px]"
       >
         <PemulihanForm value={editForm} onChange={setEditForm} />
         <div className="mt-6 flex justify-end gap-3">

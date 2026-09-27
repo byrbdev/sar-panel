@@ -255,7 +255,6 @@ const DataBuyerPage = () => {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title={editId ? 'Edit Data Buyer' : 'Tambah Data Buyer'}
-        maxWidthClass="max-w-[640px]"
       >
         <BuyerForm value={form} onChange={setForm} />
         <div className="mt-6 flex justify-end gap-3">

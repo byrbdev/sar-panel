@@ -268,7 +268,6 @@ const PenjualanMemberView = () => {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title="Lapor Penjualan Baru"
-        maxWidthClass="max-w-[640px]"
       >
         <LaporPenjualanForm
           value={form}
@@ -296,7 +295,6 @@ const PenjualanMemberView = () => {
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Detail Penjualan"
-        maxWidthClass="max-w-[640px]"
       >
         {selected && <PenjualanDetailModal penjualan={selected} />}
       </ModalOverlay>

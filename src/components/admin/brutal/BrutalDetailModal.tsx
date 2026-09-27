@@ -122,9 +122,16 @@ const BrutalDetailModal = (props: { item: BrutalItem }) => {
           <SectionLabel>Info Produk & Penjualan</SectionLabel>
           <Row
             icon={<MdQrCode2 className="h-3.5 w-3.5" />}
-            label="SKU"
-            value={item.sku}
+            label="ID Produk"
+            value={item.idProduk || '-'}
           />
+          <div className="mt-3.5">
+            <Row
+              icon={<MdQrCode2 className="h-3.5 w-3.5" />}
+              label="SKU"
+              value={item.sku}
+            />
+          </div>
           <div className="mt-3.5">
             <Row
               icon={<MdShoppingCart className="h-3.5 w-3.5" />}

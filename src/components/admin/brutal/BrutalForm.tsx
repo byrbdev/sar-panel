@@ -13,6 +13,7 @@ export const emptyBrutalForm = (): BrutalFormValue => ({
   namaToko: '',
   kategoriToko: '',
   produk: '',
+  idProduk: '',
   status: 'Muncul',
   iklan: 'Iklan',
   orderan: '',
@@ -107,6 +108,27 @@ const BrutalForm = (props: {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField
+          id="br_idProduk"
+          label="ID Produk"
+          placeholder="Contoh: 123456789"
+          type="text"
+          extra=""
+          value={value.idProduk}
+          onChange={handle('idProduk')}
+        />
+        <InputField
+          id="br_sku"
+          label="SKU"
+          placeholder="SKU-001"
+          type="text"
+          extra=""
+          value={value.sku}
+          onChange={handle('sku')}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
             Status
@@ -150,18 +172,6 @@ const BrutalForm = (props: {
           onChange={handle('orderan')}
         />
         <InputField
-          id="br_sku"
-          label="SKU"
-          placeholder="SKU-001"
-          type="text"
-          extra=""
-          value={value.sku}
-          onChange={handle('sku')}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField
           id="br_jumlahTerjual"
           label="Jumlah Terjual"
           placeholder="0"
@@ -170,6 +180,9 @@ const BrutalForm = (props: {
           value={value.jumlahTerjual}
           onChange={handle('jumlahTerjual')}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InputField
           id="br_ulasanProduk"
           label="Ulasan Produk"
@@ -179,9 +192,6 @@ const BrutalForm = (props: {
           value={value.ulasanProduk}
           onChange={handle('ulasanProduk')}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InputField
           id="br_reviewProduk"
           label="Review Produk"
@@ -191,16 +201,17 @@ const BrutalForm = (props: {
           value={value.reviewProduk}
           onChange={handle('reviewProduk')}
         />
-        <InputField
-          id="br_ratingToko"
-          label="Rating Toko"
-          placeholder="4.9"
-          type="text"
-          extra=""
-          value={value.ratingToko}
-          onChange={handle('ratingToko')}
-        />
       </div>
+
+      <InputField
+        id="br_ratingToko"
+        label="Rating Toko"
+        placeholder="4.9"
+        type="text"
+        extra=""
+        value={value.ratingToko}
+        onChange={handle('ratingToko')}
+      />
 
       <InputField
         id="br_pelanggaran"

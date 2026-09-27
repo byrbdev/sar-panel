@@ -19,6 +19,9 @@ import {
 } from 'utils/analisaHelpers';
 import { exportAnalisaToExcel } from 'utils/exportExcel';
 import { usePagedSlice, AnalisaPager, SkuCell } from './AnalisaPagination';
+import ModalOverlay from 'components/modal/ModalOverlay';
+import BrutalDetailModal from 'components/admin/brutal/BrutalDetailModal';
+import { BrutalAnalisa } from 'utils/analisaHelpers';
 import {
   MdAttachMoney,
   MdTrendingUp,
@@ -112,6 +115,7 @@ const AnalisaSuperAdminView = () => {
   // "Selanjutnya" & state halaman sendiri-sendiri (tidak saling pengaruh).
   const perluOptimasiPage = usePagedSlice(perluOptimasi, 10);
   const teroptimasiPage = usePagedSlice(teroptimasi, 10);
+  const [selectedBrutal, setSelectedBrutal] = React.useState<BrutalAnalisa | null>(null);
   const refundProdukPage = usePagedSlice(refundProduk, 10);
 
   const lineChartData = [
@@ -511,7 +515,11 @@ const AnalisaSuperAdminView = () => {
                 </tr>
               ) : (
                 perluOptimasiPage.paged.map((b) => (
-                  <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
+                  <tr
+                    key={b.id}
+                    onClick={() => setSelectedBrutal(b)}
+                    className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700"
+                  >
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {b.namaToko}
                     </td>
@@ -590,7 +598,11 @@ const AnalisaSuperAdminView = () => {
                 </tr>
               ) : (
                 teroptimasiPage.paged.map((b) => (
-                  <tr key={b.id} className="border-b border-gray-100 dark:border-white/5">
+                  <tr
+                    key={b.id}
+                    onClick={() => setSelectedBrutal(b)}
+                    className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700"
+                  >
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {b.namaToko}
                     </td>
@@ -693,6 +705,16 @@ const AnalisaSuperAdminView = () => {
           onChange={refundProdukPage.setPage}
         />
       </Card>
+
+      {selectedBrutal && (
+        <ModalOverlay
+          open={!!selectedBrutal}
+          onClose={() => setSelectedBrutal(null)}
+          title="Detail Produk Brutal"
+        >
+          <BrutalDetailModal item={selectedBrutal} />
+        </ModalOverlay>
+      )}
     </div>
   );
 };

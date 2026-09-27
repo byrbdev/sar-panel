@@ -118,7 +118,6 @@ const RefundMemberView = () => {
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Detail Refund"
-        maxWidthClass="max-w-[640px]"
       >
         {selected && <RefundDetailModal refund={selected} />}
       </ModalOverlay>

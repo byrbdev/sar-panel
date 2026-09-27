@@ -224,7 +224,6 @@ const RefundAdminView = () => {
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Detail Refund"
-        maxWidthClass="max-w-[640px]"
       >
         {selected && <RefundDetailModal refund={selected} />}
       </ModalOverlay>
@@ -233,7 +232,6 @@ const RefundAdminView = () => {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         title="Edit Data Refund"
-        maxWidthClass="max-w-[640px]"
       >
         {editForm && (
           <RefundForm value={editForm} onChange={setEditForm} />

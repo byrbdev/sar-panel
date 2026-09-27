@@ -197,7 +197,6 @@ const MemberPage = () => {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title="Tambah Anggota"
-        maxWidthClass="max-w-[520px]"
       >
         <MemberForm value={form} onChange={setForm} />
         <div className="mt-6 flex justify-end gap-3">

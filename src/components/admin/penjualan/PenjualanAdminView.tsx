@@ -463,7 +463,6 @@ const PenjualanAdminView = () => {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title={editId ? 'Edit Penjualan' : 'Tambah Penjualan'}
-        maxWidthClass="max-w-[640px]"
       >
         <PenjualanForm value={form} onChange={setForm} lockNoPesananAL={!!editId} />
         <div className="mt-6 flex justify-end gap-3">
@@ -496,7 +495,6 @@ const PenjualanAdminView = () => {
         open={refundOpen}
         onClose={() => setRefundOpen(false)}
         title="Refund Transaksi"
-        maxWidthClass="max-w-[640px]"
       >
         <RefundForm value={refundForm} onChange={setRefundForm} fromPenjualan />
         <div className="mt-6 flex justify-end gap-3">

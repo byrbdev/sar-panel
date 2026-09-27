@@ -303,7 +303,6 @@ const PesananMasukPage = () => {
         open={prosesOpen}
         onClose={() => setProsesOpen(false)}
         title="Proses Jadi Penjualan"
-        maxWidthClass="max-w-[640px]"
       >
         {form && (
           <PenjualanForm
@@ -332,7 +331,6 @@ const PesananMasukPage = () => {
         open={refundOpen}
         onClose={() => setRefundOpen(false)}
         title="Refund Pesanan"
-        maxWidthClass="max-w-[640px]"
       >
         <RefundForm value={refundForm} onChange={setRefundForm} hideOrderNumbers buyerNameKnown />
         <div className="mt-6 flex justify-end gap-3">

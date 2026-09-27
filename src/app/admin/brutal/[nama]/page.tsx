@@ -248,7 +248,6 @@ const DataBrutalAnggotaPage = ({
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title={editId ? 'Edit Data Brutal' : 'Tambah Data Brutal'}
-        maxWidthClass="max-w-[640px]"
       >
         <BrutalForm value={form} onChange={setForm} />
         <div className="mt-6 flex justify-end gap-3">
@@ -271,7 +270,6 @@ const DataBrutalAnggotaPage = ({
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Detail Brutal"
-        maxWidthClass="max-w-[640px]"
       >
         {selected && <BrutalDetailModal item={selected} />}
       </ModalOverlay>

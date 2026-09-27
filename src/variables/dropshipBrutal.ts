@@ -7,6 +7,7 @@ export type BrutalItem = {
   namaToko: string;
   kategoriToko: string;
   produk: string;
+  idProduk: string;
   status: BrutalStatus;
   iklan: BrutalIklan;
   orderan: string;

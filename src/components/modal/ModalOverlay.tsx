@@ -8,9 +8,8 @@ const ModalOverlay = (props: {
   onClose: () => void;
   title: string;
   children: ReactNode;
-  maxWidthClass?: string;
 }) => {
-  const { open, onClose, title, children, maxWidthClass } = props;
+  const { open, onClose, title, children } = props;
 
   // Render lewat portal ke document.body. WAJIB, jangan dihapus: kalau
   // komponen ini dirender di dalam elemen yang punya `backdrop-filter`,
@@ -46,8 +45,11 @@ const ModalOverlay = (props: {
         onClick={onClose}
       />
 
-      {/* Modal Card */}
-      <div className={`relative z-[101] flex max-h-[90vh] w-full ${maxWidthClass || 'max-w-[520px]'} flex-col rounded-[20px] bg-white shadow-3xl shadow-shadow-500 dark:!bg-navy-800 dark:text-white dark:shadow-none`}>
+      {/* Modal Card -- ukuran DISERAGAMKAN untuk semua overlay di seluruh
+          aplikasi (max-w-[640px]), supaya konsisten baik untuk form
+          tambah/edit maupun detail read-only. Jangan override per-halaman
+          lagi supaya tidak kembali berantakan. */}
+      <div className="relative z-[101] flex max-h-[90vh] w-full max-w-[640px] flex-col rounded-[20px] bg-white shadow-3xl shadow-shadow-500 dark:!bg-navy-800 dark:text-white dark:shadow-none">
         <div className="flex items-center justify-between px-7 pb-4 pt-7">
           <h3 className="text-2xl font-bold text-navy-700 dark:text-white">
             {title}
