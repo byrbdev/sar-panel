@@ -21,7 +21,8 @@ import { exportAnalisaToExcel } from 'utils/exportExcel';
 import { usePagedSlice, AnalisaPager, SkuCell } from './AnalisaPagination';
 import ModalOverlay from 'components/modal/ModalOverlay';
 import BrutalDetailModal from 'components/admin/brutal/BrutalDetailModal';
-import { BrutalAnalisa } from 'utils/analisaHelpers';
+import { BrutalAnalisa, ProdukAnalisa, RefundProdukAnalisa } from 'utils/analisaHelpers';
+import { TopProdukDetail, RefundProdukDetail } from './AnalisaDetailModals';
 import {
   MdAttachMoney,
   MdTrendingUp,
@@ -37,33 +38,27 @@ import {
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
-type Scope = 'keseluruhan' | 'bulanini';
-
 const AnalisaSuperAdminView = () => {
   const { penjualan, refund, toko } = useAppData();
   const { items: brutalItems } = useBrutal();
   const { member } = useMember();
   const { notify } = useUI();
 
-  const [scope, setScope] = React.useState<Scope>('bulanini');
-
   // Export controls
   const [exportBulan, setExportBulan] = React.useState('');
   const [exportTim, setExportTim] = React.useState('semua');
 
-  const dataPenjualan = React.useMemo(() => {
-    if (scope === 'bulanini') {
-      return penjualan.filter((p) => isBulanIni(p.tanggalTransaksi));
-    }
-    return penjualan;
-  }, [penjualan, scope]);
+  // Analisa HANYA menampilkan data bulan berjalan (realtime). Mode
+  // "Keseluruhan" sudah dihapus.
+  const dataPenjualan = React.useMemo(
+    () => penjualan.filter((p) => isBulanIni(p.tanggalTransaksi)),
+    [penjualan],
+  );
 
-  const dataRefund = React.useMemo(() => {
-    if (scope === 'bulanini') {
-      return refund.filter((r) => isBulanIni(r.tanggal));
-    }
-    return refund;
-  }, [refund, scope]);
+  const dataRefund = React.useMemo(
+    () => refund.filter((r) => isBulanIni(r.tanggal)),
+    [refund],
+  );
 
   const anggotaMap = React.useMemo(() => {
     const map: Record<string, string> = {};
@@ -116,6 +111,8 @@ const AnalisaSuperAdminView = () => {
   const perluOptimasiPage = usePagedSlice(perluOptimasi, 10);
   const teroptimasiPage = usePagedSlice(teroptimasi, 10);
   const [selectedBrutal, setSelectedBrutal] = React.useState<BrutalAnalisa | null>(null);
+  const [selectedTop, setSelectedTop] = React.useState<ProdukAnalisa | null>(null);
+  const [selectedRefund, setSelectedRefund] = React.useState<RefundProdukAnalisa | null>(null);
   const refundProdukPage = usePagedSlice(refundProduk, 10);
 
   const lineChartData = [
@@ -188,40 +185,19 @@ const AnalisaSuperAdminView = () => {
 
   return (
     <div className="mt-3 flex flex-col gap-5">
-      {/* Toggle scope */}
+      {/* Header */}
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-xl font-bold text-navy-700 dark:text-white">
             Analisa
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {scope === 'keseluruhan'
-              ? 'Menampilkan data kumulatif sejak awal panel digunakan'
-              : 'Menampilkan data realtime bulan berjalan saat ini'}
+            Menampilkan data realtime bulan berjalan saat ini
           </p>
         </div>
-        <div className="flex rounded-lg bg-lightPrimary p-1 dark:bg-navy-700">
-          <button
-            onClick={() => setScope('keseluruhan')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-              scope === 'keseluruhan'
-                ? 'bg-white text-brand-500 shadow dark:bg-navy-800 dark:text-white'
-                : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            Keseluruhan
-          </button>
-          <button
-            onClick={() => setScope('bulanini')}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-              scope === 'bulanini'
-                ? 'bg-white text-brand-500 shadow dark:bg-navy-800 dark:text-white'
-                : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            Bulan Ini (Realtime)
-          </button>
-        </div>
+        <span className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-brand-500 shadow dark:bg-navy-800 dark:text-white">
+          Bulan Ini (Realtime)
+        </span>
       </div>
 
       {/* KPI cards */}
@@ -458,7 +434,8 @@ const AnalisaSuperAdminView = () => {
                 top10Produk.map((p, i) => (
                   <tr
                     key={p.namaProduk + p.namaToko}
-                    className="border-b border-gray-100 dark:border-white/5"
+                    onClick={() => setSelectedTop(p)}
+                    className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700"
                   >
                     <td className="py-3 pr-2 text-sm font-bold text-navy-700 dark:text-white">
                       {i + 1}
@@ -679,7 +656,8 @@ const AnalisaSuperAdminView = () => {
                 refundProdukPage.paged.map((r) => (
                   <tr
                     key={r.namaProduk + r.namaToko}
-                    className="border-b border-gray-100 dark:border-white/5"
+                    onClick={() => setSelectedRefund(r)}
+                    className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700"
                   >
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {r.namaProduk}
@@ -707,6 +685,26 @@ const AnalisaSuperAdminView = () => {
           onChange={refundProdukPage.setPage}
         />
       </Card>
+
+      {selectedTop && (
+        <ModalOverlay
+          open={!!selectedTop}
+          onClose={() => setSelectedTop(null)}
+          title="Detail Produk Terlaris"
+        >
+          <TopProdukDetail item={selectedTop} />
+        </ModalOverlay>
+      )}
+
+      {selectedRefund && (
+        <ModalOverlay
+          open={!!selectedRefund}
+          onClose={() => setSelectedRefund(null)}
+          title="Detail Refund"
+        >
+          <RefundProdukDetail item={selectedRefund} />
+        </ModalOverlay>
+      )}
 
       {selectedBrutal && (
         <ModalOverlay

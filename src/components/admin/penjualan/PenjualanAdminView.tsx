@@ -16,6 +16,11 @@ import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
 import { useMemberName } from 'hooks/useMemberName';
 import { usePagination } from 'hooks/usePagination';
+import TanggalFilter, {
+  emptyTanggalFilter,
+  matchTanggalFilter,
+  TanggalFilterValue,
+} from 'components/admin/penjualan/TanggalFilter';
 import PaginationControl from 'components/pagination/PaginationControl';
 import {
   MdAdd,
@@ -49,6 +54,8 @@ const PenjualanAdminView = () => {
   const { notify, confirm } = useUI();
   const { resolve: resolveMember } = useMemberName();
   const [search, setSearch] = React.useState('');
+  const [tanggalFilter, setTanggalFilter] =
+    React.useState<TanggalFilterValue>(emptyTanggalFilter);
 
   const getOwnerId = (namaToko: string) =>
     toko.find((t) => t.namaToko === namaToko)?.ownerId;
@@ -71,6 +78,7 @@ const PenjualanAdminView = () => {
   const [selected, setSelected] = React.useState<Penjualan | null>(null);
 
   const filteredData = data.filter((row) => {
+    if (!matchTanggalFilter(row.tanggalTransaksi, tanggalFilter)) return false;
     const term = search.toLowerCase();
     if (!term) return true;
     // Cari juga di produk tambahan (produkList) & SKU-nya, bukan cuma
@@ -99,10 +107,16 @@ const PenjualanAdminView = () => {
       row.statusPengiriman.toLowerCase().includes(term)
     );
   });
-  const { page, totalPages, pageData, next, prev } = usePagination(
+  const { page, totalPages, pageData, next, prev, reset } = usePagination(
     filteredData,
     10,
   );
+
+  // Kembali ke halaman 1 setiap kali filter/pencarian berubah
+  React.useEffect(() => {
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, tanggalFilter]);
 
   const summary = React.useMemo(
     () => ({
@@ -254,7 +268,7 @@ const PenjualanAdminView = () => {
           </div>
           <div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Omzet (hasil pencarian)
+              Omzet (hasil filter)
             </p>
             <p className="text-lg font-bold text-navy-700 dark:text-white">
               {formatRupiah(summary.omzet)}
@@ -319,7 +333,13 @@ const PenjualanAdminView = () => {
           </div>
         </div>
 
-        <div className="mt-8 w-full">
+        <TanggalFilter
+          value={tanggalFilter}
+          onChange={setTanggalFilter}
+          tanggalList={data.map((d) => d.tanggalTransaksi)}
+        />
+
+        <div className="mt-6 w-full">
           <table className="w-full table-fixed">
             <thead>
               <tr className="!border-px !border-gray-400">

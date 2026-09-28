@@ -8,6 +8,7 @@ import { useScopedData } from 'hooks/useScopedData';
 import {
   analisaBrutal,
   analisaProdukRefund,
+  isBulanIni,
   produkTeroptimasi,
   omzetPerBulan,
   padOmzetBulanan,
@@ -16,7 +17,8 @@ import {
 import { usePagedSlice, AnalisaPager, SkuCell } from './AnalisaPagination';
 import ModalOverlay from 'components/modal/ModalOverlay';
 import BrutalDetailModal from 'components/admin/brutal/BrutalDetailModal';
-import { BrutalAnalisa } from 'utils/analisaHelpers';
+import { BrutalAnalisa, ProdukAnalisa, RefundProdukAnalisa } from 'utils/analisaHelpers';
+import { TopProdukDetail, RefundProdukDetail } from './AnalisaDetailModals';
 import {
   MdAttachMoney,
   MdTrendingUp,
@@ -32,8 +34,20 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const AnalisaMemberView = () => {
   const { profile } = useAuth();
-  const { penjualan, refund } = useScopedData();
+  const { penjualan: penjualanAll, refund: refundAll } = useScopedData();
   const { items: brutalItems } = useBrutal();
+
+  // Analisa HANYA menampilkan data bulan berjalan (realtime). Mode
+  // "Keseluruhan" sudah dihapus. Tren bulanan & analisa Brutal tetap
+  // memakai seluruh histori karena memang butuh data lintas bulan.
+  const penjualan = React.useMemo(
+    () => penjualanAll.filter((p) => isBulanIni(p.tanggalTransaksi)),
+    [penjualanAll],
+  );
+  const refund = React.useMemo(
+    () => refundAll.filter((r) => isBulanIni(r.tanggal)),
+    [refundAll],
+  );
 
   const summary = React.useMemo(
     () => ({
@@ -46,8 +60,8 @@ const AnalisaMemberView = () => {
   );
 
   const trendBulanan = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualan)),
-    [penjualan],
+    () => padOmzetBulanan(omzetPerBulan(penjualanAll)),
+    [penjualanAll],
   );
   const top10Produk = React.useMemo(
     () => topProdukTerlaris(penjualan, 10),
@@ -58,8 +72,8 @@ const AnalisaMemberView = () => {
     [brutalItems, profile],
   );
   const analisaBrutalSaya = React.useMemo(
-    () => analisaBrutal(brutalSaya, penjualan, { [profile?.id || '']: profile?.nama || '' }),
-    [brutalSaya, penjualan, profile],
+    () => analisaBrutal(brutalSaya, penjualanAll, { [profile?.id || '']: profile?.nama || '' }),
+    [brutalSaya, penjualanAll, profile],
   );
   const perluOptimasi = analisaBrutalSaya.filter((b) => b.perluDioptimasi);
   const teroptimasi = React.useMemo(
@@ -76,6 +90,8 @@ const AnalisaMemberView = () => {
   const perluOptimasiPage = usePagedSlice(perluOptimasi, 10);
   const teroptimasiPage = usePagedSlice(teroptimasi, 10);
   const [selectedBrutal, setSelectedBrutal] = React.useState<BrutalAnalisa | null>(null);
+  const [selectedTop, setSelectedTop] = React.useState<ProdukAnalisa | null>(null);
+  const [selectedRefund, setSelectedRefund] = React.useState<RefundProdukAnalisa | null>(null);
   const refundProdukPage = usePagedSlice(refundProduk, 10);
 
   const lineChartData = [
@@ -108,13 +124,18 @@ const AnalisaMemberView = () => {
 
   return (
     <div className="mt-3 flex flex-col gap-5">
-      <div>
-        <h1 className="text-xl font-bold text-navy-700 dark:text-white">
-          Analisa Performa Toko Saya
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Data hanya mencakup toko yang di-setting sebagai milikmu
-        </p>
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-xl font-bold text-navy-700 dark:text-white">
+            Analisa Performa Toko Saya
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Data hanya mencakup toko milikmu, realtime bulan berjalan saat ini
+          </p>
+        </div>
+        <span className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-brand-500 shadow dark:bg-navy-800 dark:text-white">
+          Bulan Ini (Realtime)
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -209,7 +230,7 @@ const AnalisaMemberView = () => {
                 </tr>
               ) : (
                 top10Produk.map((p, i) => (
-                  <tr key={p.namaProduk + p.namaToko} className="border-b border-gray-100 dark:border-white/5">
+                  <tr key={p.namaProduk + p.namaToko} onClick={() => setSelectedTop(p)} className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700">
                     <td className="py-3 pr-2 text-sm font-bold text-navy-700 dark:text-white">{i + 1}</td>
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{p.namaProduk}</td>
                     <td className="truncate py-3 pr-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{p.namaToko}</td>
@@ -373,7 +394,7 @@ const AnalisaMemberView = () => {
                 </tr>
               ) : (
                 refundProdukPage.paged.map((r) => (
-                  <tr key={r.namaProduk + r.namaToko} className="border-b border-gray-100 dark:border-white/5">
+                  <tr key={r.namaProduk + r.namaToko} onClick={() => setSelectedRefund(r)} className="cursor-pointer border-b border-gray-100 transition hover:bg-lightPrimary dark:border-white/5 dark:hover:bg-navy-700">
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">{r.namaProduk}</td>
                     <td className="truncate py-3 pr-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">{r.namaToko}</td>
                     <td className="truncate py-3 pr-2 text-xs font-bold text-red-500 sm:text-sm">{r.jumlahRefund}x</td>
@@ -392,6 +413,26 @@ const AnalisaMemberView = () => {
           onChange={refundProdukPage.setPage}
         />
       </Card>
+
+      {selectedTop && (
+        <ModalOverlay
+          open={!!selectedTop}
+          onClose={() => setSelectedTop(null)}
+          title="Detail Produk Terlaris"
+        >
+          <TopProdukDetail item={selectedTop} />
+        </ModalOverlay>
+      )}
+
+      {selectedRefund && (
+        <ModalOverlay
+          open={!!selectedRefund}
+          onClose={() => setSelectedRefund(null)}
+          title="Detail Refund"
+        >
+          <RefundProdukDetail item={selectedRefund} />
+        </ModalOverlay>
+      )}
 
       {selectedBrutal && (
         <ModalOverlay

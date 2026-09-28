@@ -330,6 +330,8 @@ export type RefundProdukAnalisa = {
   namaToko: string;
   jumlahRefund: number;
   totalOmzetHilang: number;
+  /** Semua data refund untuk produk+toko ini (dipakai untuk overlay detail) */
+  refunds: RefundRow[];
 };
 
 export const analisaProdukRefund = (
@@ -345,7 +347,9 @@ export const analisaProdukRefund = (
         namaToko: r.namaToko,
         jumlahRefund: 0,
         totalOmzetHilang: 0,
+        refunds: [],
       };
+      existing.refunds.push(r);
       existing.jumlahRefund += 1;
       existing.totalOmzetHilang += r.omzet || 0;
       map.set(key, existing);

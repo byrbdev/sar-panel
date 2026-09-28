@@ -1,4 +1,9 @@
 'use client';
+import TanggalFilter, {
+  emptyTanggalFilter,
+  matchTanggalFilter,
+  TanggalFilterValue,
+} from 'components/admin/penjualan/TanggalFilter';
 import React from 'react';
 import Card from 'components/card';
 import ModalOverlay from 'components/modal/ModalOverlay';
@@ -29,6 +34,8 @@ const PenjualanMemberView = () => {
   const { toko, penjualan, orders } = useScopedData();
   const { notify } = useUI();
   const [search, setSearch] = React.useState('');
+  const [tanggalFilter, setTanggalFilter] =
+    React.useState<TanggalFilterValue>(emptyTanggalFilter);
 
   const daftarTokoSaya = toko.map((t) => t.namaToko);
 
@@ -81,6 +88,7 @@ const PenjualanMemberView = () => {
   };
 
   const filteredPenjualan = penjualan.filter((p) => {
+    if (!matchTanggalFilter(p.tanggalTransaksi, tanggalFilter)) return false;
     const term = search.toLowerCase();
     if (!term) return true;
     const semuaNamaProduk = [
@@ -181,7 +189,13 @@ const PenjualanMemberView = () => {
           </div>
         )}
 
-        <div className="mt-8 w-full">
+        <TanggalFilter
+          value={tanggalFilter}
+          onChange={setTanggalFilter}
+          tanggalList={penjualan.map((p) => p.tanggalTransaksi)}
+        />
+
+        <div className="mt-6 w-full">
           <table className="w-full table-fixed">
             <thead>
               <tr className="!border-px !border-gray-400">
