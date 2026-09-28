@@ -162,6 +162,11 @@ const PenjualanMemberView = () => {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <TanggalFilter
+              value={tanggalFilter}
+              onChange={setTanggalFilter}
+              tanggalList={penjualan.map((p) => p.tanggalTransaksi)}
+            />
             <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[240px]">
               <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               <input
@@ -188,12 +193,6 @@ const PenjualanMemberView = () => {
             Admin untuk mengaitkan toko ke akunmu.
           </div>
         )}
-
-        <TanggalFilter
-          value={tanggalFilter}
-          onChange={setTanggalFilter}
-          tanggalList={penjualan.map((p) => p.tanggalTransaksi)}
-        />
 
         <div className="mt-6 w-full">
           <table className="w-full table-fixed">

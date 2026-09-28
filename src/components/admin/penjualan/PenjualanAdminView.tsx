@@ -314,6 +314,11 @@ const PenjualanAdminView = () => {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <TanggalFilter
+              value={tanggalFilter}
+              onChange={setTanggalFilter}
+              tanggalList={data.map((d) => d.tanggalTransaksi)}
+            />
             <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[280px]">
               <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               <input
@@ -332,12 +337,6 @@ const PenjualanAdminView = () => {
             </button>
           </div>
         </div>
-
-        <TanggalFilter
-          value={tanggalFilter}
-          onChange={setTanggalFilter}
-          tanggalList={data.map((d) => d.tanggalTransaksi)}
-        />
 
         <div className="mt-6 w-full">
           <table className="w-full table-fixed">
