@@ -26,7 +26,7 @@ export const exportAnalisaToExcel = async (params: {
     { header: 'Toko', key: 'toko', width: 22 },
     { header: 'Pembeli', key: 'pembeli', width: 20 },
     { header: 'Jumlah Produk', key: 'jumlahProduk', width: 13 },
-    { header: 'Produk', key: 'produk', width: 34 },
+    { header: 'Produk', key: 'produk', width: 38 },
     { header: 'SKU', key: 'sku', width: 26 },
     { header: 'Omzet', key: 'omzet', width: 16 },
     { header: 'Modal', key: 'modal', width: 16 },
@@ -53,8 +53,8 @@ export const exportAnalisaToExcel = async (params: {
       toko: p.namaToko,
       pembeli: p.namaPembeli,
       jumlahProduk: semuaProduk.length,
-      produk: semuaProduk.join(', '),
-      sku: semuaSku.join(', '),
+      produk: semuaProduk.map((n, i) => `${i + 1}. ${n}`).join('\n'),
+      sku: semuaSku.join('\n'),
       omzet: p.hargaJual,
       modal: p.modalShopee,
       profit: p.hargaJual - p.modalShopee,
@@ -82,7 +82,12 @@ export const exportAnalisaToExcel = async (params: {
     statusAkunToko: '',
   });
 
-  styleSheet(wsPenjualan, ['omzet', 'modal', 'profit'], totalRowPenjualan.number);
+  styleSheet(
+    wsPenjualan,
+    ['omzet', 'modal', 'profit'],
+    totalRowPenjualan.number,
+    ['produk', 'sku'],
+  );
 
   /* ================= Sheet 2: Per Pemilik Toko ================= */
   const wsPemilik = wb.addWorksheet('Per Pemilik Toko');
@@ -171,7 +176,12 @@ export const exportAnalisaToExcel = async (params: {
 };
 
 // eslint-disable-next-line
-function styleSheet(ws: any, currencyKeys: string[], totalRowNumber: number) {
+function styleSheet(
+  ws: any,
+  currencyKeys: string[],
+  totalRowNumber: number,
+  wrapKeys: string[] = [],
+) {
   // Header row styling
   const headerRow = ws.getRow(1);
   headerRow.eachCell((cell: any) => {
@@ -198,9 +208,32 @@ function styleSheet(ws: any, currencyKeys: string[], totalRowNumber: number) {
     col.alignment = { horizontal: 'right' };
   });
 
-  // Zebra striping for readability (skip header & total row)
+  // Kolom yang isinya bisa banyak baris (mis. Produk & SKU saat satu invoice
+  // punya beberapa produk) -- WRAP di dalam sel yang sama supaya kolom tetap
+  // rapi & tidak melebar horizontal, tapi tetap kelihatan semua isinya
+  // (baris otomatis meninggi menyesuaikan jumlah produk).
+  wrapKeys.forEach((key) => {
+    const col = ws.getColumn(key);
+    col.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+  });
+
+  // Zebra striping for readability (skip header & total row) + tinggi baris
+  // otomatis menyesuaikan jumlah baris terbanyak di antara kolom yang wrap.
   ws.eachRow((row: any, rowNumber: number) => {
-    if (rowNumber === 1 || rowNumber === totalRowNumber) return;
+    if (rowNumber === 1) return;
+
+    if (wrapKeys.length > 0 && rowNumber !== totalRowNumber) {
+      let maxLines = 1;
+      wrapKeys.forEach((key) => {
+        const val = row.getCell(key).value;
+        if (typeof val === 'string' && val.includes('\n')) {
+          maxLines = Math.max(maxLines, val.split('\n').length);
+        }
+      });
+      if (maxLines > 1) row.height = 15 * maxLines;
+    }
+
+    if (rowNumber === totalRowNumber) return;
     if (rowNumber % 2 === 0) {
       row.eachCell((cell: any) => {
         cell.fill = {

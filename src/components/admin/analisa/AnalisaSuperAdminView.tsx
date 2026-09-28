@@ -166,10 +166,12 @@ const AnalisaSuperAdminView = () => {
       });
     }
     if (exportTim !== 'semua') {
-      const tokoAnggota = brutalItems
-        .filter((i) => i.anggotaId === exportTim)
-        .map((i) => i.namaToko);
-      filtered = filtered.filter((p) => tokoAnggota.includes(p.namaToko));
+      // PENTING: filter langsung dari `ownerId` di data Penjualan (pemilik
+      // toko yang sebenarnya), BUKAN lewat tabel Brutal. Sebelumnya filter
+      // ini nyasar ke data Brutal (anggotaId) yang belum tentu lengkap
+      // diisi untuk semua toko member -- itu penyebab file export member
+      // tertentu jadi kosong padahal datanya ada.
+      filtered = filtered.filter((p) => p.ownerId === exportTim);
     }
 
     const scopeLabel =
