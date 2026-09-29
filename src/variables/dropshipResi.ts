@@ -12,8 +12,17 @@ export type FollowUpResi = {
 };
 
 /** Resi dianggap kosong kalau tidak diisi, spasi saja, atau cuma "-". */
+const kosong = (v?: string) => !v || v.trim() === '' || v.trim() === '-';
+
+/** Mode "Resi Berbeda": minimal satu produk tambahan punya resi sendiri. */
+export const isResiBerbeda = (p: Penjualan) =>
+  (p.produkList || []).some((x) => !kosong(x.noResi));
+
+/** Resi dianggap kosong kalau tidak diisi, spasi saja, atau cuma "-".
+ * Pada mode Resi Berbeda, kosong = masih ada produk yang belum punya resi. */
 export const isResiKosong = (p: Penjualan) =>
-  !p.noResi || p.noResi.trim() === '' || p.noResi.trim() === '-';
+  kosong(p.noResi) ||
+  (isResiBerbeda(p) && (p.produkList || []).some((x) => kosong(x.noResi)));
 
 /** Penjualan yang muncul di halaman Resi: sudah diproses (ada di tabel
  * penjualan), resi masih kosong, dan bukan transaksi yang sudah di-refund

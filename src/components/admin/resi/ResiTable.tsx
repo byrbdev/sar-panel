@@ -104,7 +104,7 @@ const ResiTable = (props: {
                 >
                   <MdLocalShipping className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
                   {rows.length === 0
-                    ? 'Tidak ada penjualan yang perlu resi. 🎉'
+                    ? 'Tidak ada penjualan yang perlu resi.'
                     : 'Tidak ada data yang cocok dengan pencarian.'}
                 </td>
               </tr>

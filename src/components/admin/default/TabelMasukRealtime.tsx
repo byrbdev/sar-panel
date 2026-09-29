@@ -4,9 +4,8 @@ import Link from 'next/link';
 import Card from 'components/card';
 import ModalOverlay from 'components/modal/ModalOverlay';
 import OrderDetailModal from 'components/admin/default/OrderDetailModal';
-import PenjualanForm, {
-  PenjualanFormValue,
-} from 'components/admin/penjualan/PenjualanForm';
+import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
+import ProsesPenjualanForm from 'components/admin/penjualan/ProsesPenjualanForm';
 import RefundForm, {
   emptyRefundForm,
   RefundFormValue,
@@ -261,11 +260,7 @@ export default function TabelMasukRealtime() {
         title="Proses Jadi Penjualan"
       >
         {form && (
-          <PenjualanForm
-            value={form}
-            onChange={setForm}
-            statusOptions={['Terkirim', 'Refund']}
-          />
+          <ProsesPenjualanForm value={form} onChange={setForm} />
         )}
         <div className="mt-6 flex justify-end gap-3">
           <button

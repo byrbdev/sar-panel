@@ -62,6 +62,9 @@ const ResiInputModal = (props: {
   const [noResi, setNoResi] = React.useState('');
   const [jasa, setJasa] = React.useState<string>(JASA_PENGIRIMAN[0]);
   const [saving, setSaving] = React.useState(false);
+  const [mode, setMode] = React.useState<'sama' | 'beda'>('sama');
+  // resi per produk (key = 'utama' atau id produk tambahan)
+  const [resiMap, setResiMap] = React.useState<Record<string, string>>({});
 
   // Reset field setiap kali overlay dibuka untuk penjualan yang berbeda
   React.useEffect(() => {
@@ -69,6 +72,8 @@ const ResiInputModal = (props: {
       setNoResi('');
       setJasa(penjualan.jasaPengiriman || JASA_PENGIRIMAN[0]);
       setSaving(false);
+      setMode('sama');
+      setResiMap({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [penjualan?.id]);
@@ -85,19 +90,47 @@ const ResiInputModal = (props: {
     ...(penjualan.produkList || []),
   ];
 
+  const multi = semuaProduk.length > 1;
+  const beda = multi && mode === 'beda';
+
   const handleSave = async () => {
-    const resi = noResi.trim();
-    if (!resi) {
-      notify('Nomor resi wajib diisi.', 'error');
-      return;
+    let updates: Partial<Penjualan>;
+    if (beda) {
+      const kosong = semuaProduk.filter((p) => !(resiMap[p.id] || '').trim());
+      if (kosong.length) {
+        notify(
+          `Resi wajib diisi untuk semua produk (${kosong.length} belum diisi).`,
+          'error',
+        );
+        return;
+      }
+      updates = {
+        noResi: resiMap['utama'].trim(),
+        jasaPengiriman: jasa,
+        produkList: (penjualan.produkList || []).map((x) => ({
+          ...x,
+          noResi: resiMap[x.id].trim(),
+        })),
+      };
+    } else {
+      const resi = noResi.trim();
+      if (!resi) {
+        notify('Nomor resi wajib diisi.', 'error');
+        return;
+      }
+      updates = {
+        noResi: resi,
+        jasaPengiriman: jasa,
+        // Resi Sama: bersihkan resi per produk supaya tidak dianggap "beda"
+        produkList: (penjualan.produkList || []).map((x) => ({
+          ...x,
+          noResi: '',
+        })),
+      };
     }
     setSaving(true);
     const result = await setPenjualan((prev) =>
-      prev.map((row) =>
-        row.id === penjualan.id
-          ? { ...row, noResi: resi, jasaPengiriman: jasa }
-          : row,
-      ),
+      prev.map((row) => (row.id === penjualan.id ? { ...row, ...updates } : row)),
     );
     setSaving(false);
     if (!result.ok) {
@@ -183,19 +216,44 @@ const ResiInputModal = (props: {
         {/* Resi + jasa pengiriman (paling bawah) */}
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
           <SectionLabel>Pengiriman</SectionLabel>
+
+          {multi && (
+            <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-lightPrimary p-1 dark:bg-navy-700">
+              {([
+                ['sama', 'Resi Sama'],
+                ['beda', 'Resi Berbeda'],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setMode(key)}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition duration-150 ${
+                    mode === key
+                      ? 'bg-white text-brand-500 shadow-sm dark:bg-navy-800 dark:text-white'
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InputField
-              id="resiNoResi"
-              label="Nomor Resi"
-              placeholder="Nomor resi pengiriman"
-              type="text"
-              extra=""
-              value={noResi}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setNoResi(e.target.value)
-              }
-            />
-            <div>
+            {!beda && (
+              <InputField
+                id="resiNoResi"
+                label="Nomor Resi"
+                placeholder="Nomor resi pengiriman"
+                type="text"
+                extra=""
+                value={noResi}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNoResi(e.target.value)
+                }
+              />
+            )}
+            <div className={beda ? 'sm:col-span-2' : ''}>
               <label className="mb-2 ml-3 block text-sm font-bold text-navy-700 dark:text-white">
                 Jasa Pengiriman
               </label>
@@ -212,6 +270,25 @@ const ResiInputModal = (props: {
               </select>
             </div>
           </div>
+
+          {beda && (
+            <div className="mt-4 space-y-3">
+              {semuaProduk.map((p, idx) => (
+                <InputField
+                  key={p.id}
+                  id={`resi-${p.id}`}
+                  label={`Resi ${idx + 1}: ${p.namaProduk || '(tanpa nama)'}${p.varian ? ` (${p.varian})` : ''}`}
+                  placeholder="Nomor resi produk ini"
+                  type="text"
+                  extra=""
+                  value={resiMap[p.id] || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setResiMap((m) => ({ ...m, [p.id]: e.target.value }))
+                  }
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

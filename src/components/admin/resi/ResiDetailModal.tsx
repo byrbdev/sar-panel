@@ -13,6 +13,7 @@ import {
   MdConfirmationNumber,
 } from 'react-icons/md';
 import { Penjualan } from 'variables/dropshipPenjualan';
+import { isResiBerbeda } from 'variables/dropshipResi';
 
 /**
  * Overlay "Lihat Resi" (read-only). Dipakai di halaman Resi Member DAN saat
@@ -31,9 +32,12 @@ const ResiDetailModal = (props: {
       namaProduk: penjualan.namaProduk,
       varian: penjualan.varian,
       skuProduk: penjualan.skuProduk,
+      noResi: penjualan.noResi,
     },
     ...(penjualan.produkList || []),
   ];
+
+  const beda = isResiBerbeda(penjualan);
 
   return (
     <ModalOverlay open={!!penjualan} onClose={onClose} title="Detail Resi">
@@ -90,6 +94,11 @@ const ResiDetailModal = (props: {
                         .join(' · ')}
                     </p>
                   )}
+                  {beda && (
+                    <p className="mt-1 text-xs font-medium text-brand-500 dark:text-brand-300">
+                      Resi: {(p as { noResi?: string }).noResi || '-'}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -100,8 +109,8 @@ const ResiDetailModal = (props: {
           <SectionLabel>Pengiriman</SectionLabel>
           <InfoRow
             icon={<MdConfirmationNumber className="h-3.5 w-3.5" />}
-            label="Nomor Resi"
-            value={penjualan.noResi || '-'}
+            label={beda ? 'Jenis Resi' : 'Nomor Resi'}
+            value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
           />
           <InfoRow
             icon={<MdLocalShipping className="h-3.5 w-3.5" />}
