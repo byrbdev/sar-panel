@@ -69,22 +69,6 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
 
       <ResiInfoBlocks penjualan={penjualan} />
 
-      <div className="space-y-3.5 border-t border-gray-200 pt-3.5 dark:border-white/10">
-        <SectionLabel>Pengiriman</SectionLabel>
-        <InfoRow
-          icon={<MdConfirmationNumber className="h-3.5 w-3.5" />}
-          label={beda ? 'Jenis Resi' : 'Nomor Resi'}
-          value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
-        />
-        {!beda && (
-          <InfoRow
-            icon={<MdLocalShipping className="h-3.5 w-3.5" />}
-            label="Jasa Pengiriman"
-            value={penjualan.jasaPengiriman || '-'}
-          />
-        )}
-      </div>
-
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
         <SectionLabel>Finansial</SectionLabel>
         <div className="grid grid-cols-2 gap-2">
