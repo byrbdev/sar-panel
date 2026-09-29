@@ -1,4 +1,9 @@
 'use client';
+import TanggalFilter, {
+  emptyTanggalFilter,
+  matchTanggalFilter,
+  TanggalFilterValue,
+} from 'components/admin/penjualan/TanggalFilter';
 import React from 'react';
 import Card from 'components/card';
 import ModalOverlay from 'components/modal/ModalOverlay';
@@ -18,10 +23,14 @@ const statusStyle: Record<RefundStatus, string> = {
 const RefundMemberView = () => {
   const { refund: data } = useScopedData();
   const [search, setSearch] = React.useState('');
+  const [tanggalFilter, setTanggalFilter] =
+    React.useState<TanggalFilterValue>(emptyTanggalFilter);
   const [selected, setSelected] = React.useState<RefundRow | null>(null);
 
   const filtered = data.filter((r) => {
+    if (!matchTanggalFilter(r.tanggal, tanggalFilter)) return false;
     const term = search.toLowerCase();
+    if (!term) return true;
     return (
       r.nama.toLowerCase().includes(term) ||
       r.namaToko.toLowerCase().includes(term)
@@ -40,6 +49,12 @@ const RefundMemberView = () => {
               Klik baris untuk detail (read-only)
             </p>
           </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <TanggalFilter
+            value={tanggalFilter}
+            onChange={setTanggalFilter}
+            tanggalList={data.map((d) => d.tanggal)}
+          />
           <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[260px]">
             <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             <input
@@ -48,6 +63,7 @@ const RefundMemberView = () => {
               placeholder="Cari nama, toko..."
               className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
             />
+          </div>
           </div>
         </div>
 

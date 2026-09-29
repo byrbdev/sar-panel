@@ -1,8 +1,5 @@
 'use client';
 import React from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import 'styles/MiniCalendar.css';
 import {
   MdFilterAlt,
   MdChevronLeft,
@@ -31,6 +28,7 @@ const BULAN_PANJANG = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
 ];
+const HARI_PENDEK = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 /**
  * Cocokkan tanggal transaksi (format "dd MMM yyyy") dengan filter.
@@ -62,9 +60,104 @@ const labelFilter = (f: TanggalFilterValue): string => {
 };
 
 /**
- * Filter Tanggal / Bulan / Tahun untuk halaman Penjualan (semua role) --
- * tampil sebagai IKON di samping search bar. Klik ikonnya membuka overlay
- * berisi KALENDER (bukan dropdown lagi):
+ * Kalender kecil dibuat manual dengan Tailwind (BUKAN pakai package
+ * react-calendar). Dulu sempat coba pakai react-calendar + CSS override
+ * dark mode, tapi grid tanggalnya malah jadi kotak putih/abu-abu polos di
+ * dark mode (kemungkinan konflik CSS global package itu saat dirender di
+ * dalam portal modal). Dibuat manual di sini supaya 100% ngikut dark mode
+ * aplikasi (cuma pakai class `dark:` Tailwind biasa), sama seperti
+ * komponen lain di aplikasi ini.
+ */
+const MiniMonthGrid = (props: {
+  activeStart: Date;
+  onActiveStartChange: (d: Date) => void;
+  selected: { tanggal: number; bulan: number; tahun: number } | null;
+  onSelectDay: (d: Date) => void;
+}) => {
+  const { activeStart, onActiveStartChange, selected, onSelectDay } = props;
+  const year = activeStart.getFullYear();
+  const month = activeStart.getMonth();
+  const today = new Date();
+
+  const firstDow = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = [
+    ...Array(firstDow).fill(null),
+    ...Array.from({ length: totalDays }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => onActiveStartChange(new Date(year, month - 1, 1))}
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-white transition hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-300"
+        >
+          <MdChevronLeft className="h-5 w-5" />
+        </button>
+        <p className="text-base font-bold text-navy-700 dark:text-white">
+          {BULAN_PANJANG[month]} {year}
+        </p>
+        <button
+          type="button"
+          onClick={() => onActiveStartChange(new Date(year, month + 1, 1))}
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-white transition hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-300"
+        >
+          <MdChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="mb-1.5 grid grid-cols-7 gap-1 rounded-lg bg-lightPrimary py-1.5 dark:bg-white/10">
+        {HARI_PENDEK.map((h) => (
+          <div
+            key={h}
+            className="text-center text-[11px] font-bold uppercase text-gray-500 dark:text-gray-300"
+          >
+            {h}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} />;
+          const isToday =
+            d === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear();
+          const isSelected =
+            !!selected &&
+            d === selected.tanggal &&
+            month === selected.bulan - 1 &&
+            year === selected.tahun;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelectDay(new Date(year, month, d))}
+              className={`flex h-9 w-full items-center justify-center rounded-lg text-sm transition ${
+                isSelected
+                  ? 'bg-brand-500 font-bold text-white dark:bg-brand-400'
+                  : isToday
+                  ? 'bg-lightPrimary font-bold text-brand-500 dark:bg-white/10 dark:text-brand-300'
+                  : 'text-navy-700 hover:bg-lightPrimary dark:text-white dark:hover:bg-white/10'
+              }`}
+            >
+              {d}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Filter Tanggal / Bulan / Tahun untuk halaman Penjualan & Refund (semua
+ * role) -- tampil sebagai IKON di samping search bar. Klik ikonnya membuka
+ * overlay berisi KALENDER (bukan dropdown):
  * - Klik satu tanggal -> filter jadi tanggal+bulan+tahun itu persis.
  * - Navigasi bulan/tahun di kalender lalu pakai tombol "Bulan Ini" / "Tahun
  *   Ini" -> filter jadi seluruh bulan atau seluruh tahun itu tanpa perlu
@@ -83,20 +176,19 @@ const TanggalFilter = (props: {
   React.useEffect(() => {
     if (!open) return;
     setDraft(value);
-    const base =
-      (value.tahun &&
-        new Date(
-          Number(value.tahun),
-          value.bulan ? Number(value.bulan) - 1 : 0,
-          1,
-        )) ||
-      new Date();
+    const base = value.tahun
+      ? new Date(Number(value.tahun), value.bulan ? Number(value.bulan) - 1 : 0, 1)
+      : new Date();
     setActiveStart(base);
   }, [open, value]);
 
-  const selectedDate =
+  const selected =
     draft.tanggal && draft.bulan && draft.tahun
-      ? new Date(Number(draft.tahun), Number(draft.bulan) - 1, Number(draft.tanggal))
+      ? {
+          tanggal: Number(draft.tanggal),
+          bulan: Number(draft.bulan),
+          tahun: Number(draft.tahun),
+        }
       : null;
 
   const aktif = !!(value.tanggal || value.bulan || value.tahun);
@@ -133,23 +225,18 @@ const TanggalFilter = (props: {
           untuk filter satu bulan atau satu tahun penuh.
         </p>
 
-        <div className="flex justify-center rounded-2xl bg-lightPrimary p-3 dark:bg-navy-900">
-          <Calendar
-            value={selectedDate}
-            activeStartDate={activeStart}
-            onActiveStartDateChange={({ activeStartDate }) =>
-              activeStartDate && setActiveStart(activeStartDate)
-            }
-            onClickDay={(d) =>
+        <div className="rounded-2xl bg-white p-4 shadow dark:bg-navy-900">
+          <MiniMonthGrid
+            activeStart={activeStart}
+            onActiveStartChange={setActiveStart}
+            selected={selected}
+            onSelectDay={(d) =>
               setDraft({
                 tanggal: String(d.getDate()),
                 bulan: String(d.getMonth() + 1),
                 tahun: String(d.getFullYear()),
               })
             }
-            prevLabel={<MdChevronLeft className="ml-1 h-6 w-6" />}
-            nextLabel={<MdChevronRight className="ml-1 h-6 w-6" />}
-            view="month"
           />
         </div>
 
@@ -163,7 +250,7 @@ const TanggalFilter = (props: {
                 tahun: String(activeStart.getFullYear()),
               })
             }
-            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-navy-700 shadow transition hover:bg-gray-50 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
+            className="flex items-center gap-1.5 rounded-lg bg-lightPrimary px-3 py-2 text-xs font-semibold text-navy-700 transition hover:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
           >
             <MdCalendarViewMonth className="h-4 w-4 text-brand-500 dark:text-brand-300" />
             Filter {BULAN_PANJANG[activeStart.getMonth()]} {activeStart.getFullYear()} (Sebulan Penuh)
@@ -173,7 +260,7 @@ const TanggalFilter = (props: {
             onClick={() =>
               setDraft({ tanggal: '', bulan: '', tahun: String(activeStart.getFullYear()) })
             }
-            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-navy-700 shadow transition hover:bg-gray-50 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
+            className="flex items-center gap-1.5 rounded-lg bg-lightPrimary px-3 py-2 text-xs font-semibold text-navy-700 transition hover:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
           >
             <MdDateRange className="h-4 w-4 text-brand-500 dark:text-brand-300" />
             Filter Tahun {activeStart.getFullYear()} Penuh

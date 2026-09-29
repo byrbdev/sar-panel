@@ -8,6 +8,11 @@ import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
 import { useMemberName } from 'hooks/useMemberName';
 import { usePagination } from 'hooks/usePagination';
+import TanggalFilter, {
+  emptyTanggalFilter,
+  matchTanggalFilter,
+  TanggalFilterValue,
+} from 'components/admin/penjualan/TanggalFilter';
 import PaginationControl from 'components/pagination/PaginationControl';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
 import { MdSearch, MdDelete, MdEdit } from 'react-icons/md';
@@ -31,6 +36,8 @@ const RefundAdminView = () => {
   const { notify, confirm } = useUI();
   const { resolve: resolveMember } = useMemberName();
   const [search, setSearch] = React.useState('');
+  const [tanggalFilter, setTanggalFilter] =
+    React.useState<TanggalFilterValue>(emptyTanggalFilter);
   const [selected, setSelected] = React.useState<RefundRow | null>(null);
   const [editOpen, setEditOpen] = React.useState(false);
   const [editId, setEditId] = React.useState<string | null>(null);
@@ -59,7 +66,9 @@ const RefundAdminView = () => {
   };
 
   const filtered = data.filter((r) => {
+    if (!matchTanggalFilter(r.tanggal, tanggalFilter)) return false;
     const term = search.toLowerCase();
+    if (!term) return true;
     return (
       r.nama.toLowerCase().includes(term) ||
       r.namaToko.toLowerCase().includes(term) ||
@@ -100,6 +109,12 @@ const RefundAdminView = () => {
               Daftar pesanan yang di-refund, baik sebelum maupun sesudah diproses
             </p>
           </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <TanggalFilter
+            value={tanggalFilter}
+            onChange={setTanggalFilter}
+            tanggalList={data.map((d) => d.tanggal)}
+          />
           <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[280px]">
             <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             <input
@@ -108,6 +123,7 @@ const RefundAdminView = () => {
               placeholder="Cari nama, toko, atau no pesanan..."
               className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
             />
+          </div>
           </div>
         </div>
 
