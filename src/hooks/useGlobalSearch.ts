@@ -2,10 +2,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppData } from 'context/AppDataContext';
 import { useAuth } from 'context/AuthContext';
+import { useMemberName } from 'hooks/useMemberName';
+import { perluResi } from 'variables/dropshipResi';
 
 export type SearchResult = { title: string; subtitle: string };
 export type ShippingNotif = {
   id: string;
+  /** 'resi' = resi sudah diisi (untuk Member). 'followup' = Member minta
+   * resi diisi (untuk Admin/Super Admin). Kosong dianggap 'resi'. */
+  kind?: 'resi' | 'followup';
+  /** Hanya untuk kind 'followup': penjualan yang harus diisi resinya */
+  penjualanId?: string;
+  memberName?: string;
   produk: string;
   namaToko: string;
   noResi: string;
@@ -23,8 +31,9 @@ const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
  * diisi No Resi oleh Admin).
  */
 export const useGlobalSearch = (term: string) => {
-  const { penjualan, orders, refund } = useAppData();
+  const { penjualan, orders, refund, followUps } = useAppData();
   const { profile } = useAuth();
+  const { resolve: resolveMember } = useMemberName();
   const [selectedNotif, setSelectedNotif] = useState<ShippingNotif | null>(
     null,
   );
@@ -84,6 +93,43 @@ export const useGlobalSearch = (term: string) => {
   }, [term, penjualan, orders, refund]);
 
   const notifications: ShippingNotif[] = useMemo(() => {
+    // Admin & Super Admin: notifikasi "Follow Up Resi" dari Member. Otomatis
+    // hilang begitu resi penjualan tsb sudah diisi.
+    if (profile?.role === 'admin' || profile?.role === 'super_admin') {
+      const latestByPenjualan = new Map<string, (typeof followUps)[number]>();
+      followUps.forEach((f) => {
+        const cur = latestByPenjualan.get(f.penjualanId);
+        if (
+          !cur ||
+          new Date(f.createdAt).getTime() > new Date(cur.createdAt).getTime()
+        ) {
+          latestByPenjualan.set(f.penjualanId, f);
+        }
+      });
+      const out: ShippingNotif[] = [];
+      latestByPenjualan.forEach((f) => {
+        const p = penjualan.find((x) => x.id === f.penjualanId);
+        if (!p || !perluResi(p)) return;
+        out.push({
+          id: `fu-${f.id}`,
+          kind: 'followup',
+          penjualanId: p.id,
+          memberName: resolveMember(p.ownerId, p.namaToko),
+          produk: p.namaProduk,
+          namaToko: p.namaToko,
+          noResi: '',
+          jasaPengiriman: '',
+          noPesananAL: p.noPesananAL || f.noPesananAL,
+          resiUpdatedAt: f.createdAt,
+        });
+      });
+      return out.sort(
+        (a, b) =>
+          new Date(b.resiUpdatedAt || 0).getTime() -
+          new Date(a.resiUpdatedAt || 0).getTime(),
+      );
+    }
+
     if (profile?.role !== 'member') return [];
     const now = Date.now();
     return penjualan
@@ -115,7 +161,7 @@ export const useGlobalSearch = (term: string) => {
         noPesananAL: p.noPesananAL,
         resiUpdatedAt: p.resiUpdatedAt,
       }));
-  }, [penjualan, profile]);
+  }, [penjualan, profile, followUps, resolveMember]);
 
   // Tandai sudah dibaca — disimpan per-user di localStorage supaya titik
   // merah tidak muncul lagi setelah notifikasi dibuka.

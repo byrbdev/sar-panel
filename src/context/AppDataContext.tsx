@@ -4,6 +4,7 @@ import { OrderRow } from 'variables/dropshipTables';
 import { Penjualan } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
+import { FollowUpResi } from 'variables/dropshipResi';
 import { useSyncedTable, SyncedSetter } from 'hooks/useSyncedTable';
 
 type AppDataContextType = {
@@ -15,6 +16,8 @@ type AppDataContextType = {
   setPenjualan: SyncedSetter<Penjualan>;
   refund: RefundRow[];
   setRefund: SyncedSetter<RefundRow>;
+  followUps: FollowUpResi[];
+  setFollowUps: SyncedSetter<FollowUpResi>;
   addPenjualanFromOrder: (order: OrderRow) => void;
   getTokoEmail: (namaToko: string) => string;
   getTokoOwner: (namaToko: string) => string;
@@ -184,6 +187,23 @@ const refundFromDb = (r: any): RefundRow => ({
     : '',
 });
 
+/* ============== Mapper: Follow Up Resi ============== */
+const followUpToDb = (f: FollowUpResi) => ({
+  id: f.id,
+  penjualan_id: Number(f.penjualanId),
+  owner_id: f.ownerId || null,
+  no_pesanan_al: f.noPesananAL,
+  nama_toko: f.namaToko,
+});
+const followUpFromDb = (r: any): FollowUpResi => ({
+  id: String(r.id),
+  penjualanId: String(r.penjualan_id),
+  ownerId: r.owner_id || undefined,
+  noPesananAL: r.no_pesanan_al || '',
+  namaToko: r.nama_toko || '',
+  createdAt: r.created_at || new Date().toISOString(),
+});
+
 export const AppDataProvider = ({
   children,
 }: {
@@ -215,6 +235,14 @@ export const AppDataProvider = ({
     [],
     refundToDb,
     refundFromDb,
+    true,
+  );
+
+  const [followUps, setFollowUps] = useSyncedTable<FollowUpResi>(
+    'follow_up_resi',
+    [],
+    followUpToDb,
+    followUpFromDb,
     true,
   );
 
@@ -269,6 +297,8 @@ export const AppDataProvider = ({
         setPenjualan,
         refund,
         setRefund,
+        followUps,
+        setFollowUps,
         addPenjualanFromOrder,
         getTokoEmail,
         getTokoOwner,

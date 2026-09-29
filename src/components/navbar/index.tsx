@@ -6,10 +6,18 @@ import NavLink from 'components/link/NavLink';
 import { FiSearch } from 'react-icons/fi';
 import { RiMoonFill, RiSunFill } from 'react-icons/ri';
 import { IoMdNotificationsOutline } from 'react-icons/io';
-import { MdPerson, MdLogout, MdReceiptLong } from 'react-icons/md';
+import {
+  MdPerson,
+  MdLogout,
+  MdReceiptLong,
+  MdCampaign,
+} from 'react-icons/md';
 import { useAuth } from 'context/AuthContext';
 import { useGlobalSearch } from 'hooks/useGlobalSearch';
-import ModalOverlay from 'components/modal/ModalOverlay';
+import ResiInputModal from 'components/admin/resi/ResiInputModal';
+import ResiDetailModal from 'components/admin/resi/ResiDetailModal';
+import { useAppData } from 'context/AppDataContext';
+import { perluResi } from 'variables/dropshipResi';
 
 const roleLabel: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -25,6 +33,7 @@ const Navbar = (props: {
 }) => {
   const { onOpenSidenav, brandText } = props;
   const { profile, signOut } = useAuth();
+  const { penjualan } = useAppData();
   const [darkmode, setDarkmode] = React.useState(false);
   React.useEffect(() => {
     setDarkmode(document.body.classList.contains('dark'));
@@ -164,16 +173,31 @@ const Navbar = (props: {
                     className="flex w-full items-start gap-2 rounded-lg p-2 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800"
                   >
                     <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-navy-800">
-                      <MdReceiptLong className="h-4 w-4" />
+                      {n.kind === 'followup' ? (
+                        <MdCampaign className="h-4 w-4" />
+                      ) : (
+                        <MdReceiptLong className="h-4 w-4" />
+                      )}
                     </div>
-                    <div className="text-xs">
-                      <p className="font-bold text-navy-700 dark:text-white">
-                        {n.produk}
-                      </p>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        {n.namaToko} • Resi: {n.noResi}
-                      </p>
-                    </div>
+                    {n.kind === 'followup' ? (
+                      <div className="text-xs">
+                        <p className="font-bold text-navy-700 dark:text-white">
+                          Follow Up Resi {n.noPesananAL || '-'}
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {n.namaToko} • {n.memberName || '-'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-xs">
+                        <p className="font-bold text-navy-700 dark:text-white">
+                          {n.produk}
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {n.namaToko} • Resi: {n.noResi}
+                        </p>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
@@ -234,31 +258,28 @@ const Navbar = (props: {
         </Dropdown>
       </div>
 
-      {selectedNotif && (
-        <ModalOverlay
-          open={!!selectedNotif}
-          onClose={() => setSelectedNotif(null)}
-          title="Detail Pengiriman"
-        >
-          <div className="space-y-3 text-sm">
-            <p className="text-navy-700 dark:text-white">
-              <b>Produk:</b> {selectedNotif.produk}
-            </p>
-            <p className="text-navy-700 dark:text-white">
-              <b>No Pesanan AL:</b> {selectedNotif.noPesananAL || '-'}
-            </p>
-            <p className="text-navy-700 dark:text-white">
-              <b>No Resi:</b> {selectedNotif.noResi || '-'}
-            </p>
-            <p className="text-navy-700 dark:text-white">
-              <b>Jasa Pengiriman:</b> {selectedNotif.jasaPengiriman || '-'}
-            </p>
-            <p className="text-navy-700 dark:text-white">
-              <b>Toko:</b> {selectedNotif.namaToko}
-            </p>
-          </div>
-        </ModalOverlay>
-      )}
+      {/* Follow Up Resi (Admin/Super Admin): overlay yang sama dengan halaman Resi.
+          Dicari dari data terbaru supaya otomatis tertutup begitu resi tersimpan. */}
+      <ResiInputModal
+        penjualan={
+          selectedNotif?.kind === 'followup'
+            ? penjualan.find(
+                (p) => p.id === selectedNotif.penjualanId && perluResi(p),
+              ) || null
+            : null
+        }
+        onClose={() => setSelectedNotif(null)}
+      />
+
+      {/* Notifikasi resi (Member): overlay yang sama dengan tombol Lihat Resi */}
+      <ResiDetailModal
+        penjualan={
+          selectedNotif && selectedNotif.kind !== 'followup'
+            ? penjualan.find((p) => p.id === selectedNotif.id) || null
+            : null
+        }
+        onClose={() => setSelectedNotif(null)}
+      />
     </nav>
   );
 };

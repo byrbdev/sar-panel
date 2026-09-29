@@ -5,6 +5,7 @@ import {
   MdHome,
   MdStorefront,
   MdPointOfSale,
+  MdLocalShipping,
   MdAssignmentReturn,
   MdPeopleAlt,
   MdInsights,
@@ -33,6 +34,13 @@ const routes = [
     layout: '/admin',
     path: 'penjualan',
     icon: <MdPointOfSale className="h-6 w-6" />,
+    roles: ['super_admin', 'admin', 'member'],
+  },
+  {
+    name: 'Resi',
+    layout: '/admin',
+    path: 'resi',
+    icon: <MdLocalShipping className="h-6 w-6" />,
     roles: ['super_admin', 'admin', 'member'],
   },
   {
