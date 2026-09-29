@@ -45,6 +45,11 @@ const RefundDetailModal = (props: { refund: RefundRow }) => {
         value={refund.noHp}
       />
       <InfoRow
+        icon={<MdLocationOn className="h-3.5 w-3.5" />}
+        label="Alamat"
+        value={refund.alamat}
+      />
+      <InfoRow
         icon={<MdStorefront className="h-3.5 w-3.5" />}
         label="Nama Toko"
         value={refund.namaToko}
@@ -98,16 +103,11 @@ const RefundDetailModal = (props: { refund: RefundRow }) => {
               <p className="mb-0.5 text-xs text-gray-500 dark:text-gray-400">
                 Produk
               </p>
-              <p className="break-words text-sm font-semibold text-navy-700 dark:text-white">
+              <p className="break-words text-sm font-semibold text-navy-700 [overflow-wrap:anywhere] dark:text-white">
                 {refund.namaProduk}
               </p>
             </div>
           </div>
-          <InfoRow
-            icon={<MdLocationOn className="h-3.5 w-3.5" />}
-            label="Alamat"
-            value={refund.alamat}
-          />
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl bg-lightPrimary p-3 dark:bg-navy-700">
               <p className="mb-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">

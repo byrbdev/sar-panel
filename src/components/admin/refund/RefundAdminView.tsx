@@ -133,7 +133,7 @@ const RefundAdminView = () => {
               <tr className="!border-px !border-gray-400">
                 {[
                   { label: 'MEMBER', hide: 'hidden xl:table-cell' },
-                  { label: 'NAMA', hide: '' },
+                  { label: 'PEMBELI', hide: '' },
                   { label: 'NAMA TOKO', hide: 'hidden sm:table-cell' },
                   { label: 'NO PESANAN AL', hide: 'hidden md:table-cell' },
                   { label: 'NO PESANAN SHP', hide: 'hidden lg:table-cell' },

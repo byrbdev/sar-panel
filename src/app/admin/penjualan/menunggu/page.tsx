@@ -109,7 +109,7 @@ const MenungguDiprosesPage = () => {
         onClose={() => setSelected(null)}
         title="Detail Laporan"
       >
-        {selected && <OrderDetailModal order={selected} hideStatusBadge />}
+        {selected && <OrderDetailModal order={selected} />}
       </ModalOverlay>
     </div>
   );

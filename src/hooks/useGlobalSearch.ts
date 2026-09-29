@@ -177,6 +177,8 @@ export const useGlobalSearch = (term: string) => {
     }
   }, [storageKey]);
 
+  const isRead = useCallback((id: string) => readIds.includes(id), [readIds]);
+
   const unreadCount = notifications.filter(
     (n) => !readIds.includes(n.id),
   ).length;
@@ -214,6 +216,7 @@ export const useGlobalSearch = (term: string) => {
     results,
     notifications,
     unreadCount,
+    isRead,
     markAllRead,
     markOneRead,
     selectedNotif,

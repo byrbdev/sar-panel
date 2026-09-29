@@ -1,6 +1,5 @@
 'use client';
 import {
-  MdInventory2,
   MdPerson,
   MdPhone,
   MdLocationOn,
@@ -9,35 +8,21 @@ import {
   MdAttachMoney,
   MdTrendingUp,
   MdTag,
-  MdLocalShipping,
-  MdConfirmationNumber,
 } from 'react-icons/md';
 import { Penjualan } from 'variables/dropshipPenjualan';
-import { isResiBerbeda } from 'variables/dropshipResi';
+import ResiInfoBlocks from 'components/admin/resi/ResiInfoBlocks';
 import { InfoRow, SectionLabel } from 'components/admin/resi/ResiInputModal';
 import { useMemberName } from 'hooks/useMemberName';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
-/** Detail Penjualan: tata letak sama dengan Detail Resi (section per blok),
- * isi data tetap lengkap seperti sebelumnya. */
+/** Detail Penjualan: tata letak sama dengan Detail Resi (section per blok).
+ * Urutan: Info Pembeli -> Info Transaksi -> Produk -> Pengiriman (resi &
+ * jasa pengiriman, persis seperti Detail Resi) -> Finansial. */
 const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
   const { penjualan } = props;
   const { resolve: resolveMember } = useMemberName();
   const profit = penjualan.hargaJual - penjualan.modalShopee;
-  const beda = isResiBerbeda(penjualan);
-
-  const semuaProduk = [
-    {
-      id: 'utama',
-      namaProduk: penjualan.namaProduk,
-      varian: penjualan.varian,
-      skuProduk: penjualan.skuProduk,
-      noResi: penjualan.noResi,
-      jasaPengiriman: penjualan.jasaPengiriman,
-    },
-    ...(penjualan.produkList || []),
-  ];
 
   return (
     <div className="space-y-3.5">
@@ -71,48 +56,18 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
           value={penjualan.namaToko}
         />
         <InfoRow
-          icon={<MdCalendarToday className="h-3.5 w-3.5" />}
-          label="Tanggal Transaksi"
-          value={penjualan.tanggalTransaksi}
-        />
-        <InfoRow
           icon={<MdTag className="h-3.5 w-3.5" />}
           label="No Pesanan AL"
           value={penjualan.noPesananAL || '-'}
         />
+        <InfoRow
+          icon={<MdCalendarToday className="h-3.5 w-3.5" />}
+          label="Tanggal Transaksi"
+          value={penjualan.tanggalTransaksi}
+        />
       </div>
 
-      <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
-        <SectionLabel>Produk di Pesanan Ini ({semuaProduk.length})</SectionLabel>
-        <div className="space-y-2">
-          {semuaProduk.map((p, idx) => (
-            <div
-              key={p.id}
-              className="flex items-start gap-3 rounded-xl bg-lightPrimary p-3 dark:bg-navy-700"
-            >
-              <MdInventory2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-500 dark:text-white" />
-              <div className="min-w-0">
-                <p className="break-words text-sm font-semibold text-navy-700 dark:text-white">
-                  {semuaProduk.length > 1 ? `${idx + 1}. ` : ''}
-                  {p.namaProduk || '(tanpa nama)'}
-                </p>
-                {(p.varian || p.skuProduk) && (
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                )}
-                {beda && (
-                  <p className="mt-1 text-xs font-medium text-brand-500 dark:text-brand-300">
-                    Resi: {(p as { noResi?: string }).noResi || '-'} · {(p as { jasaPengiriman?: string }).jasaPengiriman || '-'}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ResiInfoBlocks penjualan={penjualan} />
 
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
         <SectionLabel>Finansial</SectionLabel>
@@ -144,28 +99,6 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
             {formatRupiah(profit)}
           </p>
         </div>
-      </div>
-
-      <div className="space-y-3.5 border-t border-gray-200 pt-3.5 dark:border-white/10">
-        <SectionLabel>Pengiriman</SectionLabel>
-        <InfoRow
-          icon={<MdConfirmationNumber className="h-3.5 w-3.5" />}
-          label={beda ? 'Jenis Resi' : 'Nomor Resi'}
-          value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
-        />
-        {!beda && (
-
-          <InfoRow
-
-            icon={<MdLocalShipping className="h-3.5 w-3.5" />}
-
-            label="Jasa Pengiriman"
-
-            value={penjualan.jasaPengiriman || '-'}
-
-          />
-
-        )}
       </div>
     </div>
   );

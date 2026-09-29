@@ -35,3 +35,49 @@ input.defaultCheckbox::before path {
 input:checked.defaultCheckbox::before {
   opacity: 1;
 }
+
+/* ================= Native <select> (dropdown) =================
+   Satu gaya untuk SEMUA dropdown: panah bawaan browser dimatikan lalu diganti
+   panah yang sama persis dengan SearchableSelect/CreatableSelect (chevron
+   20px, warna gray-400, 12px dari tepi kanan). Daftar opsi juga diberi warna
+   eksplisit untuk light & dark mode supaya tidak ikut warna bawaan browser. */
+select:not([multiple]) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  color-scheme: light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B0BBD5'%3E%3Cpath d='M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem 1.25rem;
+  /* !important: supaya teks tidak menabrak panah walau elemen memakai p-3 */
+  padding-right: 2.5rem !important;
+  text-overflow: ellipsis;
+}
+
+select:not([multiple]):disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Varian pill (mis. status di tabel Data Buyer): panah lebih kecil */
+select.select-pill:not([multiple]) {
+  background-position: right 0.4rem center;
+  background-size: 1rem 1rem;
+  padding-right: 1.6rem !important;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #1b254b; /* navy-700 */
+}
+
+.dark select:not([multiple]) {
+  color-scheme: dark;
+}
+
+.dark select option {
+  background-color: #111c44; /* navy-800 */
+  color: #ffffff;
+}

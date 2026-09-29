@@ -214,7 +214,7 @@ const DataBuyerPage = () => {
                         onChange={(e) =>
                           updateStatus(row.id, e.target.value as BuyerStatus)
                         }
-                        className={`rounded-full border-none px-2 py-1.5 text-[10px] font-bold outline-none sm:px-3 sm:text-xs ${statusStyle[row.status]}`}
+                        className={`select-pill rounded-full border-none px-2 py-1.5 text-[10px] font-bold outline-none sm:px-3 sm:text-xs ${statusStyle[row.status]}`}
                       >
                         <option value="DIPAKAI">DIPAKAI</option>
                         <option value="KOSONG">KOSONG</option>

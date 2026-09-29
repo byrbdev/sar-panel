@@ -20,14 +20,9 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 /**
  * Detail Pesanan Masuk / Detail Laporan (read-only). Tata letak disamakan
  * dengan Detail Penjualan & Detail Resi (section per blok).
- * `hideStatusBadge`: sembunyikan badge "Menunggu Diproses" (dipakai di
- * Detail Laporan).
  */
-const OrderDetailModal = (props: {
-  order: OrderRow;
-  hideStatusBadge?: boolean;
-}) => {
-  const { order, hideStatusBadge } = props;
+const OrderDetailModal = (props: { order: OrderRow }) => {
+  const { order } = props;
   const { resolve: resolveMember } = useMemberName();
   const profit = order.hargaJual - order.modal;
 
@@ -43,14 +38,6 @@ const OrderDetailModal = (props: {
 
   return (
     <div className="space-y-3.5">
-      {!hideStatusBadge && (
-        <div className="flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
-            Menunggu Diproses
-          </span>
-        </div>
-      )}
-
       <SectionLabel>Info Pembeli</SectionLabel>
       <InfoRow
         icon={<MdPerson className="h-3.5 w-3.5" />}
@@ -81,14 +68,14 @@ const OrderDetailModal = (props: {
           value={order.toko}
         />
         <InfoRow
-          icon={<MdCalendarToday className="h-3.5 w-3.5" />}
-          label="Tanggal Masuk"
-          value={order.tanggal}
-        />
-        <InfoRow
           icon={<MdReceiptLong className="h-3.5 w-3.5" />}
           label="No Pesanan AL"
           value={order.noPesananAL || '-'}
+        />
+        <InfoRow
+          icon={<MdCalendarToday className="h-3.5 w-3.5" />}
+          label="Tanggal Masuk"
+          value={order.tanggal}
         />
         <InfoRow
           icon={<MdInventory2 className="h-3.5 w-3.5" />}

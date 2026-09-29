@@ -309,7 +309,11 @@ const PenjualanMemberView = () => {
         onClose={() => setSelected(null)}
         title="Detail Penjualan"
       >
-        {selected && <PenjualanDetailModal penjualan={selected} />}
+        {selected && (
+          <PenjualanDetailModal
+            penjualan={penjualan.find((d) => d.id === selected.id) || selected}
+          />
+        )}
       </ModalOverlay>
     </div>
   );

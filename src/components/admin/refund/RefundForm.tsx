@@ -60,34 +60,34 @@ const RefundForm = (props: {
           <p className="mb-3 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
             Data dari Transaksi yang Sudah Diproses
           </p>
-          <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-            <div>
+          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Nama Produk
               </p>
-              <p className="font-semibold text-navy-700 dark:text-white">
+              <p className="break-words font-semibold text-navy-700 [overflow-wrap:anywhere] dark:text-white">
                 {value.namaProduk}
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Alamat
               </p>
-              <p className="font-semibold text-navy-700 dark:text-white">
+              <p className="break-words font-semibold text-navy-700 [overflow-wrap:anywhere] dark:text-white">
                 {value.alamat}
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400">Omzet</p>
-              <p className="font-semibold text-navy-700 dark:text-white">
+              <p className="break-words font-semibold text-navy-700 [overflow-wrap:anywhere] dark:text-white">
                 {formatRupiah(value.omzet || 0)}
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Profit
               </p>
-              <p className="font-semibold text-navy-700 dark:text-white">
+              <p className="break-words font-semibold text-navy-700 [overflow-wrap:anywhere] dark:text-white">
                 {formatRupiah(value.profit || 0)}
               </p>
             </div>

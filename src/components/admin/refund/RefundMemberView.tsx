@@ -71,7 +71,7 @@ const RefundMemberView = () => {
           <table className="w-full table-fixed">
             <thead>
               <tr className="!border-px !border-gray-400">
-                {['NAMA', 'NAMA TOKO', 'ALASAN', 'STATUS'].map((h) => (
+                {['PEMBELI', 'NAMA TOKO', 'ALASAN', 'STATUS'].map((h) => (
                   <th
                     key={h}
                     className={`border-b-[1px] border-gray-200 pb-2 pr-2 pt-4 ${h === 'STATUS' ? 'text-center' : 'text-start'}`}

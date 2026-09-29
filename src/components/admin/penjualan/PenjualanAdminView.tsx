@@ -506,7 +506,11 @@ const PenjualanAdminView = () => {
         onClose={() => setSelected(null)}
         title="Detail Penjualan"
       >
-        {selected && <PenjualanDetailModal penjualan={selected} />}
+        {selected && (
+          <PenjualanDetailModal
+            penjualan={data.find((d) => d.id === selected.id) || selected}
+          />
+        )}
       </ModalOverlay>
 
       {/* Modal Refund dari transaksi yang sudah diproses */}

@@ -44,6 +44,7 @@ const Navbar = (props: {
     results,
     notifications,
     unreadCount,
+    isRead,
     markOneRead,
     selectedNotif,
     setSelectedNotif,
@@ -158,48 +159,65 @@ const Navbar = (props: {
               </p>
             ) : (
               <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto pr-1">
-                {notifications.map((n) => (
-                  <button
-                    key={n.id}
-                    onClick={() => {
-                      // Tutup dropdown-nya dulu supaya tidak "numpuk" di
-                      // belakang modal detail yang baru dibuka.
-                      setNotifOpen(false);
-                      setSelectedNotif(n);
-                      // Cuma notifikasi INI yang ditandai sudah dibaca --
-                      // badge merah berkurang satu, bukan langsung nol semua.
-                      markOneRead(n.id);
-                    }}
-                    className="flex w-full items-start gap-2 rounded-lg p-2 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800"
-                  >
-                    <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-navy-800">
+                {notifications.map((n) => {
+                  const unread = !isRead(n.id);
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => {
+                        // Tutup dropdown-nya dulu supaya tidak "numpuk" di
+                        // belakang modal detail yang baru dibuka.
+                        setNotifOpen(false);
+                        setSelectedNotif(n);
+                        // Cuma notifikasi INI yang ditandai sudah dibaca --
+                        // badge merah berkurang satu, bukan langsung nol semua.
+                        markOneRead(n.id);
+                      }}
+                      className={`relative flex w-full items-start gap-2 rounded-lg p-2 pr-6 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800 ${
+                        unread ? 'bg-brand-50/60 dark:bg-white/5' : ''
+                      }`}
+                    >
+                      <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-navy-800">
+                        {n.kind === 'followup' ? (
+                          <MdCampaign className="h-4 w-4" />
+                        ) : (
+                          <MdReceiptLong className="h-4 w-4" />
+                        )}
+                      </div>
                       {n.kind === 'followup' ? (
-                        <MdCampaign className="h-4 w-4" />
+                        <div className="text-xs">
+                          <p
+                            className={`text-navy-700 dark:text-white ${unread ? 'font-bold' : 'font-medium'}`}
+                          >
+                            Follow Up Resi {n.noPesananAL || '-'}
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-400">
+                            {n.namaToko} • {n.memberName || '-'}
+                          </p>
+                        </div>
                       ) : (
-                        <MdReceiptLong className="h-4 w-4" />
+                        <div className="text-xs">
+                          <p
+                            className={`text-navy-700 dark:text-white ${unread ? 'font-bold' : 'font-medium'}`}
+                          >
+                            {n.produk}
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-400">
+                            {n.namaToko} • Resi: {n.noResi}
+                          </p>
+                        </div>
                       )}
-                    </div>
-                    {n.kind === 'followup' ? (
-                      <div className="text-xs">
-                        <p className="font-bold text-navy-700 dark:text-white">
-                          Follow Up Resi {n.noPesananAL || '-'}
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400">
-                          {n.namaToko} • {n.memberName || '-'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-xs">
-                        <p className="font-bold text-navy-700 dark:text-white">
-                          {n.produk}
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400">
-                          {n.namaToko} • Resi: {n.noResi}
-                        </p>
-                      </div>
-                    )}
-                  </button>
-                ))}
+                      {/* Penanda belum dibaca: titik biru. Hilang setelah dibuka. */}
+                      {unread && (
+                        <span
+                          aria-label="Belum dibaca"
+                          title="Belum dibaca"
+                          className="absolute right-2.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-brand-500 dark:bg-brand-400"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

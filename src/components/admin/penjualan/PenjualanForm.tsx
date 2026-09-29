@@ -7,6 +7,7 @@ import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
 import { MdContentPaste } from 'react-icons/md';
 import {
   JASA_PENGIRIMAN,
+  jasaOptions,
   Penjualan,
   StatusPengiriman,
   StatusAkunToko,
@@ -313,7 +314,7 @@ const PenjualanForm = (props: {
             }
             className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
           >
-            {JASA_PENGIRIMAN.map((j) => (
+            {jasaOptions(value.jasaPengiriman).map((j) => (
               <option key={j} value={j}>
                 {j}
               </option>

@@ -172,10 +172,10 @@ export async function POST(req: NextRequest) {
     // ---------------- Layout blok berdampingan ----------------
     const GAP = 2; // jumlah kolom kosong antar blok
     const P_HEAD = [
-      'Tanggal', 'No Pesanan AL', 'Toko', 'Pembeli', 'Member',
+      'No Pesanan AL', 'Tanggal', 'Toko', 'Pembeli', 'Member',
       'Jumlah Produk', 'Produk', 'SKU', 'Omzet', 'Modal', 'Profit', 'Status',
     ];
-    const P_W = [105, 200, 170, 150, 130, 90, 340, 200, 120, 120, 120, 105];
+    const P_W = [200, 105, 170, 150, 130, 90, 340, 200, 120, 120, 120, 105];
     const R_HEAD = [
       'Tanggal', 'Nama Pembeli', 'Toko', 'Member', 'Produk', 'SKU',
       'Status', 'Omzet', 'Profit',
@@ -394,8 +394,8 @@ export async function POST(req: NextRequest) {
       totalOmzetP += omzet;
       totalModalP += modal;
       return [
-        fmtTanggal(p.tanggal_transaksi),
         p.no_pesanan_al || '-',
+        fmtTanggal(p.tanggal_transaksi),
         p.nama_toko || '-',
         p.nama_pembeli || '-',
         namaMember.get(p.owner_id) || '-',
@@ -420,7 +420,7 @@ export async function POST(req: NextRequest) {
       ],
       theme: THEME_PENJUALAN,
       currencyCols: [8, 9, 10],
-      centerCols: [0, 5, 11],
+      centerCols: [1, 5, 11],
       emptyText: '(Belum ada transaksi penjualan bulan ini)',
     });
 

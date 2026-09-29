@@ -27,8 +27,8 @@ export const exportAnalisaToExcel = async (params: {
     fitToHeight: 0,
   };
   wsPenjualan.columns = [
-    { header: 'Tanggal', key: 'tanggal', width: 14 },
     { header: 'No Pesanan AL', key: 'noPesananAL', width: 28 },
+    { header: 'Tanggal', key: 'tanggal', width: 14 },
     { header: 'Toko', key: 'toko', width: 22 },
     { header: 'Pembeli', key: 'pembeli', width: 20 },
     { header: 'Jumlah Produk', key: 'jumlahProduk', width: 13 },
