@@ -9,7 +9,7 @@ import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 /**
- * Form "Proses Jadi Penjualan". Semua data pesanan READ-ONLY; yang bisa
+ * Form "Proses Penjualan". Semua data pesanan READ-ONLY; yang bisa
  * diinput hanya Penghasilan/Omzet dan Modal. Profit dihitung otomatis.
  * Nomor resi & jasa pengiriman diisi di halaman Resi.
  */
@@ -44,7 +44,7 @@ const ProsesPenjualanForm = (props: {
       </div>
 
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
-        <SectionLabel>Produk di Invoice Ini ({semuaProduk.length})</SectionLabel>
+        <SectionLabel>Produk di Pesanan Ini ({semuaProduk.length})</SectionLabel>
         <div className="space-y-2">
           {semuaProduk.map((p, idx) => (
             <div key={p.id} className="flex items-start gap-3 rounded-xl bg-lightPrimary p-3 dark:bg-navy-700">

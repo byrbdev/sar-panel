@@ -23,6 +23,8 @@ export type ProdukItem = {
   /** Resi khusus produk ini. Hanya terisi kalau admin memilih "Resi Berbeda"
    * di overlay Masukkan Resi (produk utama memakai `Penjualan.noResi`). */
   noResi?: string;
+  /** Jasa pengiriman khusus produk ini (hanya mode "Resi Berbeda"). */
+  jasaPengiriman?: string;
 };
 
 export type Penjualan = {

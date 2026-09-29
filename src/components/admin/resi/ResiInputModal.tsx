@@ -47,7 +47,7 @@ export const InfoRow = (props: {
 /**
  * Overlay "Masukkan Resi" -- dipakai di halaman Resi (Admin/Super Admin)
  * DAN saat notifikasi "Follow Up Resi" diklik, jadi tampilannya selalu sama.
- * Isinya: info pembeli, daftar produk di invoice, lalu (paling bawah)
+ * Isinya: info pembeli, daftar produk di pesanan, lalu (paling bawah)
  * field Nomor Resi + Jasa Pengiriman.
  */
 const ResiInputModal = (props: {
@@ -65,6 +65,8 @@ const ResiInputModal = (props: {
   const [mode, setMode] = React.useState<'sama' | 'beda'>('sama');
   // resi per produk (key = 'utama' atau id produk tambahan)
   const [resiMap, setResiMap] = React.useState<Record<string, string>>({});
+  // jasa pengiriman per produk (mode Resi Berbeda)
+  const [jasaMap, setJasaMap] = React.useState<Record<string, string>>({});
 
   // Reset field setiap kali overlay dibuka untuk penjualan yang berbeda
   React.useEffect(() => {
@@ -74,6 +76,7 @@ const ResiInputModal = (props: {
       setSaving(false);
       setMode('sama');
       setResiMap({});
+      setJasaMap({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [penjualan?.id]);
@@ -106,10 +109,11 @@ const ResiInputModal = (props: {
       }
       updates = {
         noResi: resiMap['utama'].trim(),
-        jasaPengiriman: jasa,
+        jasaPengiriman: jasaMap['utama'] || JASA_PENGIRIMAN[0],
         produkList: (penjualan.produkList || []).map((x) => ({
           ...x,
           noResi: resiMap[x.id].trim(),
+          jasaPengiriman: jasaMap[x.id] || JASA_PENGIRIMAN[0],
         })),
       };
     } else {
@@ -125,6 +129,7 @@ const ResiInputModal = (props: {
         produkList: (penjualan.produkList || []).map((x) => ({
           ...x,
           noResi: '',
+          jasaPengiriman: '',
         })),
       };
     }
@@ -185,9 +190,9 @@ const ResiInputModal = (props: {
           />
         </div>
 
-        {/* Produk di invoice */}
+        {/* Produk di pesanan */}
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
-          <SectionLabel>Produk di Invoice Ini ({semuaProduk.length})</SectionLabel>
+          <SectionLabel>Produk di Pesanan Ini ({semuaProduk.length})</SectionLabel>
           <div className="space-y-2">
             {semuaProduk.map((p, idx) => (
               <div
@@ -253,7 +258,8 @@ const ResiInputModal = (props: {
                 }
               />
             )}
-            <div className={beda ? 'sm:col-span-2' : ''}>
+            {!beda && (
+            <div>
               <label className="mb-2 ml-3 block text-sm font-bold text-navy-700 dark:text-white">
                 Jasa Pengiriman
               </label>
@@ -269,23 +275,52 @@ const ResiInputModal = (props: {
                 ))}
               </select>
             </div>
+            )}
           </div>
 
           {beda && (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
               {semuaProduk.map((p, idx) => (
-                <InputField
+                <div
                   key={p.id}
-                  id={`resi-${p.id}`}
-                  label={`Resi ${idx + 1}: ${p.namaProduk || '(tanpa nama)'}${p.varian ? ` (${p.varian})` : ''}`}
-                  placeholder="Nomor resi produk ini"
-                  type="text"
-                  extra=""
-                  value={resiMap[p.id] || ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setResiMap((m) => ({ ...m, [p.id]: e.target.value }))
-                  }
-                />
+                  className="rounded-xl border border-gray-200 p-3 dark:border-white/10"
+                >
+                  <p className="mb-3 break-words text-sm font-semibold text-navy-700 dark:text-white">
+                    {idx + 1}. {p.namaProduk || '(tanpa nama)'}
+                    {p.varian ? ` (${p.varian})` : ''}
+                  </p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <InputField
+                      id={`resi-${p.id}`}
+                      label="Nomor Resi"
+                      placeholder="Nomor resi produk ini"
+                      type="text"
+                      extra=""
+                      value={resiMap[p.id] || ''}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setResiMap((m) => ({ ...m, [p.id]: e.target.value }))
+                      }
+                    />
+                    <div>
+                      <label className="mb-2 ml-3 block text-sm font-bold text-navy-700 dark:text-white">
+                        Jasa Pengiriman
+                      </label>
+                      <select
+                        value={jasaMap[p.id] || JASA_PENGIRIMAN[0]}
+                        onChange={(e) =>
+                          setJasaMap((m) => ({ ...m, [p.id]: e.target.value }))
+                        }
+                        className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+                      >
+                        {JASA_PENGIRIMAN.map((j) => (
+                          <option key={j} value={j} className="dark:bg-navy-800">
+                            {j}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}

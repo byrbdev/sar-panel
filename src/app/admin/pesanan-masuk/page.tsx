@@ -301,7 +301,7 @@ const PesananMasukPage = () => {
       <ModalOverlay
         open={prosesOpen}
         onClose={() => setProsesOpen(false)}
-        title="Proses Jadi Penjualan"
+        title="Proses Penjualan"
       >
         {form && (
           <ProsesPenjualanForm value={form} onChange={setForm} />

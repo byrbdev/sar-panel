@@ -33,6 +33,7 @@ const ResiDetailModal = (props: {
       varian: penjualan.varian,
       skuProduk: penjualan.skuProduk,
       noResi: penjualan.noResi,
+      jasaPengiriman: penjualan.jasaPengiriman,
     },
     ...(penjualan.produkList || []),
   ];
@@ -74,7 +75,7 @@ const ResiDetailModal = (props: {
         </div>
 
         <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
-          <SectionLabel>Produk di Invoice Ini ({semuaProduk.length})</SectionLabel>
+          <SectionLabel>Produk di Pesanan Ini ({semuaProduk.length})</SectionLabel>
           <div className="space-y-2">
             {semuaProduk.map((p, idx) => (
               <div
@@ -96,7 +97,7 @@ const ResiDetailModal = (props: {
                   )}
                   {beda && (
                     <p className="mt-1 text-xs font-medium text-brand-500 dark:text-brand-300">
-                      Resi: {(p as { noResi?: string }).noResi || '-'}
+                      Resi: {(p as { noResi?: string }).noResi || '-'} · {(p as { jasaPengiriman?: string }).jasaPengiriman || '-'}
                     </p>
                   )}
                 </div>
@@ -112,11 +113,19 @@ const ResiDetailModal = (props: {
             label={beda ? 'Jenis Resi' : 'Nomor Resi'}
             value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
           />
-          <InfoRow
-            icon={<MdLocalShipping className="h-3.5 w-3.5" />}
-            label="Jasa Pengiriman"
-            value={penjualan.jasaPengiriman || '-'}
-          />
+          {!beda && (
+
+            <InfoRow
+
+              icon={<MdLocalShipping className="h-3.5 w-3.5" />}
+
+              label="Jasa Pengiriman"
+
+              value={penjualan.jasaPengiriman || '-'}
+
+            />
+
+          )}
         </div>
       </div>
 

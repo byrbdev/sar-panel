@@ -42,7 +42,7 @@ const ProdukTambahan = (props: {
       {produkList.length > 0 && (
         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
           <MdInventory2 className="h-3.5 w-3.5" />
-          Produk Lain di Invoice/No Pesanan Ini
+          Produk Lain di Pesanan Ini
         </p>
       )}
       {produkList.map((item, idx) => (
