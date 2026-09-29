@@ -32,7 +32,12 @@ const statusLabel: Record<RefundStatus, string> = {
 };
 
 const RefundAdminView = () => {
-  const { refund: data, setRefund: setData } = useAppData();
+  const {
+    refund: data,
+    setRefund: setData,
+    penjualan,
+    setPenjualan,
+  } = useAppData();
   const { notify, confirm } = useUI();
   const { resolve: resolveMember } = useMemberName();
   const [search, setSearch] = React.useState('');
@@ -85,16 +90,63 @@ const RefundAdminView = () => {
     notify('Status refund berhasil diperbarui.', 'success');
   };
 
+  // Penjualan yang terkait dengan sebuah refund: No Pesanan AL sama + toko sama
+  // + statusPengiriman 'Refund' (penjualan berstatus lain tidak ikut dihapus).
+  // (No Pesanan AL kosong / "-" dianggap tidak terhubung ke penjualan mana pun.)
+  const normalizeNo = (v?: string) => (v || '').trim().toLowerCase();
+  const findLinkedPenjualan = (row: RefundRow) => {
+    const no = normalizeNo(row.noPesananAL);
+    if (!no || no === '-') return [];
+    return penjualan.filter(
+      (p) =>
+        p.statusPengiriman === 'Refund' &&
+        normalizeNo(p.noPesananAL) === no &&
+        normalizeNo(p.namaToko) === normalizeNo(row.namaToko),
+    );
+  };
+
   const handleDelete = async (e: React.MouseEvent, row: RefundRow) => {
     e.stopPropagation();
-    const ok = await confirm(
-      `Data refund untuk "${row.nama}" akan dihapus secara permanen.`,
-      { title: 'Hapus Data Refund?', confirmText: 'Ya, Hapus', danger: true },
-    );
+    const linked = findLinkedPenjualan(row);
+    const pesan =
+      linked.length > 0
+        ? `Data refund untuk "${row.nama}" akan dihapus permanen, beserta ${linked.length} data penjualan berstatus Refund dengan No Pesanan AL ${row.noPesananAL}.`
+        : `Data refund untuk "${row.nama}" akan dihapus secara permanen.`;
+    const ok = await confirm(pesan, {
+      title: 'Hapus Data Refund?',
+      confirmText: 'Ya, Hapus',
+      danger: true,
+    });
     if (!ok) return;
-    setData(data.filter((r) => r.id !== row.id));
+
+    const refundResult = await setData(data.filter((r) => r.id !== row.id));
+    if (!refundResult.ok) {
+      notify(`Gagal menghapus data refund: ${refundResult.errors[0]}`, 'error');
+      return;
+    }
+
+    if (linked.length > 0) {
+      const linkedIds = new Set(linked.map((p) => p.id));
+      const penjualanResult = await setPenjualan((prev) =>
+        prev.filter((p) => !linkedIds.has(p.id)),
+      );
+      if (!penjualanResult.ok) {
+        setSelected(null);
+        notify(
+          `Refund terhapus, tapi data penjualan gagal dihapus: ${penjualanResult.errors[0]}`,
+          'error',
+        );
+        return;
+      }
+    }
+
     setSelected(null);
-    notify('Data refund berhasil dihapus.', 'info');
+    notify(
+      linked.length > 0
+        ? 'Data refund dan data penjualan terkait berhasil dihapus.'
+        : 'Data refund berhasil dihapus.',
+      'info',
+    );
   };
 
   return (

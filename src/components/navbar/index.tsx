@@ -149,7 +149,7 @@ const Navbar = (props: {
           animation="origin-[65%_0%] md:origin-top-right transition-all duration-300 ease-in-out"
           classNames={'py-2 top-4 -left-[230px] md:-left-[350px] w-max'}
         >
-          <div className="flex w-[320px] max-w-[calc(100vw-2rem)] flex-col gap-2 overflow-hidden rounded-[20px] bg-white p-4 shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none sm:w-[360px]">
+          <div className="flex w-[320px] flex-col gap-2 rounded-[20px] bg-white p-4 shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none sm:w-[360px]">
             <p className="text-base font-bold text-navy-700 dark:text-white">
               Notifikasi
             </p>
@@ -158,7 +158,7 @@ const Navbar = (props: {
                 Belum ada notifikasi.
               </p>
             ) : (
-              <div className="flex max-h-[360px] flex-col gap-1 overflow-y-auto overflow-x-hidden pr-1">
+              <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto pr-1">
                 {notifications.map((n) => {
                   const unread = !isRead(n.id);
                   return (
@@ -173,7 +173,7 @@ const Navbar = (props: {
                         // badge merah berkurang satu, bukan langsung nol semua.
                         markOneRead(n.id);
                       }}
-                      className={`relative flex w-full min-w-0 items-start gap-3 rounded-xl p-2.5 pr-7 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800 ${
+                      className={`relative flex w-full items-start gap-2 rounded-lg p-2 pr-6 text-left transition hover:bg-lightPrimary dark:hover:bg-navy-800 ${
                         unread ? 'bg-brand-50/60 dark:bg-white/5' : ''
                       }`}
                     >
@@ -184,50 +184,29 @@ const Navbar = (props: {
                           <MdReceiptLong className="h-4 w-4" />
                         )}
                       </div>
-                      {(() => {
-                        const isFollowup = n.kind === 'followup';
-                        const title = isFollowup
-                          ? `Follow Up Resi ${n.noPesananAL || '-'}`
-                          : n.produk || '-';
-                        const rows: { label: string; value: string }[] = isFollowup
-                          ? [
-                              { label: 'Toko', value: n.namaToko || '-' },
-                              { label: 'Member', value: n.memberName || '-' },
-                            ]
-                          : [
-                              { label: 'Toko', value: n.namaToko || '-' },
-                              { label: 'Resi', value: n.noResi || '-' },
-                            ];
-                        return (
-                          <div className="min-w-0 flex-1">
-                            <p
-                              title={title}
-                              className={`line-clamp-2 break-words text-sm leading-snug text-navy-700 [overflow-wrap:anywhere] dark:text-white ${
-                                unread ? 'font-bold' : 'font-medium'
-                              }`}
-                            >
-                              {title}
-                            </p>
-                            <div className="mt-1 flex flex-col gap-0.5">
-                              {rows.map((r) => (
-                                <p
-                                  key={r.label}
-                                  title={r.value}
-                                  className="flex min-w-0 gap-1.5 text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                  <span className="w-11 flex-shrink-0 font-medium">
-                                    {r.label}
-                                  </span>
-                                  <span className="flex-shrink-0">:</span>
-                                  <span className="min-w-0 flex-1 truncate">
-                                    {r.value}
-                                  </span>
-                                </p>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                      {n.kind === 'followup' ? (
+                        <div className="text-xs">
+                          <p
+                            className={`text-navy-700 dark:text-white ${unread ? 'font-bold' : 'font-medium'}`}
+                          >
+                            Follow Up Resi {n.noPesananAL || '-'}
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-400">
+                            {n.namaToko} • {n.memberName || '-'}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-xs">
+                          <p
+                            className={`text-navy-700 dark:text-white ${unread ? 'font-bold' : 'font-medium'}`}
+                          >
+                            {n.produk}
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-400">
+                            {n.namaToko} • Resi: {n.noResi}
+                          </p>
+                        </div>
+                      )}
                       {/* Penanda belum dibaca: titik biru. Hilang setelah dibuka. */}
                       {unread && (
                         <span
