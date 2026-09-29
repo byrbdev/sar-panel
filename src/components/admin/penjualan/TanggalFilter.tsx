@@ -1,10 +1,16 @@
 'use client';
 import React from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import 'styles/MiniCalendar.css';
 import {
   MdFilterAlt,
-  MdKeyboardArrowDown,
-  MdCheck,
+  MdChevronLeft,
+  MdChevronRight,
   MdRestartAlt,
+  MdEvent,
+  MdCalendarViewMonth,
+  MdDateRange,
 } from 'react-icons/md';
 import { parseTanggalIndo } from 'utils/analisaHelpers';
 import ModalOverlay from 'components/modal/ModalOverlay';
@@ -44,129 +50,54 @@ export const matchTanggalFilter = (
   return true;
 };
 
-/**
- * Dropdown custom (BUKAN <select> bawaan browser). <select> asli dipakai
- * sebelumnya, tapi popup opsinya dirender langsung oleh OS/browser
- * (bukan oleh CSS kita), jadi warnanya bisa nggak sinkron dengan dark mode
- * aplikasi (teks gelap di atas panel gelap, susah dibaca). Dropdown custom
- * di bawah ini full dikontrol Tailwind, jadi selalu konsisten dark/light.
- */
-const Picker = (props: {
-  label: string;
-  value: string;
-  placeholder: string;
-  options: { value: string; label: string }[];
-  onChange: (v: string) => void;
-}) => {
-  const { label, value, placeholder, options, onChange } = props;
-  const [open, setOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, []);
-
-  const current = options.find((o) => o.value === value);
-
-  return (
-    <div ref={ref} className="relative">
-      <label className="mb-1.5 ml-1 block text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        {label}
-      </label>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 text-sm text-navy-700 outline-none transition hover:border-gray-300 dark:border-white/10 dark:bg-navy-700 dark:text-white dark:hover:border-white/20"
-      >
-        <span className={current ? '' : 'text-gray-400 dark:text-gray-500'}>
-          {current ? current.label : placeholder}
-        </span>
-        <MdKeyboardArrowDown
-          className={`h-5 w-5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {open && (
-        <div className="absolute z-[120] mt-1 max-h-[220px] w-full overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-xl dark:border-white/10 dark:bg-navy-700">
-          <button
-            type="button"
-            onClick={() => {
-              onChange('');
-              setOpen(false);
-            }}
-            className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-gray-500 transition hover:bg-lightPrimary dark:text-gray-400 dark:hover:bg-white/10"
-          >
-            {placeholder}
-            {!value && <MdCheck className="h-4 w-4 text-brand-500 dark:text-white" />}
-          </button>
-          {options.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                onChange(o.value);
-                setOpen(false);
-              }}
-              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-navy-700 transition hover:bg-lightPrimary dark:text-white dark:hover:bg-white/10"
-            >
-              {o.label}
-              {o.value === value && (
-                <MdCheck className="h-4 w-4 text-brand-500 dark:text-white" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+const labelFilter = (f: TanggalFilterValue): string => {
+  if (!f.tanggal && !f.bulan && !f.tahun) return 'Semua tanggal';
+  if (f.tanggal && f.bulan && f.tahun) {
+    return `${f.tanggal} ${BULAN_PANJANG[Number(f.bulan) - 1]} ${f.tahun}`;
+  }
+  if (f.bulan && f.tahun) return `${BULAN_PANJANG[Number(f.bulan) - 1]} ${f.tahun}`;
+  if (f.tahun) return `Tahun ${f.tahun}`;
+  if (f.bulan) return `Bulan ${BULAN_PANJANG[Number(f.bulan) - 1]} (semua tahun)`;
+  return `Tanggal ${f.tanggal} (semua bulan/tahun)`;
 };
 
 /**
  * Filter Tanggal / Bulan / Tahun untuk halaman Penjualan (semua role) --
  * tampil sebagai IKON di samping search bar. Klik ikonnya membuka overlay
- * (pakai ModalOverlay yang sama dipakai di seluruh aplikasi) berisi
- * pilihan Tanggal/Bulan/Tahun. `tanggalList` dipakai untuk mengisi pilihan
- * Tahun secara dinamis dari data yang benar-benar ada.
+ * berisi KALENDER (bukan dropdown lagi):
+ * - Klik satu tanggal -> filter jadi tanggal+bulan+tahun itu persis.
+ * - Navigasi bulan/tahun di kalender lalu pakai tombol "Bulan Ini" / "Tahun
+ *   Ini" -> filter jadi seluruh bulan atau seluruh tahun itu tanpa perlu
+ *   pilih tanggal spesifik.
  */
 const TanggalFilter = (props: {
   value: TanggalFilterValue;
   onChange: (v: TanggalFilterValue) => void;
   tanggalList: string[];
 }) => {
-  const { value, onChange, tanggalList } = props;
+  const { value, onChange } = props;
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState(value);
+  const [activeStart, setActiveStart] = React.useState<Date>(new Date());
 
   React.useEffect(() => {
-    if (open) setDraft(value);
+    if (!open) return;
+    setDraft(value);
+    const base =
+      (value.tahun &&
+        new Date(
+          Number(value.tahun),
+          value.bulan ? Number(value.bulan) - 1 : 0,
+          1,
+        )) ||
+      new Date();
+    setActiveStart(base);
   }, [open, value]);
 
-  const tahunOptions = React.useMemo(() => {
-    const set = new Set<number>([new Date().getFullYear()]);
-    tanggalList.forEach((t) => {
-      const d = parseTanggalIndo(t || '');
-      if (d) set.add(d.getFullYear());
-    });
-    return Array.from(set)
-      .sort((a, b) => b - a)
-      .map((y) => ({ value: String(y), label: String(y) }));
-  }, [tanggalList]);
-
-  const tanggalOptions = React.useMemo(
-    () =>
-      Array.from({ length: 31 }, (_, i) => ({
-        value: String(i + 1),
-        label: String(i + 1),
-      })),
-    [],
-  );
-  const bulanOptions = React.useMemo(
-    () => BULAN_PANJANG.map((b, i) => ({ value: String(i + 1), label: b })),
-    [],
-  );
+  const selectedDate =
+    draft.tanggal && draft.bulan && draft.tahun
+      ? new Date(Number(draft.tahun), Number(draft.bulan) - 1, Number(draft.tanggal))
+      : null;
 
   const aktif = !!(value.tanggal || value.bulan || value.tahun);
   const jumlahAktif = [value.tanggal, value.bulan, value.tahun].filter(Boolean).length;
@@ -196,35 +127,67 @@ const TanggalFilter = (props: {
         onClose={() => setOpen(false)}
         title="Filter Penjualan"
       >
-        <p className="mb-4 -mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Tampilkan penjualan berdasarkan Tanggal, Bulan, dan/atau Tahun.
-          Boleh isi salah satu saja atau digabung.
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Pilih tanggal di kalender untuk filter persis di hari itu, atau
+          navigasi ke bulan/tahun yang dituju lalu pakai tombol di bawah
+          untuk filter satu bulan atau satu tahun penuh.
         </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Picker
-            label="Tanggal"
-            placeholder="Semua Tanggal"
-            value={draft.tanggal}
-            options={tanggalOptions}
-            onChange={(v) => setDraft({ ...draft, tanggal: v })}
-          />
-          <Picker
-            label="Bulan"
-            placeholder="Semua Bulan"
-            value={draft.bulan}
-            options={bulanOptions}
-            onChange={(v) => setDraft({ ...draft, bulan: v })}
-          />
-          <Picker
-            label="Tahun"
-            placeholder="Semua Tahun"
-            value={draft.tahun}
-            options={tahunOptions}
-            onChange={(v) => setDraft({ ...draft, tahun: v })}
+
+        <div className="flex justify-center rounded-2xl bg-lightPrimary p-3 dark:bg-navy-900">
+          <Calendar
+            value={selectedDate}
+            activeStartDate={activeStart}
+            onActiveStartDateChange={({ activeStartDate }) =>
+              activeStartDate && setActiveStart(activeStartDate)
+            }
+            onClickDay={(d) =>
+              setDraft({
+                tanggal: String(d.getDate()),
+                bulan: String(d.getMonth() + 1),
+                tahun: String(d.getFullYear()),
+              })
+            }
+            prevLabel={<MdChevronLeft className="ml-1 h-6 w-6" />}
+            nextLabel={<MdChevronRight className="ml-1 h-6 w-6" />}
+            view="month"
           />
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              setDraft({
+                tanggal: '',
+                bulan: String(activeStart.getMonth() + 1),
+                tahun: String(activeStart.getFullYear()),
+              })
+            }
+            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-navy-700 shadow transition hover:bg-gray-50 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
+          >
+            <MdCalendarViewMonth className="h-4 w-4 text-brand-500 dark:text-brand-300" />
+            Filter {BULAN_PANJANG[activeStart.getMonth()]} {activeStart.getFullYear()} (Sebulan Penuh)
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setDraft({ tanggal: '', bulan: '', tahun: String(activeStart.getFullYear()) })
+            }
+            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-navy-700 shadow transition hover:bg-gray-50 dark:bg-navy-700 dark:text-white dark:hover:bg-white/10"
+          >
+            <MdDateRange className="h-4 w-4 text-brand-500 dark:text-brand-300" />
+            Filter Tahun {activeStart.getFullYear()} Penuh
+          </button>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2.5 dark:border-white/15">
+          <MdEvent className="h-4 w-4 flex-shrink-0 text-brand-500 dark:text-brand-300" />
+          <p className="text-sm text-navy-700 dark:text-white">
+            Filter terpilih: <b>{labelFilter(draft)}</b>
+          </p>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => setDraft(emptyTanggalFilter)}
