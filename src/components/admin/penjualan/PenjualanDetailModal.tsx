@@ -19,8 +19,9 @@ import { useMemberName } from 'hooks/useMemberName';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
-/** Detail Penjualan: tata letak sama dengan Detail Resi (section per blok),
- * isi data tetap lengkap seperti sebelumnya. */
+/** Detail Penjualan: tata letak sama dengan Detail Resi (section per blok).
+ * Urutan: Info Pembeli -> Info Transaksi -> Produk -> Pengiriman (resi &
+ * jasa pengiriman, persis seperti Detail Resi) -> Finansial. */
 const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
   const { penjualan } = props;
   const { resolve: resolveMember } = useMemberName();
@@ -114,6 +115,22 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
         </div>
       </div>
 
+      <div className="space-y-3.5 border-t border-gray-200 pt-3.5 dark:border-white/10">
+        <SectionLabel>Pengiriman</SectionLabel>
+        <InfoRow
+          icon={<MdConfirmationNumber className="h-3.5 w-3.5" />}
+          label={beda ? 'Jenis Resi' : 'Nomor Resi'}
+          value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
+        />
+        {!beda && (
+          <InfoRow
+            icon={<MdLocalShipping className="h-3.5 w-3.5" />}
+            label="Jasa Pengiriman"
+            value={penjualan.jasaPengiriman || '-'}
+          />
+        )}
+      </div>
+
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
         <SectionLabel>Finansial</SectionLabel>
         <div className="grid grid-cols-2 gap-2">
@@ -144,28 +161,6 @@ const PenjualanDetailModal = (props: { penjualan: Penjualan }) => {
             {formatRupiah(profit)}
           </p>
         </div>
-      </div>
-
-      <div className="space-y-3.5 border-t border-gray-200 pt-3.5 dark:border-white/10">
-        <SectionLabel>Pengiriman</SectionLabel>
-        <InfoRow
-          icon={<MdConfirmationNumber className="h-3.5 w-3.5" />}
-          label={beda ? 'Jenis Resi' : 'Nomor Resi'}
-          value={beda ? 'Resi Berbeda (per produk)' : penjualan.noResi || '-'}
-        />
-        {!beda && (
-
-          <InfoRow
-
-            icon={<MdLocalShipping className="h-3.5 w-3.5" />}
-
-            label="Jasa Pengiriman"
-
-            value={penjualan.jasaPengiriman || '-'}
-
-          />
-
-        )}
       </div>
     </div>
   );

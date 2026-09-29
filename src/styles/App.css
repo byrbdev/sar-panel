@@ -3,6 +3,4 @@ body {
   font-family: 'DM Sans', sans-serif;
 }
 
-option {
-  color: black;
-}
+/* Warna <option> diatur di index.css (light & dark mode). */

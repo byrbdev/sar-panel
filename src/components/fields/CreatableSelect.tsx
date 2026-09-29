@@ -81,11 +81,11 @@ const CreatableSelect = (props: {
         onClick={() => setOpen((o) => !o)}
         className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-200 bg-white/0 p-3 text-left text-sm text-navy-700 outline-none transition duration-150 hover:border-gray-300 dark:border-white/10 dark:text-white dark:hover:border-white/20"
       >
-        <span className={value ? '' : 'text-gray-400 dark:text-gray-500'}>
+        <span className={`truncate pr-2 ${value ? '' : 'text-gray-400 dark:text-gray-500'}`}>
           {value || placeholder || 'Pilih atau ketik baru...'}
         </span>
         <MdKeyboardArrowDown
-          className={`h-5 w-5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`h-5 w-5 flex-shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 

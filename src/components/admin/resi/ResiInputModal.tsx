@@ -10,7 +10,11 @@ import {
   MdTag,
   MdInventory2,
 } from 'react-icons/md';
-import { JASA_PENGIRIMAN, Penjualan } from 'variables/dropshipPenjualan';
+import {
+  JASA_PENGIRIMAN,
+  jasaOptions,
+  Penjualan,
+} from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
 import { useMemberName } from 'hooks/useMemberName';
@@ -268,8 +272,8 @@ const ResiInputModal = (props: {
                 onChange={(e) => setJasa(e.target.value)}
                 className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
               >
-                {JASA_PENGIRIMAN.map((j) => (
-                  <option key={j} value={j} className="dark:bg-navy-800">
+                {jasaOptions(jasa).map((j) => (
+                  <option key={j} value={j}>
                     {j}
                   </option>
                 ))}
@@ -312,8 +316,8 @@ const ResiInputModal = (props: {
                         }
                         className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
                       >
-                        {JASA_PENGIRIMAN.map((j) => (
-                          <option key={j} value={j} className="dark:bg-navy-800">
+                        {jasaOptions(jasaMap[p.id]).map((j) => (
+                          <option key={j} value={j}>
                             {j}
                           </option>
                         ))}

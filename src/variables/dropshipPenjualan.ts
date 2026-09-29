@@ -1,13 +1,26 @@
 export const JASA_PENGIRIMAN = [
-  'Shopee Express',
-  'SiCepat',
   'J&T Express',
-  'JNE',
+  'SiCepat Express',
+  'JNE Express',
+  'J&T Cargo',
+  'Anteraja Express',
+  'Ninja Express',
   'Wahana',
-  'Anteraja',
-  'Ninja Xpress',
-  'POS Indonesia',
+  'Shopee Express',
+  'TIKI',
 ] as const;
+
+/**
+ * Daftar opsi dropdown Jasa Pengiriman. Kalau data lama masih memakai nama
+ * jasa yang sudah tidak ada di daftar (mis. "SiCepat", "JNE", "POS Indonesia"),
+ * nilainya tetap ikut ditampilkan supaya dropdown tidak "loncat" ke opsi
+ * pertama secara diam-diam.
+ */
+export const jasaOptions = (current?: string): string[] => {
+  const list: string[] = [...JASA_PENGIRIMAN];
+  if (current && !list.includes(current)) list.push(current);
+  return list;
+};
 
 export type StatusPengiriman = 'Masuk' | 'Terkirim' | 'Refund';
 export type StatusAkunToko = 'Aktif' | 'Ban';
