@@ -4,11 +4,12 @@ import Card from 'components/card';
 import LineChart from 'components/charts/LineChart';
 import { useAuth } from 'context/AuthContext';
 import { useBrutal } from 'context/BrutalContext';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import { useScopedData } from 'hooks/useScopedData';
 import {
   analisaBrutal,
   analisaProdukRefund,
-  isBulanIni,
+  isInBulan,
   produkTeroptimasi,
   omzetPerBulan,
   padOmzetBulanan,
@@ -36,17 +37,21 @@ const AnalisaMemberView = () => {
   const { profile } = useAuth();
   const { penjualan: penjualanAll, refund: refundAll } = useScopedData();
   const { items: brutalItems } = useBrutal();
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
   // Analisa HANYA menampilkan data bulan berjalan (realtime). Mode
   // "Keseluruhan" sudah dihapus. Tren bulanan & analisa Brutal tetap
   // memakai seluruh histori karena memang butuh data lintas bulan.
   const penjualan = React.useMemo(
-    () => penjualanAll.filter((p) => isBulanIni(p.tanggalTransaksi)),
-    [penjualanAll],
+    () =>
+      penjualanAll.filter((p) =>
+        isInBulan(p.tanggalIso, p.tanggalTransaksi, bulanKey),
+      ),
+    [penjualanAll, bulanKey],
   );
   const refund = React.useMemo(
-    () => refundAll.filter((r) => isBulanIni(r.tanggal)),
-    [refundAll],
+    () => refundAll.filter((r) => isInBulan(r.tanggalIso, r.tanggal, bulanKey)),
+    [refundAll, bulanKey],
   );
 
   const summary = React.useMemo(
@@ -60,8 +65,8 @@ const AnalisaMemberView = () => {
   );
 
   const trendBulanan = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualanAll)),
-    [penjualanAll],
+    () => padOmzetBulanan(omzetPerBulan(penjualanAll), 6, bulanKey),
+    [penjualanAll, bulanKey],
   );
   const top10Produk = React.useMemo(
     () => topProdukTerlaris(penjualan, 10),

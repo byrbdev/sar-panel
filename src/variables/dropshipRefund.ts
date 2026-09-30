@@ -16,6 +16,8 @@ export type RefundRow = {
   keterangan: string;
   status: RefundStatus;
   tanggal: string;
+  /** Waktu refund asli dari database (ISO) -- lihat `Penjualan.tanggalIso`. */
+  tanggalIso?: string;
   // Terisi hanya jika refund berasal dari transaksi yang sudah diproses (sudah ada di Penjualan)
   namaProduk?: string;
   omzet?: number;

@@ -6,12 +6,13 @@ import { useAppData } from 'context/AppDataContext';
 import { useBrutal } from 'context/BrutalContext';
 import { useMember } from 'context/MemberContext';
 import { useUI } from 'context/UIContext';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import {
   analisaBrutal,
   analisaPerPemilik,
   analisaProdukRefund,
-  getBulanKey,
-  isBulanIni,
+  bulanKeyOf,
+  isInBulan,
   omzetPerBulan,
   padOmzetBulanan,
   produkTeroptimasi,
@@ -43,6 +44,7 @@ const AnalisaSuperAdminView = () => {
   const { items: brutalItems } = useBrutal();
   const { member } = useMember();
   const { notify } = useUI();
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
   // Export controls
   const [exportBulan, setExportBulan] = React.useState('');
@@ -51,13 +53,16 @@ const AnalisaSuperAdminView = () => {
   // Analisa HANYA menampilkan data bulan berjalan (realtime). Mode
   // "Keseluruhan" sudah dihapus.
   const dataPenjualan = React.useMemo(
-    () => penjualan.filter((p) => isBulanIni(p.tanggalTransaksi)),
-    [penjualan],
+    () =>
+      penjualan.filter((p) =>
+        isInBulan(p.tanggalIso, p.tanggalTransaksi, bulanKey),
+      ),
+    [penjualan, bulanKey],
   );
 
   const dataRefund = React.useMemo(
-    () => refund.filter((r) => isBulanIni(r.tanggal)),
-    [refund],
+    () => refund.filter((r) => isInBulan(r.tanggalIso, r.tanggal, bulanKey)),
+    [refund, bulanKey],
   );
 
   const anggotaMap = React.useMemo(() => {
@@ -89,8 +94,8 @@ const AnalisaSuperAdminView = () => {
     [dataPenjualan],
   );
   const trendBulanan = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualan)), // trend selalu full history
-    [penjualan],
+    () => padOmzetBulanan(omzetPerBulan(penjualan), 6, bulanKey), // trend selalu full history
+    [penjualan, bulanKey],
   );
   const brutalAnalisa = React.useMemo(
     () => analisaBrutal(brutalItems, penjualan, anggotaMap),
@@ -158,7 +163,9 @@ const AnalisaSuperAdminView = () => {
     let filtered = penjualan;
     if (exportBulan) {
       filtered = filtered.filter((p) => {
-        const key = p.tanggalTransaksi ? getBulanKey(p.tanggalTransaksi) : '';
+        const key = p.tanggalTransaksi
+          ? bulanKeyOf(p.tanggalIso, p.tanggalTransaksi)
+          : '';
         return key === exportBulan;
       });
     }

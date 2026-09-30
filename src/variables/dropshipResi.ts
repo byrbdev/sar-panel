@@ -1,4 +1,6 @@
 import { Penjualan } from 'variables/dropshipPenjualan';
+import { bulanKeyFromIso, bulanKeyWib } from 'utils/bulanJakarta';
+import { getBulanKey } from 'utils/analisaHelpers';
 
 /** Satu permintaan "Follow Up Resi" dari Member ke Admin/Super Admin untuk
  * sebuah penjualan yang resinya belum diisi. */
@@ -34,13 +36,17 @@ export const perluResi = (p: Penjualan) =>
  * notifikasi ke Admin tidak dispam berulang-ulang. */
 export const FOLLOW_UP_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
-/** Kapan resi sebuah penjualan diisi. Data lama yang belum punya
- * `resiUpdatedAt` memakai tanggal transaksi sebagai pengganti. */
-const waktuResiDiisi = (p: Penjualan): Date | null => {
-  const raw = p.resiUpdatedAt || p.tanggalTransaksi;
-  if (!raw) return null;
-  const d = new Date(raw);
-  return Number.isNaN(d.getTime()) ? null : d;
+/** Bulan (kunci "YYYY-MM", zona WIB) saat resi sebuah penjualan diisi. Data
+ * lama yang belum punya `resiUpdatedAt` memakai tanggal transaksi sebagai
+ * pengganti. Teks tanggal ("01 Agu 2026") TIDAK bisa dibaca `new Date()`
+ * untuk bulan Agu/Mei/Okt/Des, jadi dipakai ISO-nya dulu. null = tidak
+ * diketahui. */
+const bulanResiDiisi = (p: Penjualan): string | null => {
+  const key =
+    bulanKeyFromIso(p.resiUpdatedAt) ??
+    bulanKeyFromIso(p.tanggalIso) ??
+    (p.tanggalTransaksi ? getBulanKey(p.tanggalTransaksi) : null);
+  return key && key !== 'unknown' ? key : null;
 };
 
 /** Penjualan yang resinya SUDAH diisi dan masih ditampilkan di halaman Resi
@@ -49,9 +55,7 @@ const waktuResiDiisi = (p: Penjualan): Date | null => {
 export const resiTerisiBulanIni = (p: Penjualan, now: Date = new Date()) => {
   if (isResiKosong(p)) return false;
   if (p.statusPengiriman === 'Refund') return false;
-  const d = waktuResiDiisi(p);
-  if (!d) return true;
-  return (
-    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-  );
+  const bulanDiisi = bulanResiDiisi(p);
+  if (!bulanDiisi) return true;
+  return bulanDiisi === bulanKeyWib(now);
 };

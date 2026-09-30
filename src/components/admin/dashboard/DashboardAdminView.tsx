@@ -3,7 +3,8 @@ import Link from 'next/link';
 import TabelMasukRealtime from 'components/admin/default/TabelMasukRealtime';
 import Widget from 'components/widget/Widget';
 import { useAppData } from 'context/AppDataContext';
-import { isBulanIni } from 'utils/analisaHelpers';
+import { isInBulan } from 'utils/analisaHelpers';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import {
   MdMoveToInbox,
   MdOutlineAutorenew,
@@ -12,7 +13,10 @@ import {
 
 const DashboardAdminView = () => {
   const { refund, orders } = useAppData();
-  const refundBulanIni = refund.filter((r) => isBulanIni(r.tanggal));
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
+  const refundBulanIni = refund.filter((r) =>
+    isInBulan(r.tanggalIso, r.tanggal, bulanKey),
+  );
   const jumlahProsesRefund = refundBulanIni.filter(
     (r) => r.status === 'Proses',
   ).length;

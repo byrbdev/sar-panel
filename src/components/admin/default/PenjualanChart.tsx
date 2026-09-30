@@ -11,6 +11,7 @@ import { lineChartOptionsPenjualan } from 'variables/dropshipCharts';
 import LineChart from 'components/charts/LineChart';
 import { useAppData } from 'context/AppDataContext';
 import { omzetPerBulan, padOmzetBulanan } from 'utils/analisaHelpers';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import { Penjualan } from 'variables/dropshipPenjualan';
 
 const formatRupiahSingkat = (n: number) => {
@@ -22,10 +23,13 @@ const formatRupiahSingkat = (n: number) => {
 const PenjualanChart = (props: { data?: Penjualan[] }) => {
   const { penjualan: allPenjualan } = useAppData();
   const penjualan = props.data ?? allPenjualan;
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
+  // Grafik selalu berakhir di bulan berjalan (nilai 0 kalau belum ada
+  // transaksi), sehingga "Bulan ini" tidak salah membaca bulan lalu.
   const trend = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualan).slice(-6), 6),
-    [penjualan],
+    () => padOmzetBulanan(omzetPerBulan(penjualan).slice(-6), 6, bulanKey),
+    [penjualan, bulanKey],
   );
 
   const totalOmzet = trend.reduce((a, b) => a + b.omzet, 0);

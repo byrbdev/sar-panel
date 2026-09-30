@@ -2,6 +2,7 @@ import { Penjualan, jumlahOf } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { BrutalItem } from 'variables/dropshipBrutal';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
+import { bulanKeyFromIso, bulanKeyWib } from 'utils/bulanJakarta';
 
 const BULAN_ID = [
   'Jan',
@@ -20,14 +21,17 @@ const BULAN_ID = [
 
 /** Parse tanggal format "dd MMM yyyy" (Indonesia) mis. "01 Sep 2026" */
 export const parseTanggalIndo = (tanggal: string): Date | null => {
-  const parts = tanggal.trim().split(' ');
+  const parts = tanggal.trim().split(/\s+/);
   if (parts.length !== 3) return null;
   const [dayStr, monthStr, yearStr] = parts;
   const day = parseInt(dayStr, 10);
   const year = parseInt(yearStr, 10);
-  const monthIdx = BULAN_ID.findIndex(
-    (m) => m.toLowerCase() === monthStr.toLowerCase(),
-  );
+  // Cocokkan 3 huruf pertama supaya variasi locale ("Sep", "Sept",
+  // "September", "Agu"/"Agt"/"Agustus", ...) tetap terbaca.
+  const prefix = monthStr.replace(/\./g, '').slice(0, 3).toLowerCase();
+  const alias: Record<string, string> = { agt: 'agu', ags: 'agu' };
+  const bulan3 = alias[prefix] || prefix;
+  const monthIdx = BULAN_ID.findIndex((m) => m.toLowerCase() === bulan3);
   if (isNaN(day) || isNaN(year) || monthIdx === -1) return null;
   return new Date(year, monthIdx, day);
 };
@@ -44,14 +48,26 @@ export const formatBulanLabel = (key: string): string => {
   return `${BULAN_ID[idx] || month} ${year}`;
 };
 
-export const isBulanIni = (tanggal: string): boolean => {
-  const d = parseTanggalIndo(tanggal);
-  if (!d) return false;
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-  );
-};
+/**
+ * Kunci bulan ("YYYY-MM") sebuah baris data. Waktu ISO dari database
+ * diutamakan (dihitung di zona WIB); teks "dd MMM yyyy" hanya cadangan untuk
+ * data yang baru dibuat di klien dan belum punya ISO.
+ */
+export const bulanKeyOf = (
+  iso: string | null | undefined,
+  tanggalIndo: string,
+): string => bulanKeyFromIso(iso) ?? getBulanKey(tanggalIndo);
+
+/**
+ * Apakah baris data ini jatuh di bulan `bulanKey` ("YYYY-MM")?
+ * `bulanKey` sebaiknya dari `useBulanBerjalan()` supaya tampilan ikut
+ * berganti otomatis saat pergantian bulan.
+ */
+export const isInBulan = (
+  iso: string | null | undefined,
+  tanggalIndo: string,
+  bulanKey: string,
+): boolean => bulanKeyOf(iso, tanggalIndo) === bulanKey;
 
 /** Cari nama pemilik toko dari database Toko berdasarkan nama toko */
 export const getTokoOwner = (
@@ -190,7 +206,7 @@ export type OmzetBulanan = {
 export const omzetPerBulan = (data: Penjualan[]): OmzetBulanan[] => {
   const map = new Map<string, OmzetBulanan>();
   data.forEach((row) => {
-    const key = getBulanKey(row.tanggalTransaksi);
+    const key = bulanKeyOf(row.tanggalIso, row.tanggalTransaksi);
     const existing = map.get(key) || {
       key,
       label: formatBulanLabel(key),
@@ -204,38 +220,62 @@ export const omzetPerBulan = (data: Penjualan[]): OmzetBulanan[] => {
   return Array.from(map.values()).sort((a, b) => (a.key > b.key ? 1 : -1));
 };
 
+const KEY_BULAN = /^\d{4}-\d{2}$/;
+const keyDariBulan = (tahun: number, bulan0: number): string => {
+  const d = new Date(tahun, bulan0, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+const kosongBulan = (key: string): OmzetBulanan => ({
+  key,
+  label: formatBulanLabel(key),
+  omzet: 0,
+  profit: 0,
+});
+
 /**
  * ApexCharts merender line chart dengan hanya 1 titik data sebagai satu
  * garis vertikal tunggal (terlihat seperti bar, bukan garis tren). Fungsi
  * ini memastikan selalu ada minimal `minPoints` bulan berurutan (dipadatkan
  * dengan nilai 0 untuk bulan yang belum ada transaksi) supaya grafik selalu
  * tampil sebagai garis tren yang wajar, persis seperti bawaan Horizon.
+ *
+ * `endKeyOverride` ("YYYY-MM", biasanya dari `useBulanBerjalan()`): grafik
+ * SELALU berakhir di bulan berjalan. Tanpa ini, di awal bulan baru yang
+ * belum ada transaksi, titik terakhir grafik masih bulan lalu -- padahal
+ * kartu "Bulan ini" membaca titik terakhir itu.
  */
 export const padOmzetBulanan = (
   trend: OmzetBulanan[],
   minPoints = 6,
+  endKeyOverride?: string,
 ): OmzetBulanan[] => {
-  if (trend.length >= minPoints) return trend;
+  const lastDataKey = [...trend].reverse().find((t) => KEY_BULAN.test(t.key))
+    ?.key;
+  const endKey =
+    endKeyOverride && (!lastDataKey || endKeyOverride > lastDataKey)
+      ? endKeyOverride
+      : lastDataKey ?? bulanKeyWib();
 
-  const now = new Date();
-  const endKey = trend.length
-    ? trend[trend.length - 1].key
-    : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  if (trend.length >= minPoints) {
+    if (!lastDataKey || endKey === lastDataKey) return trend;
+    // Riwayat penuh dipertahankan; sambung bulan kosong sampai bulan berjalan.
+    const sambungan: OmzetBulanan[] = [];
+    let [y, m] = lastDataKey.split('-').map((v) => parseInt(v, 10));
+    for (let k = keyDariBulan(y, m); k <= endKey; k = keyDariBulan(y, m)) {
+      sambungan.push(kosongBulan(k));
+      m += 1;
+      if (sambungan.length > 240) break; // pengaman
+    }
+    return [...trend, ...sambungan];
+  }
+
   const [endYear, endMonth] = endKey.split('-').map((v) => parseInt(v, 10));
   const existing = new Map(trend.map((t) => [t.key, t]));
 
   const result: OmzetBulanan[] = [];
   for (let i = minPoints - 1; i >= 0; i--) {
-    const d = new Date(endYear, endMonth - 1 - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    result.push(
-      existing.get(key) || {
-        key,
-        label: formatBulanLabel(key),
-        omzet: 0,
-        profit: 0,
-      },
-    );
+    const key = keyDariBulan(endYear, endMonth - 1 - i);
+    result.push(existing.get(key) || kosongBulan(key));
   }
   return result;
 };

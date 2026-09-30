@@ -70,6 +70,11 @@ export type Penjualan = {
   statusPengiriman: StatusPengiriman;
   statusAkunToko: StatusAkunToko;
   tanggalTransaksi: string;
+  /** Waktu transaksi asli dari database (ISO). Dipakai untuk menentukan
+   * bulan (filter "Bulan Ini", tren, backup) -- jauh lebih andal daripada
+   * mem-parse teks `tanggalTransaksi`. Kosong untuk data yang baru dibuat
+   * di klien dan belum ter-sync; di kasus itu teks dipakai sebagai cadangan. */
+  tanggalIso?: string;
 };
 
 // Daftar toko diambil dari data Toko (variables/dropshipPemulihan) supaya konsisten

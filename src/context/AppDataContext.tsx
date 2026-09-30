@@ -142,6 +142,7 @@ const penjualanFromDb = (r: any): Penjualan => ({
         year: 'numeric',
       })
     : '',
+  tanggalIso: r.tanggal_transaksi || undefined,
 });
 
 /* ============== Mapper: Refund ============== */
@@ -189,6 +190,7 @@ const refundFromDb = (r: any): RefundRow => ({
         year: 'numeric',
       })
     : '',
+  tanggalIso: r.tanggal || undefined,
 });
 
 /* ============== Mapper: Follow Up Resi ============== */

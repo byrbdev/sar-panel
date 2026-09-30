@@ -3,6 +3,7 @@ import { google, sheets_v4 } from 'googleapis';
 import { supabaseAdmin } from 'lib/supabaseAdmin';
 import { supabase } from 'lib/supabaseClient';
 import { jumlahLabel } from 'variables/dropshipPenjualan';
+import { bulanKeyFromIso, bulanKeyWib, bulanWib } from 'utils/bulanJakarta';
 
 /**
  * POST /api/backup-sheets
@@ -20,6 +21,9 @@ import { jumlahLabel } from 'variables/dropshipPenjualan';
  * - Tekan lagi di bulan yang sama = tab itu dihitung ulang & diperbarui.
  *   Bulan berganti = tab baru dibuat otomatis, tab lama tidak disentuh.
  * - Sheet ID diatur lewat UI Setting (tabel app_settings).
+ * - Batas pergantian bulan = 00:00 WIB (Asia/Jakarta), BUKAN jam server.
+ *   Server Vercel berjalan di UTC; tanpa ini transaksi tgl 1 pukul
+ *   00:00-06:59 WIB masuk ke tab bulan sebelumnya.
  */
 
 const BULAN_ID = [
@@ -119,20 +123,14 @@ export async function POST(req: NextRequest) {
     const sheets = google.sheets({ version: 'v4', auth });
 
     const now = new Date();
-    const bulanLabel = `${BULAN_ID[now.getMonth()]} ${now.getFullYear()}`;
+    const { tahun: tahunWib, bulan: bulanWibIdx } = bulanWib(now);
+    const bulanLabel = `${BULAN_ID[bulanWibIdx]} ${tahunWib}`;
     const sheetName = bulanLabel;
-    const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthKey = bulanKeyWib(now);
     const q = `'${sheetName.replace(/'/g, "''")}'`; // nama tab berspasi WAJIB diquote
 
-    const inThisMonth = (iso: string | null | undefined) => {
-      if (!iso) return false;
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return false;
-      return (
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` ===
-        monthKey
-      );
-    };
+    const inThisMonth = (iso: string | null | undefined) =>
+      bulanKeyFromIso(iso) === monthKey;
 
     // ---------------- Data bulan ini ----------------
     const [
@@ -165,6 +163,7 @@ export async function POST(req: NextRequest) {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+        timeZone: 'Asia/Jakarta',
       });
     };
 
@@ -245,7 +244,7 @@ export async function POST(req: NextRequest) {
     });
     put(
       ROW_SUB, 0,
-      `Terakhir di-backup: ${now.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}  |  Data hanya mencakup bulan ${bulanLabel}`,
+      `Terakhir di-backup: ${now.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Asia/Jakarta' })} WIB  |  Data hanya mencakup bulan ${bulanLabel}`,
     );
     merge(ROW_SUB, 0, TOTAL_COLS);
     fmt(ROW_SUB, ROW_SUB + 1, 0, TOTAL_COLS, {

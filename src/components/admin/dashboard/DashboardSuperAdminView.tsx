@@ -5,7 +5,8 @@ import OmzetMingguan from 'components/admin/default/OmzetMingguan';
 import TabelMasukRealtime from 'components/admin/default/TabelMasukRealtime';
 import Widget from 'components/widget/Widget';
 import { useAppData } from 'context/AppDataContext';
-import { isBulanIni } from 'utils/analisaHelpers';
+import { isInBulan } from 'utils/analisaHelpers';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import {
   MdAttachMoney,
   MdSavings,
@@ -19,10 +20,13 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const DashboardSuperAdminView = () => {
   const { refund, penjualan, orders } = useAppData();
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
   const penjualanBulanIni = penjualan.filter((p) =>
-    isBulanIni(p.tanggalTransaksi),
+    isInBulan(p.tanggalIso, p.tanggalTransaksi, bulanKey),
   );
-  const refundBulanIni = refund.filter((r) => isBulanIni(r.tanggal));
+  const refundBulanIni = refund.filter((r) =>
+    isInBulan(r.tanggalIso, r.tanggal, bulanKey),
+  );
   const omzetBulanIni = penjualanBulanIni.reduce((a, p) => a + p.hargaJual, 0);
   const profitBulanIni = penjualanBulanIni.reduce(
     (a, p) => a + (p.hargaJual - p.modalShopee),
