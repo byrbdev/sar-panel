@@ -411,6 +411,15 @@ const AnalisaSuperAdminView = () => {
         </div>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
+            {/* # secukupnya, Produk lebar; TOKO & TERJUAL mulai di 66,67% &
+                83,33% supaya sejajar dengan kolom STATUS & IKLAN di tabel
+                Produk Brutal (enam kolom sama lebar). */}
+            <colgroup>
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '61.67%' }} />
+              <col style={{ width: '16.67%' }} />
+              <col style={{ width: '16.66%' }} />
+            </colgroup>
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
                 {['#', 'PRODUK', 'TOKO', 'TERJUAL'].map((h) => (

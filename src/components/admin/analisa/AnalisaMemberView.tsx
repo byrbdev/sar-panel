@@ -212,6 +212,15 @@ const AnalisaMemberView = () => {
         </div>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
+            {/* # secukupnya, Produk lebar; TOKO & TERJUAL mulai di 60% & 80%
+                supaya sejajar dengan kolom STATUS & IKLAN di tabel Produk
+                Brutal (lima kolom sama lebar). */}
+            <colgroup>
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '55%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '20%' }} />
+            </colgroup>
             <thead>
               <tr className="border-b border-gray-200 dark:border-white/10">
                 {['#', 'PRODUK', 'TOKO', 'TERJUAL'].map((h) => (
