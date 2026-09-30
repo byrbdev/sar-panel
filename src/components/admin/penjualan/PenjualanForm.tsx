@@ -128,6 +128,75 @@ const PenjualanForm = (props: {
 
   const profit = value.hargaJual - value.modalShopee;
 
+  // ---- Resi: Sama / Berbeda (hanya kalau produk lebih dari satu) ----
+  const produkTambahan = value.produkList || [];
+  const multi = produkTambahan.length > 0;
+  const [resiMode, setResiMode] = React.useState<'sama' | 'beda'>(
+    produkTambahan.some((p) => (p.noResi || '').trim()) ? 'beda' : 'sama',
+  );
+  const beda = multi && resiMode === 'beda';
+  const defaultJasa = value.jasaPengiriman || JASA_PENGIRIMAN[0];
+
+  const semuaProduk = [
+    {
+      id: 'utama',
+      namaProduk: value.namaProduk,
+      varian: value.varian,
+      skuProduk: value.skuProduk,
+    },
+    ...produkTambahan,
+  ];
+
+  const switchResiMode = (mode: 'sama' | 'beda') => {
+    setResiMode(mode);
+    if (mode === 'sama') {
+      // Resi Sama: bersihkan resi per produk supaya tidak dianggap "beda"
+      onChange({
+        ...value,
+        produkList: produkTambahan.map((p) => ({
+          ...p,
+          noResi: '',
+          jasaPengiriman: '',
+        })),
+      });
+    } else {
+      onChange({
+        ...value,
+        jasaPengiriman: defaultJasa,
+        produkList: produkTambahan.map((p) => ({
+          ...p,
+          jasaPengiriman: p.jasaPengiriman || defaultJasa,
+        })),
+      });
+    }
+  };
+
+  const setResiProduk = (
+    id: string,
+    field: 'noResi' | 'jasaPengiriman',
+    val: string,
+  ) => {
+    if (id === 'utama') {
+      onChange({ ...value, [field]: val });
+      return;
+    }
+    onChange({
+      ...value,
+      produkList: produkTambahan.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              [field]: val,
+              jasaPengiriman:
+                field === 'jasaPengiriman'
+                  ? val
+                  : p.jasaPengiriman || defaultJasa,
+            }
+          : p,
+      ),
+    });
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {/* Auto Paste */}
@@ -293,35 +362,116 @@ const PenjualanForm = (props: {
       </div>
 
       {/* Resi & jasa pengiriman */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField
-          id="noResi"
-          label="Nomor Resi"
-          placeholder="Nomor resi pengiriman"
-          type="text"
-          extra=""
-          value={value.noResi}
-          onChange={handle('noResi')}
-        />
-        <div>
-          <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-            Jasa Pengiriman
-          </label>
-          <select
-            value={value.jasaPengiriman}
-            onChange={(e) =>
-              onChange({ ...value, jasaPengiriman: e.target.value })
-            }
-            className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
-          >
-            {jasaOptions(value.jasaPengiriman).map((j) => (
-              <option key={j} value={j}>
-                {j}
-              </option>
-            ))}
-          </select>
+      {multi && (
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-lightPrimary p-1 dark:bg-navy-700">
+          {(
+            [
+              ['sama', 'Resi Sama'],
+              ['beda', 'Resi Berbeda'],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => switchResiMode(key)}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition duration-150 ${
+                resiMode === key
+                  ? 'bg-white text-brand-500 shadow-sm dark:bg-navy-800 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      </div>
+      )}
+
+      {!beda && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <InputField
+            id="noResi"
+            label="Nomor Resi"
+            placeholder="Nomor resi pengiriman"
+            type="text"
+            extra=""
+            value={value.noResi}
+            onChange={handle('noResi')}
+          />
+          <div>
+            <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+              Jasa Pengiriman
+            </label>
+            <select
+              value={value.jasaPengiriman}
+              onChange={(e) =>
+                onChange({ ...value, jasaPengiriman: e.target.value })
+              }
+              className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+            >
+              {jasaOptions(value.jasaPengiriman).map((j) => (
+                <option key={j} value={j}>
+                  {j}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {beda && (
+        <div className="space-y-3">
+          {semuaProduk.map((p, idx) => {
+            const resiVal =
+              p.id === 'utama' ? value.noResi : (p as any).noResi || '';
+            const jasaVal =
+              p.id === 'utama'
+                ? value.jasaPengiriman
+                : (p as any).jasaPengiriman || defaultJasa;
+            return (
+              <div
+                key={p.id}
+                className="rounded-xl border border-gray-200 p-3 dark:border-white/10"
+              >
+                <p className="mb-3 break-words text-sm font-semibold text-navy-700 dark:text-white">
+                  {idx + 1}. {p.namaProduk || '(tanpa nama)'}
+                  {p.varian ? ` (${p.varian})` : ''}
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <InputField
+                    id={`resi-${p.id}`}
+                    label="Nomor Resi"
+                    placeholder="Nomor resi produk ini"
+                    type="text"
+                    extra=""
+                    value={resiVal}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setResiProduk(p.id, 'noResi', e.target.value)
+                    }
+                  />
+                  <div>
+                    <label className="mb-2 ml-3 block text-sm font-bold text-navy-700 dark:text-white">
+                      Jasa Pengiriman
+                    </label>
+                    <select
+                      value={jasaVal}
+                      onChange={(e) =>
+                        setResiProduk(p.id, 'jasaPengiriman', e.target.value)
+                      }
+                      className="flex h-12 w-full items-center rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none dark:border-white/10 dark:text-white"
+                    >
+                      {jasaOptions(jasaVal).map((j) => (
+                        <option key={j} value={j}>
+                          {j}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Status */}
       <div>
