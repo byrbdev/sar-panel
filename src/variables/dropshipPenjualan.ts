@@ -90,6 +90,26 @@ const tableDataPenjualan: Penjualan[] = [];
 
 export default tableDataPenjualan;
 
+/** Tanggal transaksi = saat penjualan SELESAI DIPROSES oleh Admin, BUKAN saat
+ * member melapor. Panggil tepat ketika Admin menyimpan proses penjualan.
+ * Mengembalikan teks tampilan + ISO (ISO yang dikirim ke kolom
+ * `tanggal_transaksi` di database). */
+export const tanggalSekarang = (): {
+  tanggalTransaksi: string;
+  tanggalIso: string;
+} => {
+  const now = new Date();
+  return {
+    tanggalTransaksi: now.toLocaleDateString('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    tanggalIso: now.toISOString(),
+  };
+};
+
 /** Jumlah per pcs sebuah produk (produk utama atau ProdukItem). Kosong/0/
  * tidak valid dianggap 1, supaya data lama tetap terhitung 1 pcs. */
 export const jumlahOf = (x?: { jumlah?: number | null }): number => {

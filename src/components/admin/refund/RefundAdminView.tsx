@@ -17,7 +17,7 @@ import PaginationControl from 'components/pagination/PaginationControl';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
 import ProsesPenjualanForm from 'components/admin/penjualan/ProsesPenjualanForm';
 import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
-import { Penjualan } from 'variables/dropshipPenjualan';
+import { Penjualan, tanggalSekarang } from 'variables/dropshipPenjualan';
 import {
   MdSearch,
   MdDelete,
@@ -120,13 +120,6 @@ const RefundAdminView = () => {
   const [cuLinked, setCuLinked] = React.useState<Penjualan | null>(null);
   const [cuForm, setCuForm] = React.useState<PenjualanFormValue | null>(null);
 
-  const todayStr = () =>
-    new Date().toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-
   const openCheckoutUlang = (e: React.MouseEvent, row: RefundRow) => {
     e.stopPropagation();
     const linked = findLinkedPenjualan(row)[0] || null;
@@ -145,7 +138,7 @@ const RefundAdminView = () => {
             hargaJual: omzet,
             modalShopee: modal,
             statusPengiriman: 'Terkirim',
-            tanggalTransaksi: todayStr(),
+            ...tanggalSekarang(),
           }
         : {
             namaToko: row.namaToko,
@@ -164,7 +157,7 @@ const RefundAdminView = () => {
             jasaPengiriman: 'Shopee Express',
             statusPengiriman: 'Terkirim',
             statusAkunToko: 'Aktif',
-            tanggalTransaksi: todayStr(),
+            ...tanggalSekarang(),
           },
     );
     setCuOpen(true);
@@ -180,13 +173,15 @@ const RefundAdminView = () => {
     const penjualanResult = await setPenjualan((prev) => {
       if (cuLinked) {
         return prev.map((p) =>
-          p.id === cuLinked.id ? { ...cuForm, id: cuLinked.id, ownerId } : p,
+          p.id === cuLinked.id
+            ? { ...cuForm, ...tanggalSekarang(), id: cuLinked.id, ownerId }
+            : p,
         );
       }
       const newId = String(
         prev.length ? Math.max(...prev.map((p) => Number(p.id) || 0)) + 1 : 1,
       );
-      return [{ ...cuForm, id: newId, ownerId }, ...prev];
+      return [{ ...cuForm, ...tanggalSekarang(), id: newId, ownerId }, ...prev];
     });
     if (!penjualanResult.ok) {
       notify(

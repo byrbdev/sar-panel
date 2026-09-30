@@ -90,7 +90,7 @@ const ProsesPenjualanForm = (props: {
         <SectionLabel>Info Pesanan</SectionLabel>
         <InfoRow icon={<MdStorefront className="h-3.5 w-3.5" />} label="Toko" value={value.namaToko} />
         <InfoRow icon={<MdTag className="h-3.5 w-3.5" />} label="No Pesanan AL" value={value.noPesananAL || '-'} />
-        <InfoRow icon={<MdCalendarToday className="h-3.5 w-3.5" />} label="Tanggal Transaksi" value={value.tanggalTransaksi} />
+        <InfoRow icon={<MdCalendarToday className="h-3.5 w-3.5" />} label="Tanggal Transaksi (saat diproses)" value={value.tanggalTransaksi} />
       </div>
 
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">

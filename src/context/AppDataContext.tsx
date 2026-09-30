@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext } from 'react';
 import { OrderRow } from 'variables/dropshipTables';
-import { Penjualan } from 'variables/dropshipPenjualan';
+import { Penjualan, tanggalSekarang } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
 import { FollowUpResi } from 'variables/dropshipResi';
@@ -114,6 +114,8 @@ const penjualanToDb = (p: Penjualan) => ({
   jasa_pengiriman: p.jasaPengiriman,
   status_pengiriman: p.statusPengiriman,
   status_akun_toko: p.statusAkunToko,
+  // Waktu penjualan selesai diproses. undefined -> tidak dikirim (DB pakai now()).
+  tanggal_transaksi: p.tanggalIso,
 });
 const penjualanFromDb = (r: any): Penjualan => ({
   id: String(r.id),
@@ -137,6 +139,7 @@ const penjualanFromDb = (r: any): Penjualan => ({
   statusAkunToko: r.status_akun_toko || 'Aktif',
   tanggalTransaksi: r.tanggal_transaksi
     ? new Date(r.tanggal_transaksi).toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -287,7 +290,7 @@ export const AppDataProvider = ({
         jasaPengiriman: 'Shopee Express',
         statusPengiriman: 'Masuk',
         statusAkunToko: 'Aktif',
-        tanggalTransaksi: order.tanggal,
+        ...tanggalSekarang(),
       },
       ...prev,
     ]);

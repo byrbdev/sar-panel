@@ -19,6 +19,7 @@ import {
   MdChevronLeft,
   MdChevronRight,
 } from 'react-icons/md';
+import { tanggalSekarang } from 'variables/dropshipPenjualan';
 
 const PAGE_SIZE = 8;
 
@@ -86,7 +87,8 @@ const PesananMasukPage = () => {
       jasaPengiriman: 'Shopee Express',
       statusPengiriman: 'Terkirim',
       statusAkunToko: 'Aktif',
-      tanggalTransaksi: order.tanggal,
+      // Tanggal transaksi = tanggal diproses (hari ini), bukan tanggal laporan
+      ...tanggalSekarang(),
     });
     setProsesOpen(true);
   };
@@ -103,7 +105,7 @@ const PesananMasukPage = () => {
         : 1,
     );
     setPenjualan([
-      { ...finalForm, id: newId, ownerId: getOwnerId(finalForm.namaToko) },
+      { ...finalForm, ...tanggalSekarang(), id: newId, ownerId: getOwnerId(finalForm.namaToko) },
       ...penjualan,
     ]);
     setOrders(orders.filter((o) => o.id !== prosesOrder.id));

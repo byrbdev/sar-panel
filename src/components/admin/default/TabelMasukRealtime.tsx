@@ -15,6 +15,7 @@ import { useUI } from 'context/UIContext';
 import { useMemberName } from 'hooks/useMemberName';
 import { OrderRow } from 'variables/dropshipTables';
 import { MdAssignmentReturn, MdShoppingCartCheckout } from 'react-icons/md';
+import { tanggalSekarang } from 'variables/dropshipPenjualan';
 
 export default function TabelMasukRealtime() {
   const {
@@ -66,7 +67,8 @@ export default function TabelMasukRealtime() {
       jasaPengiriman: 'Shopee Express',
       statusPengiriman: 'Terkirim',
       statusAkunToko: 'Aktif',
-      tanggalTransaksi: order.tanggal,
+      // Tanggal transaksi = tanggal diproses (hari ini), bukan tanggal laporan
+      ...tanggalSekarang(),
     });
     setProsesOpen(true);
   };
@@ -85,6 +87,7 @@ export default function TabelMasukRealtime() {
     setPenjualan([
       {
         ...finalForm,
+        ...tanggalSekarang(),
         id: newId,
         ownerId: getOwnerId(finalForm.namaToko),
       },
