@@ -155,6 +155,7 @@ const RefundAdminView = () => {
             namaProduk: row.namaProduk || '',
             varian: '',
             skuProduk: row.sku,
+            jumlah: 1,
             produkList: [],
             noPesananAL: noAL,
             hargaJual: omzet,

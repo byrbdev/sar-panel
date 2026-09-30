@@ -8,6 +8,8 @@ import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
 import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
 import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
+import JumlahInput from 'components/fields/JumlahInput';
+import { jumlahLabel } from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
@@ -35,6 +37,7 @@ const ProsesPenjualanForm = (props: {
       namaProduk: value.namaProduk,
       varian: value.varian,
       skuProduk: value.skuProduk,
+      jumlah: value.jumlah,
     },
     ...(value.produkList || []),
   ];
@@ -71,6 +74,7 @@ const ProsesPenjualanForm = (props: {
           <InputField id="cu_varian" label="Varian Produk" placeholder="Contoh: Hitam, size L" type="text" extra="" value={value.varian} onChange={setField('varian')} />
           <InputField id="cu_sku" label="SKU Produk (opsional)" placeholder="SKU-001" type="text" extra="" value={value.skuProduk} onChange={setField('skuProduk')} />
         </div>
+        <JumlahInput id="cu_jumlah" value={value.jumlah} onChange={(n) => onChange({ ...value, jumlah: n })} />
         <ProdukTambahan produkList={value.produkList || []} onChange={(list) => onChange({ ...value, produkList: list })} />
       </div>
 
@@ -100,11 +104,9 @@ const ProsesPenjualanForm = (props: {
                   {semuaProduk.length > 1 ? `${idx + 1}. ` : ''}
                   {p.namaProduk || '(tanpa nama)'}
                 </p>
-                {(p.varian || p.skuProduk) && (
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`].filter(Boolean).join(' · ')}
-                  </p>
-                )}
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`, `Jumlah: ${jumlahLabel(p)}`].filter(Boolean).join(' · ')}
+                </p>
               </div>
             </div>
           ))}

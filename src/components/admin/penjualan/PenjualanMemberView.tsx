@@ -65,6 +65,7 @@ const PenjualanMemberView = () => {
         produk: form.produk,
         varian: form.varian,
         sku: form.sku,
+        jumlah: form.jumlah || 1,
         produkList: form.produkList,
         noHp: form.noHp,
         alamat: form.alamat,

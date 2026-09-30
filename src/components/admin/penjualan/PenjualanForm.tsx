@@ -4,6 +4,7 @@ import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
 import RupiahInput from 'components/fields/RupiahInput';
 import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
+import JumlahInput from 'components/fields/JumlahInput';
 import { MdContentPaste } from 'react-icons/md';
 import { SectionLabel } from 'components/admin/resi/ResiInputModal';
 import {
@@ -25,6 +26,7 @@ const emptyForm: PenjualanFormValue = {
   namaProduk: '',
   varian: '',
   skuProduk: '',
+  jumlah: 1,
   produkList: [],
   noPesananAL: '',
   hargaJual: 0,
@@ -331,6 +333,11 @@ const PenjualanForm = (props: {
             onChange={handle('skuProduk')}
           />
         </div>
+        <JumlahInput
+          id="jumlah"
+          value={value.jumlah}
+          onChange={(n) => onChange({ ...value, jumlah: n })}
+        />
         <ProdukTambahan
           produkList={value.produkList || []}
           onChange={(list) => onChange({ ...value, produkList: list })}

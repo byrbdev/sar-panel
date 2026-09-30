@@ -1,6 +1,7 @@
 'use client';
 import { MdAdd, MdClose, MdInventory2 } from 'react-icons/md';
 import InputField from 'components/fields/InputField';
+import JumlahInput from 'components/fields/JumlahInput';
 import { ProdukItem } from 'variables/dropshipPenjualan';
 
 let counter = 0;
@@ -23,11 +24,21 @@ const ProdukTambahan = (props: {
   const addItem = () => {
     onChange([
       ...produkList,
-      { id: newProdukItemId(), namaProduk: '', varian: '', skuProduk: '' },
+      {
+        id: newProdukItemId(),
+        namaProduk: '',
+        varian: '',
+        skuProduk: '',
+        jumlah: 1,
+      },
     ]);
   };
 
-  const updateItem = (id: string, field: keyof ProdukItem, val: string) => {
+  const updateItem = (
+    id: string,
+    field: keyof ProdukItem,
+    val: string | number,
+  ) => {
     onChange(
       produkList.map((p) => (p.id === id ? { ...p, [field]: val } : p)),
     );
@@ -96,6 +107,13 @@ const ProdukTambahan = (props: {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateItem(item.id, 'skuProduk', e.target.value)
               }
+            />
+          </div>
+          <div className="mt-4">
+            <JumlahInput
+              id={`pt_jumlah_${item.id}`}
+              value={item.jumlah}
+              onChange={(n) => updateItem(item.id, 'jumlah', n)}
             />
           </div>
         </div>

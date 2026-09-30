@@ -1,6 +1,6 @@
 'use client';
 import { MdInventory2, MdLocalShipping, MdConfirmationNumber } from 'react-icons/md';
-import { Penjualan } from 'variables/dropshipPenjualan';
+import { Penjualan, jumlahLabel } from 'variables/dropshipPenjualan';
 import { isResiBerbeda } from 'variables/dropshipResi';
 import { InfoRow, SectionLabel } from 'components/admin/resi/ResiInputModal';
 
@@ -11,6 +11,7 @@ export const getSemuaProduk = (penjualan: Penjualan) => [
     namaProduk: penjualan.namaProduk,
     varian: penjualan.varian,
     skuProduk: penjualan.skuProduk,
+    jumlah: penjualan.jumlah,
     noResi: penjualan.noResi,
     jasaPengiriman: penjualan.jasaPengiriman,
   },
@@ -50,13 +51,15 @@ const ResiInfoBlocks = (props: { penjualan: Penjualan }) => {
                   {semuaProduk.length > 1 ? `${idx + 1}. ` : ''}
                   {p.namaProduk || '(tanpa nama)'}
                 </p>
-                {(p.varian || p.skuProduk) && (
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                )}
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {[
+                    p.varian,
+                    p.skuProduk && `SKU: ${p.skuProduk}`,
+                    `Jumlah: ${jumlahLabel(p)}`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
                 {beda && (
                   <p className="mt-1 text-xs font-medium text-brand-500 dark:text-brand-300">
                     Resi: {p.noResi || '-'} · {p.jasaPengiriman || '-'}

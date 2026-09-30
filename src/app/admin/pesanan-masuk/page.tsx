@@ -77,6 +77,7 @@ const PesananMasukPage = () => {
       namaProduk: order.produk,
       varian: order.varian,
       skuProduk: order.sku,
+      jumlah: order.jumlah || 1,
       produkList: order.produkList || [],
       noPesananAL: order.noPesananAL || '',
       hargaJual: order.hargaJual,

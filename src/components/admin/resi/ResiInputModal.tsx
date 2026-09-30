@@ -14,6 +14,7 @@ import {
   JASA_PENGIRIMAN,
   jasaOptions,
   Penjualan,
+  jumlahLabel,
 } from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
 import { useUI } from 'context/UIContext';
@@ -93,6 +94,7 @@ const ResiInputModal = (props: {
       namaProduk: penjualan.namaProduk,
       varian: penjualan.varian,
       skuProduk: penjualan.skuProduk,
+      jumlah: penjualan.jumlah,
     },
     ...(penjualan.produkList || []),
   ];
@@ -209,13 +211,15 @@ const ResiInputModal = (props: {
                     {semuaProduk.length > 1 ? `${idx + 1}. ` : ''}
                     {p.namaProduk || '(tanpa nama)'}
                   </p>
-                  {(p.varian || p.skuProduk) && (
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                      {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </p>
-                  )}
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    {[
+                      p.varian,
+                      p.skuProduk && `SKU: ${p.skuProduk}`,
+                      `Jumlah: ${jumlahLabel(p)}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
                 </div>
               </div>
             ))}

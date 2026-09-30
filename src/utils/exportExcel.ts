@@ -1,4 +1,5 @@
 import type { Penjualan } from 'variables/dropshipPenjualan';
+import { jumlahLabel } from 'variables/dropshipPenjualan';
 import type { PemulihanRow } from 'variables/dropshipPemulihan';
 import { analisaPerPemilik, topProdukTerlaris } from 'utils/analisaHelpers';
 
@@ -49,18 +50,19 @@ export const exportAnalisaToExcel = async (params: {
     // yang SAMA dengan produknya (kalau produk ke-2 tidak punya SKU tetap
     // ditulis "-"), supaya kolom Produk & SKU selalu sejajar.
     const items = [
-      { nama: p.namaProduk, varian: p.varian, sku: p.skuProduk },
+      { nama: p.namaProduk, varian: p.varian, sku: p.skuProduk, jumlah: p.jumlah },
       ...(p.produkList || []).map((x) => ({
         nama: x.namaProduk,
         varian: x.varian,
         sku: x.skuProduk,
+        jumlah: x.jumlah,
       })),
     ].filter((i) => i.nama || i.sku);
     const multi = items.length > 1;
     const produkText = items
       .map(
         (it, i) =>
-          `${multi ? `${i + 1}. ` : ''}${it.nama || '-'}${it.varian ? ` (${it.varian})` : ''}`,
+          `${multi ? `${i + 1}. ` : ''}${it.nama || '-'}${it.varian ? ` (${it.varian})` : ''} (${jumlahLabel(it)})`,
       )
       .join('\n');
     const skuText = items

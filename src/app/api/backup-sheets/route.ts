@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { google, sheets_v4 } from 'googleapis';
 import { supabaseAdmin } from 'lib/supabaseAdmin';
 import { supabase } from 'lib/supabaseClient';
+import { jumlahLabel } from 'variables/dropshipPenjualan';
 
 /**
  * POST /api/backup-sheets
@@ -14,7 +15,8 @@ import { supabase } from 'lib/supabaseClient';
  *   sendiri dan lebar kolom sendiri supaya teks tidak ketutupan.
  * - Penjualan = satu baris per INVOICE (No Pesanan AL); kalau satu invoice
  *   punya beberapa produk, semuanya ditulis bernomor dalam satu sel
- *   (sama seperti export Excel), baris otomatis meninggi.
+ *   (sama seperti export Excel), baris otomatis meninggi. Jumlah per pcs
+ *   ditulis di belakang nama produk, mis. "Garpu Premium (2x)".
  * - Tekan lagi di bulan yang sama = tab itu dihitung ulang & diperbarui.
  *   Bulan berganti = tab baru dibuat otomatis, tab lama tidak disentuh.
  * - Sheet ID diatur lewat UI Setting (tabel app_settings).
@@ -372,18 +374,24 @@ export async function POST(req: NextRequest) {
     const penjualanData = penjualanBulanIni.map((p: any) => {
       const list = Array.isArray(p.produk_list) ? p.produk_list : [];
       const items = [
-        { nama: p.nama_produk, varian: p.varian, sku: p.sku_produk },
+        {
+          nama: p.nama_produk,
+          varian: p.varian,
+          sku: p.sku_produk,
+          jumlah: p.jumlah,
+        },
         ...list.map((x: any) => ({
           nama: x.namaProduk,
           varian: x.varian,
           sku: x.skuProduk,
+          jumlah: x.jumlah,
         })),
       ].filter((i) => i.nama || i.sku);
       const multi = items.length > 1;
       const produkText = items
         .map(
           (it, i) =>
-            `${multi ? `${i + 1}. ` : ''}${it.nama || '-'}${it.varian ? ` (${it.varian})` : ''}`,
+            `${multi ? `${i + 1}. ` : ''}${it.nama || '-'}${it.varian ? ` (${it.varian})` : ''} (${jumlahLabel(it)})`,
         )
         .join('\n');
       const skuText = items

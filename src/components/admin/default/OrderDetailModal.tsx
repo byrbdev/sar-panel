@@ -12,6 +12,7 @@ import {
   MdTrendingUp,
 } from 'react-icons/md';
 import { OrderRow } from 'variables/dropshipTables';
+import { jumlahLabel } from 'variables/dropshipPenjualan';
 import { InfoRow, SectionLabel } from 'components/admin/resi/ResiInputModal';
 import { useMemberName } from 'hooks/useMemberName';
 
@@ -32,6 +33,7 @@ const OrderDetailModal = (props: { order: OrderRow }) => {
       namaProduk: order.produk,
       varian: order.varian,
       skuProduk: order.sku,
+      jumlah: order.jumlah,
     },
     ...(order.produkList || []),
   ];
@@ -98,13 +100,15 @@ const OrderDetailModal = (props: { order: OrderRow }) => {
                   {semuaProduk.length > 1 ? `${idx + 1}. ` : ''}
                   {p.namaProduk || '(tanpa nama)'}
                 </p>
-                {(p.varian || p.skuProduk) && (
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {[p.varian, p.skuProduk && `SKU: ${p.skuProduk}`]
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    {[
+                      p.varian,
+                      p.skuProduk && `SKU: ${p.skuProduk}`,
+                      `Jumlah: ${jumlahLabel(p)}`,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
-                )}
               </div>
             </div>
           ))}

@@ -33,6 +33,8 @@ export type ProdukItem = {
   namaProduk: string;
   varian: string;
   skuProduk: string;
+  /** Jumlah per pcs produk ini di pesanan (default 1). */
+  jumlah?: number;
   /** Resi khusus produk ini. Hanya terisi kalau admin memilih "Resi Berbeda"
    * di overlay Masukkan Resi (produk utama memakai `Penjualan.noResi`). */
   noResi?: string;
@@ -50,6 +52,9 @@ export type Penjualan = {
   namaProduk: string;
   varian: string;
   skuProduk: string;
+  /** Jumlah per pcs produk utama (default 1). Dipakai di Analisa sebagai
+   * jumlah terjual. Jumlah produk tambahan ada di `produkList[].jumlah`. */
+  jumlah?: number;
   /** Produk TAMBAHAN di invoice/No Pesanan AL yang sama (di luar produk utama
    * di atas). Kosong/undefined = cuma 1 produk. Finansial (harga/modal) TETAP
    * satu untuk seluruh invoice, tidak dipecah per produk. */
@@ -79,3 +84,14 @@ export const daftarToko = [
 const tableDataPenjualan: Penjualan[] = [];
 
 export default tableDataPenjualan;
+
+/** Jumlah per pcs sebuah produk (produk utama atau ProdukItem). Kosong/0/
+ * tidak valid dianggap 1, supaya data lama tetap terhitung 1 pcs. */
+export const jumlahOf = (x?: { jumlah?: number | null }): number => {
+  const n = Number(x?.jumlah);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+};
+
+/** Teks jumlah untuk tampilan/export, mis. "2x" */
+export const jumlahLabel = (x?: { jumlah?: number | null }): string =>
+  `${jumlahOf(x)}x`;

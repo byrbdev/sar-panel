@@ -1,4 +1,4 @@
-import { Penjualan } from 'variables/dropshipPenjualan';
+import { Penjualan, jumlahOf } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { BrutalItem } from 'variables/dropshipBrutal';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
@@ -156,7 +156,7 @@ export const topProdukTerlaris = (
   limit = 10,
 ): ProdukAnalisa[] => {
   const map = new Map<string, ProdukAnalisa>();
-  const tambah = (namaProduk: string, namaToko: string) => {
+  const tambah = (namaProduk: string, namaToko: string, jumlah = 1) => {
     if (!namaProduk) return;
     const key = namaProduk + '||' + namaToko;
     const existing = map.get(key) || {
@@ -164,12 +164,16 @@ export const topProdukTerlaris = (
       namaToko,
       jumlahTerjual: 0,
     };
-    existing.jumlahTerjual += 1;
+    existing.jumlahTerjual += jumlah;
     map.set(key, existing);
   };
+  // Jumlah terjual = "Jumlah" tiap produk (default 1), jadi produk
+  // dengan jumlah 2 atau 3 dihitung terjual 2 atau 3.
   data.forEach((row) => {
-    tambah(row.namaProduk, row.namaToko);
-    (row.produkList || []).forEach((p) => tambah(p.namaProduk, row.namaToko));
+    tambah(row.namaProduk, row.namaToko, jumlahOf(row));
+    (row.produkList || []).forEach((p) =>
+      tambah(p.namaProduk, row.namaToko, jumlahOf(p)),
+    );
   });
   return Array.from(map.values())
     .sort((a, b) => b.jumlahTerjual - a.jumlahTerjual)
@@ -260,7 +264,11 @@ export const omzetPerHariTerakhir = (
       profit: 0,
       _sort: d.getTime(),
     };
-    existing.produkTerjual += 1;
+    // Produk terjual = total pcs semua produk di transaksi ini
+    // (Jumlah produk utama + produk tambahan).
+    existing.produkTerjual +=
+      jumlahOf(row) +
+      (row.produkList || []).reduce((a, x) => a + jumlahOf(x), 0);
     existing.omzet += row.hargaJual;
     existing.profit += row.hargaJual - row.modalShopee;
     map.set(key, existing as any);
@@ -289,12 +297,21 @@ export const analisaBrutal = (
 ): BrutalAnalisa[] => {
   return items
     .map((item) => {
-      const realOrderan = penjualan.filter(
-        (p) =>
-          p.skuProduk &&
-          item.sku &&
-          p.skuProduk.trim().toLowerCase() === item.sku.trim().toLowerCase(),
-      ).length;
+      // Real orderan = total pcs terjual untuk SKU ini (Jumlah),
+      // baik dari produk utama maupun produk tambahan di suatu invoice.
+      const skuItem = (item.sku || '').trim().toLowerCase();
+      const realOrderan = skuItem
+        ? penjualan.reduce((total, p) => {
+            let n = 0;
+            if ((p.skuProduk || '').trim().toLowerCase() === skuItem)
+              n += jumlahOf(p);
+            (p.produkList || []).forEach((x) => {
+              if ((x.skuProduk || '').trim().toLowerCase() === skuItem)
+                n += jumlahOf(x);
+            });
+            return total + n;
+          }, 0)
+        : 0;
       // Mapping utamanya cuma dari kolom STATUS: "Muncul" = sudah
       // teroptimasi, "Tidak" = perlu dioptimasi. Supaya kedua tabel di
       // Analisa (Perlu Dioptimasi vs Sudah Teroptimasi) saling melengkapi

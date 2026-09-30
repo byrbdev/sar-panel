@@ -8,6 +8,8 @@ export type OrderRow = {
   produk: string;
   varian: string;
   sku: string;
+  /** Jumlah per pcs produk utama (default 1) */
+  jumlah?: number;
   /** Produk tambahan di invoice/No Pesanan AL yang sama (lihat ProdukItem) */
   produkList?: ProdukItem[];
   noHp: string;
