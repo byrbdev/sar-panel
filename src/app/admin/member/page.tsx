@@ -65,7 +65,12 @@ const MemberPage = () => {
       const json = await res.json();
 
       if (!res.ok) {
-        notify(json.error || 'Gagal membuat akun.', 'error');
+        notify(
+          res.status === 401
+            ? `${json.error || 'Unauthorized'}. Coba Log Out lalu login lagi.`
+            : json.error || 'Gagal membuat akun.',
+          'error',
+        );
         setSubmitting(false);
         return;
       }
