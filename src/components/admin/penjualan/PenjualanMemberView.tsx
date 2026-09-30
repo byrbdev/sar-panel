@@ -123,7 +123,7 @@ const PenjualanMemberView = () => {
         <Card extra="!flex-row items-center gap-3 p-4">
           <div className="min-w-0">
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Omzet Toko Saya
+              Omzet (hasil filter)
             </p>
             <p className="truncate text-lg font-bold text-navy-700 dark:text-white">
               {formatRupiah(summary.omzet)}
@@ -133,7 +133,7 @@ const PenjualanMemberView = () => {
         <Card extra="!flex-row items-center gap-3 p-4">
           <div className="min-w-0">
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Profit Toko Saya
+              Profit (hasil filter)
             </p>
             <p className="truncate text-lg font-bold text-green-500">
               {formatRupiah(summary.profit)}
