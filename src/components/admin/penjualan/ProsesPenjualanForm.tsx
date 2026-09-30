@@ -60,7 +60,6 @@ const ProsesPenjualanForm = (props: {
           placeholder="Pilih toko..."
         />
         <InputField id="cu_noAL" label="No Pesanan AL" placeholder="AL-20260101-001" type="text" extra="" value={value.noPesananAL} onChange={setField('noPesananAL')} />
-        <InfoRow icon={<MdCalendarToday className="h-3.5 w-3.5" />} label="Tanggal Transaksi" value={value.tanggalTransaksi} />
       </div>
 
       <div className="space-y-4 border-t border-gray-200 pt-3.5 dark:border-white/10">
