@@ -15,7 +15,15 @@ import TanggalFilter, {
 } from 'components/admin/penjualan/TanggalFilter';
 import PaginationControl from 'components/pagination/PaginationControl';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
-import { MdSearch, MdDelete, MdEdit } from 'react-icons/md';
+import ProsesPenjualanForm from 'components/admin/penjualan/ProsesPenjualanForm';
+import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
+import { Penjualan } from 'variables/dropshipPenjualan';
+import {
+  MdSearch,
+  MdDelete,
+  MdEdit,
+  MdShoppingCartCheckout,
+} from 'react-icons/md';
 
 const statusStyle: Record<RefundStatus, string> = {
   Belum: 'bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300',
@@ -37,6 +45,7 @@ const RefundAdminView = () => {
     setRefund: setData,
     penjualan,
     setPenjualan,
+    toko,
   } = useAppData();
   const { notify, confirm } = useUI();
   const { resolve: resolveMember } = useMemberName();
@@ -103,6 +112,109 @@ const RefundAdminView = () => {
         normalizeNo(p.noPesananAL) === no &&
         normalizeNo(p.namaToko) === normalizeNo(row.namaToko),
     );
+  };
+
+  // ---- Checkout Ulang: kembalikan refund ke Penjualan ----
+  const [cuOpen, setCuOpen] = React.useState(false);
+  const [cuRefund, setCuRefund] = React.useState<RefundRow | null>(null);
+  const [cuLinked, setCuLinked] = React.useState<Penjualan | null>(null);
+  const [cuForm, setCuForm] = React.useState<PenjualanFormValue | null>(null);
+
+  const todayStr = () =>
+    new Date().toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+  const openCheckoutUlang = (e: React.MouseEvent, row: RefundRow) => {
+    e.stopPropagation();
+    const linked = findLinkedPenjualan(row)[0] || null;
+    // Omzet & modal lama disimpan di refund (omzet/profit); di Penjualan
+    // nilainya sudah dinolkan saat di-refund, jadi ambil dari refund.
+    const omzet = row.omzet ?? 0;
+    const modal = row.omzet !== undefined ? omzet - (row.profit ?? 0) : 0;
+    const noAL = row.noPesananAL === '-' ? '' : row.noPesananAL;
+
+    setCuRefund(row);
+    setCuLinked(linked);
+    setCuForm(
+      linked
+        ? {
+            ...(({ id, ...rest }) => rest)(linked),
+            hargaJual: omzet,
+            modalShopee: modal,
+            statusPengiriman: 'Terkirim',
+            tanggalTransaksi: todayStr(),
+          }
+        : {
+            namaToko: row.namaToko,
+            namaPembeli: row.nama,
+            noHp: row.noHp,
+            alamatPembeli: row.alamat || '',
+            namaProduk: row.namaProduk || '',
+            varian: '',
+            skuProduk: row.sku,
+            produkList: [],
+            noPesananAL: noAL,
+            hargaJual: omzet,
+            modalShopee: modal,
+            noResi: '',
+            jasaPengiriman: 'Shopee Express',
+            statusPengiriman: 'Terkirim',
+            statusAkunToko: 'Aktif',
+            tanggalTransaksi: todayStr(),
+          },
+    );
+    setCuOpen(true);
+  };
+
+  const saveCheckoutUlang = async () => {
+    if (!cuForm || !cuRefund) return;
+    const ownerId =
+      toko.find((t) => t.namaToko === cuForm.namaToko)?.ownerId ??
+      cuRefund.ownerId;
+
+    // 1) Masukkan kembali ke Penjualan dengan Omzet & Profit yang baru
+    const penjualanResult = await setPenjualan((prev) => {
+      if (cuLinked) {
+        return prev.map((p) =>
+          p.id === cuLinked.id ? { ...cuForm, id: cuLinked.id, ownerId } : p,
+        );
+      }
+      const newId = String(
+        prev.length ? Math.max(...prev.map((p) => Number(p.id) || 0)) + 1 : 1,
+      );
+      return [{ ...cuForm, id: newId, ownerId }, ...prev];
+    });
+    if (!penjualanResult.ok) {
+      notify(
+        `Gagal memasukkan ke Penjualan: ${penjualanResult.errors[0]}`,
+        'error',
+      );
+      return; // refund dibiarkan utuh supaya bisa dicoba lagi
+    }
+
+    // 2) Hapus dari daftar Refund karena sudah kembali jadi penjualan
+    const refundResult = await setData(
+      data.filter((r) => r.id !== cuRefund.id),
+    );
+    if (!refundResult.ok) {
+      notify(
+        `Penjualan tersimpan, tapi data refund gagal dihapus: ${refundResult.errors[0]}`,
+        'error',
+      );
+    } else {
+      notify(
+        'Checkout ulang berhasil. Data kembali ke Penjualan dengan Omzet & Profit baru.',
+        'success',
+      );
+    }
+    setCuOpen(false);
+    setCuRefund(null);
+    setCuLinked(null);
+    setCuForm(null);
+    setSelected(null);
   };
 
   const handleDelete = async (e: React.MouseEvent, row: RefundRow) => {
@@ -267,6 +379,13 @@ const RefundAdminView = () => {
                           <MdEdit className="h-4 w-4" />
                         </button>
                         <button
+                          onClick={(e) => openCheckoutUlang(e, row)}
+                          title="Checkout Ulang"
+                          className="rounded-lg p-2 text-brand-500 transition duration-150 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-white/10"
+                        >
+                          <MdShoppingCartCheckout className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={(e) => handleDelete(e, row)}
                           className="rounded-lg p-2 text-red-500 transition duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
                         >
@@ -294,6 +413,30 @@ const RefundAdminView = () => {
         title="Detail Refund"
       >
         {selected && <RefundDetailModal refund={selected} />}
+      </ModalOverlay>
+
+      <ModalOverlay
+        open={cuOpen}
+        onClose={() => setCuOpen(false)}
+        title="Proses Checkout Ulang"
+      >
+        {cuForm && (
+          <ProsesPenjualanForm value={cuForm} onChange={setCuForm} editable />
+        )}
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => setCuOpen(false)}
+            className="linear rounded-lg bg-lightPrimary px-6 py-2.5 text-sm font-medium text-gray-600 transition duration-200 hover:bg-gray-100 active:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/20"
+          >
+            Batal
+          </button>
+          <button
+            onClick={saveCheckoutUlang}
+            className="linear rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+          >
+            Simpan Checkout Ulang
+          </button>
+        </div>
       </ModalOverlay>
 
       <ModalOverlay

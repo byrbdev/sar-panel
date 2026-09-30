@@ -4,6 +4,7 @@ import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
 import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
 import { MdContentPaste } from 'react-icons/md';
+import { SectionLabel } from 'components/admin/resi/ResiInputModal';
 import { ProdukItem } from 'variables/dropshipPenjualan';
 
 export type LaporPenjualanValue = {
@@ -152,28 +153,50 @@ const LaporPenjualanForm = (props: {
         </div>
       </div>
 
-      <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-        Info Pembeli
-      </p>
-      <InputField
-        id="lp_nama"
-        label="Nama"
-        placeholder="Nama pembeli"
-        type="text"
-        extra=""
-        value={value.nama}
-        onChange={handle('nama')}
-      />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Section 1 - Info Pesanan */}
+      <div className="flex flex-col gap-4">
+        <SectionLabel>Info Pesanan</SectionLabel>
+        <SearchableSelect
+          label="Toko"
+          options={daftarToko}
+          value={value.toko}
+          onChange={(v) => onChange({ ...value, toko: v })}
+          placeholder="Pilih toko..."
+        />
         <InputField
-          id="lp_noHp"
-          label="Nomor HP"
-          placeholder="081234567890"
+          id="lp_noPesananAL"
+          label="No Pesanan AL"
+          placeholder="AL-20260101-001"
           type="text"
           extra=""
-          value={value.noHp}
-          onChange={handle('noHp')}
+          value={value.noPesananAL}
+          onChange={handle('noPesananAL')}
         />
+      </div>
+
+      {/* Section 2 - Info Pembeli */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Info Pembeli</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <InputField
+            id="lp_nama"
+            label="Nama"
+            placeholder="Nama pembeli"
+            type="text"
+            extra=""
+            value={value.nama}
+            onChange={handle('nama')}
+          />
+          <InputField
+            id="lp_noHp"
+            label="Nomor HP"
+            placeholder="081234567890"
+            type="text"
+            extra=""
+            value={value.noHp}
+            onChange={handle('noHp')}
+          />
+        </div>
         <InputField
           id="lp_alamat"
           label="Alamat"
@@ -185,71 +208,59 @@ const LaporPenjualanForm = (props: {
         />
       </div>
 
-      <p className="mb-1 mt-2 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-        Info Pesanan
-      </p>
-      <SearchableSelect
-        label="Toko"
-        options={daftarToko}
-        value={value.toko}
-        onChange={(v) => onChange({ ...value, toko: v })}
-        placeholder="Pilih toko..."
-      />
-      <InputField
-        id="lp_produk"
-        label="Produk"
-        placeholder="Nama produk"
-        type="text"
-        extra=""
-        value={value.produk}
-        onChange={handle('produk')}
-      />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Section 3 - Produk */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Produk</SectionLabel>
         <InputField
-          id="lp_varian"
-          label="Varian Produk"
-          placeholder="Contoh: Hitam, size L"
+          id="lp_produk"
+          label="Produk"
+          placeholder="Nama produk"
           type="text"
           extra=""
-          value={value.varian}
-          onChange={handle('varian')}
+          value={value.produk}
+          onChange={handle('produk')}
         />
-        <InputField
-          id="lp_sku"
-          label="SKU"
-          placeholder="SKU-001"
-          type="text"
-          extra=""
-          value={value.sku}
-          onChange={handle('sku')}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <InputField
+            id="lp_varian"
+            label="Varian Produk"
+            placeholder="Contoh: Hitam, size L"
+            type="text"
+            extra=""
+            value={value.varian}
+            onChange={handle('varian')}
+          />
+          <InputField
+            id="lp_sku"
+            label="SKU"
+            placeholder="SKU-001"
+            type="text"
+            extra=""
+            value={value.sku}
+            onChange={handle('sku')}
+          />
+        </div>
+        <ProdukTambahan
+          produkList={value.produkList}
+          onChange={(list) => onChange({ ...value, produkList: list })}
         />
       </div>
 
-      <ProdukTambahan
-        produkList={value.produkList}
-        onChange={(list) => onChange({ ...value, produkList: list })}
-      />
-
-      <InputField
-        id="lp_noPesananAL"
-        label="No Pesanan AL"
-        placeholder="AL-20260101-001"
-        type="text"
-        extra=""
-        value={value.noPesananAL}
-        onChange={handle('noPesananAL')}
-      />
-      <div>
-        <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
-          Keterangan (opsional)
-        </label>
-        <textarea
-          value={value.keterangan}
-          onChange={handle('keterangan')}
-          rows={3}
-          placeholder="Catatan tambahan untuk admin..."
-          className="w-full resize-none rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
-        />
+      {/* Section 4 - Keterangan */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Keterangan</SectionLabel>
+        <div>
+          <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
+            Keterangan (opsional)
+          </label>
+          <textarea
+            value={value.keterangan}
+            onChange={handle('keterangan')}
+            rows={3}
+            placeholder="Catatan tambahan untuk admin..."
+            className="w-full resize-none rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+          />
+        </div>
       </div>
     </div>
   );

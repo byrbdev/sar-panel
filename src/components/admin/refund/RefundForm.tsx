@@ -3,6 +3,7 @@ import InputField from 'components/fields/InputField';
 import SearchableSelect from 'components/fields/SearchableSelect';
 import { useMember } from 'context/MemberContext';
 import { useAppData } from 'context/AppDataContext';
+import { SectionLabel } from 'components/admin/resi/ResiInputModal';
 import { RefundAlasan, RefundRow, RefundStatus } from 'variables/dropshipRefund';
 
 export type RefundFormValue = Omit<RefundRow, 'id'>;
@@ -95,7 +96,66 @@ const RefundForm = (props: {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Section 1 - Info Pesanan */}
+      <div className="flex flex-col gap-4">
+        <SectionLabel>Info Pesanan</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <SearchableSelect
+            label="Nama Toko"
+            options={daftarToko}
+            value={value.namaToko}
+            onChange={(v) => onChange({ ...value, namaToko: v })}
+            placeholder="Pilih toko..."
+          />
+          <InputField
+            id="r_emailToko"
+            label="Email Toko"
+            placeholder="email@contoh.com"
+            type="email"
+            extra=""
+            value={value.emailToko}
+            onChange={handle('emailToko')}
+          />
+        </div>
+        {!hideOrderNumbers && (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <InputField
+                id="r_noPesananAL"
+                label="No Pesanan AL"
+                placeholder="AL-20260101-001"
+                type="text"
+                extra=""
+                value={value.noPesananAL}
+                onChange={handle('noPesananAL')}
+              />
+              <InputField
+                id="r_noPesananSHP"
+                label="No Pesanan SHP"
+                placeholder="SHP-88213741"
+                type="text"
+                extra=""
+                value={value.noPesananSHP}
+                onChange={handle('noPesananSHP')}
+              />
+            </div>
+            <InputField
+              id="r_updateNoPesanan"
+              label="Update No Pesanan (opsional)"
+              placeholder="Nomor pesanan baru setelah update"
+              type="text"
+              extra=""
+              value={value.updateNoPesanan}
+              onChange={handle('updateNoPesanan')}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Section 2 - Info Pembeli */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Info Pembeli</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {fromPenjualan || buyerNameKnown ? (
           <InputField
             id="r_namaPembeli"
@@ -126,25 +186,6 @@ const RefundForm = (props: {
             </select>
           </div>
         )}
-        <SearchableSelect
-          label="Nama Toko"
-          options={daftarToko}
-          value={value.namaToko}
-          onChange={(v) => onChange({ ...value, namaToko: v })}
-          placeholder="Pilih toko..."
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField
-          id="r_emailToko"
-          label="Email Toko"
-          placeholder="email@contoh.com"
-          type="email"
-          extra=""
-          value={value.emailToko}
-          onChange={handle('emailToko')}
-        />
         <InputField
           id="r_noHp"
           label="No HP"
@@ -154,54 +195,27 @@ const RefundForm = (props: {
           value={value.noHp}
           onChange={handle('noHp')}
         />
+        </div>
       </div>
 
-      <InputField
-        id="r_sku"
-        label="SKU"
-        placeholder="SKU-001"
-        type="text"
-        extra=""
-        value={value.sku}
-        onChange={handle('sku')}
-      />
+      {/* Section 3 - Produk */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Produk</SectionLabel>
+        <InputField
+          id="r_sku"
+          label="SKU"
+          placeholder="SKU-001"
+          type="text"
+          extra=""
+          value={value.sku}
+          onChange={handle('sku')}
+        />
+      </div>
 
-      {!hideOrderNumbers && (
-        <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InputField
-              id="r_noPesananAL"
-              label="No Pesanan AL"
-              placeholder="AL-20260101-001"
-              type="text"
-              extra=""
-              value={value.noPesananAL}
-              onChange={handle('noPesananAL')}
-            />
-            <InputField
-              id="r_noPesananSHP"
-              label="No Pesanan SHP"
-              placeholder="SHP-88213741"
-              type="text"
-              extra=""
-              value={value.noPesananSHP}
-              onChange={handle('noPesananSHP')}
-            />
-          </div>
-
-          <InputField
-            id="r_updateNoPesanan"
-            label="Update No Pesanan (opsional)"
-            placeholder="Nomor pesanan baru setelah update"
-            type="text"
-            extra=""
-            value={value.updateNoPesanan}
-            onChange={handle('updateNoPesanan')}
-          />
-        </>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Section 4 - Detail Refund */}
+      <div className="flex flex-col gap-4 border-t border-gray-200 pt-5 dark:border-white/10">
+        <SectionLabel>Detail Refund</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
             Alasan
@@ -234,8 +248,7 @@ const RefundForm = (props: {
             <option value="Selesai">Selesai</option>
           </select>
         </div>
-      </div>
-
+        </div>
       <div>
         <label className="mb-1.5 ml-1.5 block text-sm font-bold text-navy-700 dark:text-white">
           Keterangan
@@ -247,6 +260,7 @@ const RefundForm = (props: {
           placeholder="Catatan tambahan seputar refund ini..."
           className="w-full resize-none rounded-xl border border-gray-200 bg-white/0 p-3 text-sm text-navy-700 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
         />
+      </div>
       </div>
     </div>
   );

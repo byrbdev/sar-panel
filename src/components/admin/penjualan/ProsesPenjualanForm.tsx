@@ -5,6 +5,10 @@ import RupiahInput from 'components/fields/RupiahInput';
 import { InfoRow, SectionLabel } from 'components/admin/resi/ResiInputModal';
 import { MdPerson, MdPhone, MdLocationOn, MdStorefront, MdTag, MdCalendarToday } from 'react-icons/md';
 import { PenjualanFormValue } from 'components/admin/penjualan/PenjualanForm';
+import InputField from 'components/fields/InputField';
+import SearchableSelect from 'components/fields/SearchableSelect';
+import ProdukTambahan from 'components/admin/penjualan/ProdukTambahan';
+import { useAppData } from 'context/AppDataContext';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
@@ -16,8 +20,14 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 const ProsesPenjualanForm = (props: {
   value: PenjualanFormValue;
   onChange: (value: PenjualanFormValue) => void;
+  /** true = data pesanan (pembeli, toko, produk, dst) ikut bisa diedit.
+   * Dipakai oleh Proses Checkout Ulang dari halaman Refund. */
+  editable?: boolean;
 }) => {
-  const { value, onChange } = props;
+  const { value, onChange, editable } = props;
+  const { toko } = useAppData();
+  const setField = (field: keyof PenjualanFormValue) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    onChange({ ...value, [field]: e.target.value });
   const profit = value.hargaJual - value.modalShopee;
   const semuaProduk = [
     {
@@ -31,6 +41,42 @@ const ProsesPenjualanForm = (props: {
 
   return (
     <div className="space-y-3.5">
+      {editable ? (
+        <>
+      <div className="space-y-3.5">
+        <SectionLabel>Info Pesanan</SectionLabel>
+        <SearchableSelect
+          label="Toko (Akulaku)"
+          options={toko.map((t) => t.namaToko)}
+          value={value.namaToko}
+          onChange={(v) => onChange({ ...value, namaToko: v })}
+          placeholder="Pilih toko..."
+        />
+        <InputField id="cu_noAL" label="No Pesanan AL" placeholder="AL-20260101-001" type="text" extra="" value={value.noPesananAL} onChange={setField('noPesananAL')} />
+      </div>
+
+      <div className="space-y-3.5 border-t border-gray-200 pt-3.5 dark:border-white/10">
+        <SectionLabel>Info Pembeli</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <InputField id="cu_namaPembeli" label="Nama Pembeli" placeholder="Nama pembeli" type="text" extra="" value={value.namaPembeli} onChange={setField('namaPembeli')} />
+          <InputField id="cu_noHp" label="Nomor HP" placeholder="081234567890" type="text" extra="" value={value.noHp} onChange={setField('noHp')} />
+        </div>
+        <InputField id="cu_alamat" label="Alamat Pembeli" placeholder="Alamat lengkap pembeli" type="text" extra="" value={value.alamatPembeli} onChange={setField('alamatPembeli')} />
+      </div>
+
+      <div className="space-y-4 border-t border-gray-200 pt-3.5 dark:border-white/10">
+        <SectionLabel>Produk</SectionLabel>
+        <InputField id="cu_namaProduk" label="Nama Produk" placeholder="Nama produk" type="text" extra="" value={value.namaProduk} onChange={setField('namaProduk')} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <InputField id="cu_varian" label="Varian Produk" placeholder="Contoh: Hitam, size L" type="text" extra="" value={value.varian} onChange={setField('varian')} />
+          <InputField id="cu_sku" label="SKU Produk (opsional)" placeholder="SKU-001" type="text" extra="" value={value.skuProduk} onChange={setField('skuProduk')} />
+        </div>
+        <ProdukTambahan produkList={value.produkList || []} onChange={(list) => onChange({ ...value, produkList: list })} />
+      </div>
+
+        </>
+      ) : (
+        <>
       <SectionLabel>Info Pembeli</SectionLabel>
       <InfoRow icon={<MdPerson className="h-3.5 w-3.5" />} label="Nama Pembeli" value={value.namaPembeli} />
       <InfoRow icon={<MdPhone className="h-3.5 w-3.5" />} label="Nomor HP" value={value.noHp} />
@@ -64,6 +110,9 @@ const ProsesPenjualanForm = (props: {
           ))}
         </div>
       </div>
+
+        </>
+      )}
 
       <div className="border-t border-gray-200 pt-3.5 dark:border-white/10">
         <SectionLabel>Finansial</SectionLabel>
