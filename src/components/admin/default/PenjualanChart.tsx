@@ -32,7 +32,6 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
     [penjualan, bulanKey],
   );
 
-  const totalOmzet = trend.reduce((a, b) => a + b.omzet, 0);
   const bulanIniOmzet = trend[trend.length - 1]?.omzet || 0;
   const bulanLaluOmzet = trend[trend.length - 2]?.omzet || 0;
   const growth =
@@ -72,11 +71,11 @@ const PenjualanChart = (props: { data?: Penjualan[] }) => {
       <div className="flex h-full w-full flex-row justify-between sm:flex-wrap lg:flex-nowrap 2xl:overflow-hidden">
         <div className="flex w-[150px] flex-shrink-0 flex-col items-start">
           <p className="mt-[20px] whitespace-nowrap text-left text-3xl font-bold text-navy-700 dark:text-white">
-            {formatRupiahSingkat(totalOmzet)}
+            {formatRupiahSingkat(bulanIniOmzet)}
           </p>
           <div className="flex flex-col items-start">
             <p className="mt-2 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-              Total Penjualan (6 Bulan)
+              Penjualan Bulan Ini
             </p>
             <div className="flex flex-row items-center justify-center">
               {growth >= 0 ? (
