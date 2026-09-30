@@ -3,6 +3,21 @@ import { supabaseAdmin } from 'lib/supabaseAdmin';
 import { supabase } from 'lib/supabaseClient';
 
 /**
+ * Alasan penolakan token dari Supabase ikut dikirim + dicatat di Log Vercel,
+ * supaya tidak cuma "Unauthorized" tanpa tahu sebabnya (token kedaluwarsa,
+ * sesi dicabut, project/kunci tidak cocok, dll).
+ */
+const unauthorized = (err?: { message?: string; status?: number; code?: string } | null) => {
+  const reason = err?.message || 'token tidak dikenali';
+  console.error('[api/member] verifikasi token gagal:', {
+    message: err?.message,
+    status: err?.status,
+    code: err?.code,
+  });
+  return NextResponse.json({ error: `Unauthorized: ${reason}` }, { status: 401 });
+};
+
+/**
  * POST /api/member
  * Body: { nama: string, email: string, password: string, role: 'admin' | 'member' }
  *
@@ -24,7 +39,7 @@ export async function POST(req: NextRequest) {
       token,
     );
     if (userErr || !userData.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorized(userErr);
     }
 
     const { data: callerProfile } = await supabaseAdmin
@@ -105,9 +120,9 @@ export async function DELETE(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization') || '';
     const token = authHeader.replace('Bearer ', '');
-    const { data: userData } = await supabase.auth.getUser(token);
-    if (!userData?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      return unauthorized(userErr);
     }
 
     const { data: callerProfile } = await supabaseAdmin
