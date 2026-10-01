@@ -109,6 +109,8 @@ const PenjualanAdminView = () => {
       row.noResi.toLowerCase().includes(term) ||
       (row.noPesananAL || '').toLowerCase().includes(term) ||
       row.namaToko.toLowerCase().includes(term) ||
+      // Cari berdasarkan nama Member pemilik toko (sama dengan kolom MEMBER)
+      resolveMember(row.ownerId, row.namaToko).toLowerCase().includes(term) ||
       row.statusAkunToko.toLowerCase().includes(term) ||
       row.statusPengiriman.toLowerCase().includes(term)
     );
@@ -350,7 +352,7 @@ const PenjualanAdminView = () => {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari pembeli, produk, toko, no pesanan, resi..."
+                placeholder="Cari pembeli, produk, toko, member, no pesanan, resi..."
                 className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
               />
             </div>

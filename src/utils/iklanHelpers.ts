@@ -35,9 +35,9 @@ export const topUpBulan = (
  * Top Up yang ikut "hasil filter" di halaman Penjualan.
  * - Filter tanggal: sama persis dengan yang dipakai pada penjualan.
  * - Pencarian teks: Top Up dicatat per TOKO (tidak punya produk/pembeli),
- *   jadi saat ada kata pencarian, Top Up hanya ikut kalau nama tokonya
- *   cocok. Mencari nama produk/pembeli menampilkan profit produk itu
- *   tanpa potongan iklan.
+ *   jadi saat ada kata pencarian, Top Up hanya ikut kalau nama toko ATAU
+ *   nama pemilik (member)-nya cocok. Mencari nama produk/pembeli
+ *   menampilkan profit produk itu tanpa potongan iklan.
  */
 export const topUpHasilFilter = (
   list: IklanTopUp[],
@@ -48,7 +48,9 @@ export const topUpHasilFilter = (
   return list.filter(
     (t) =>
       cocokTanggal(t.tanggal) &&
-      (!term || t.namaToko.toLowerCase().includes(term)),
+      (!term ||
+        t.namaToko.toLowerCase().includes(term) ||
+        (t.pemilik || '').toLowerCase().includes(term)),
   );
 };
 
