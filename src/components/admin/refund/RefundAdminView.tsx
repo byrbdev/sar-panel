@@ -41,6 +41,17 @@ const statusLabel: Record<RefundStatus, string> = {
   Selesai: 'Selesai',
 };
 
+/** Perkiraan `selesaiAt` di sisi klien (nilai resminya dari trigger database).
+ * Mulai Selesai -> sekarang; tetap Selesai -> pertahankan; bukan Selesai -> kosong. */
+const selesaiAtBaru = (
+  lama: RefundRow | undefined,
+  status: RefundStatus,
+): string | undefined => {
+  if (status !== 'Selesai') return undefined;
+  if (lama?.status === 'Selesai') return lama.selesaiAt;
+  return new Date().toISOString();
+};
+
 const RefundAdminView = () => {
   const {
     refund: data,
@@ -70,8 +81,12 @@ const RefundAdminView = () => {
 
   const saveEdit = async () => {
     if (!editId || !editForm) return;
+    const lama = data.find((r) => r.id === editId);
+    const selesaiAt = selesaiAtBaru(lama, editForm.status);
     const result = await setData(
-      data.map((r) => (r.id === editId ? { id: editId, ...editForm } : r)),
+      data.map((r) =>
+        r.id === editId ? { id: editId, ...editForm, selesaiAt } : r,
+      ),
     );
     if (result.ok) {
       notify('Perubahan data refund berhasil disimpan.', 'success');
@@ -103,7 +118,11 @@ const RefundAdminView = () => {
     10,
   );
   const updateStatus = (id: string, status: RefundStatus) => {
-    setData(data.map((r) => (r.id === id ? { ...r, status } : r)));
+    setData(
+      data.map((r) =>
+        r.id === id ? { ...r, status, selesaiAt: selesaiAtBaru(r, status) } : r,
+      ),
+    );
     notify('Status refund berhasil diperbarui.', 'success');
   };
 

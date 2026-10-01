@@ -73,14 +73,16 @@ export const isInBulan = (
  * Apakah refund ini masih ditampilkan di halaman Refund pada bulan `bulanKey`?
  * - Status Belum / Proses: SELALU tampil (masih harus ditindaklanjuti), meski
  *   dibuat di bulan sebelumnya.
- * - Status Selesai: hanya tampil di bulan refund itu dibuat, lalu otomatis
- *   hilang begitu bulan berganti. Datanya tidak dihapus dari database.
+ * - Status Selesai: hanya tampil di bulan saat refund itu DISELESAIKAN
+ *   (`selesaiAt`, diisi trigger database), lalu otomatis hilang begitu bulan
+ *   berganti. Data lama yang belum punya `selesaiAt` memakai tanggal refund
+ *   dibuat sebagai pengganti. Datanya tidak dihapus dari database.
  * Tanggal tidak terbaca ('unknown') dibiarkan tampil supaya data tidak
  * hilang diam-diam.
  */
 export const refundTampilDiBulan = (r: RefundRow, bulanKey: string): boolean => {
   if (r.status !== 'Selesai') return true;
-  const key = bulanKeyOf(r.tanggalIso, r.tanggal);
+  const key = bulanKeyFromIso(r.selesaiAt) ?? bulanKeyOf(r.tanggalIso, r.tanggal);
   return key === 'unknown' || key === bulanKey;
 };
 

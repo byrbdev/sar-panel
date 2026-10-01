@@ -194,6 +194,7 @@ const refundFromDb = (r: any): RefundRow => ({
       })
     : '',
   tanggalIso: r.tanggal || undefined,
+  selesaiAt: r.selesai_at || undefined,
 });
 
 /* ============== Mapper: Follow Up Resi ============== */

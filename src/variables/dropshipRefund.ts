@@ -18,6 +18,11 @@ export type RefundRow = {
   tanggal: string;
   /** Waktu refund asli dari database (ISO) -- lihat `Penjualan.tanggalIso`. */
   tanggalIso?: string;
+  /** Waktu status berubah menjadi Selesai (ISO), diisi otomatis oleh trigger
+   * database (kolom `selesai_at`). undefined = belum Selesai, atau data lama
+   * yang belum punya catatan waktu. Dipakai untuk menentukan bulan tampil di
+   * halaman Refund -- lihat `refundTampilDiBulan`. */
+  selesaiAt?: string;
   // Terisi hanya jika refund berasal dari transaksi yang sudah diproses (sudah ada di Penjualan)
   namaProduk?: string;
   omzet?: number;
