@@ -1,6 +1,11 @@
 import { Penjualan } from 'variables/dropshipPenjualan';
-import { bulanKeyFromIso, bulanKeyWib } from 'utils/bulanJakarta';
-import { getBulanKey } from 'utils/analisaHelpers';
+import {
+  bulanKeyFromIso,
+  bulanKeyWib,
+  hariIndexFromIso,
+  hariIndexWib,
+} from 'utils/bulanJakarta';
+import { getBulanKey, parseTanggalIndo } from 'utils/analisaHelpers';
 
 /** Satu permintaan "Follow Up Resi" dari Member ke Admin/Super Admin untuk
  * sebuah penjualan yang resinya belum diisi. */
@@ -31,6 +36,43 @@ export const isResiKosong = (p: Penjualan) =>
  * (transaksi Refund memang tidak akan dikirim). */
 export const perluResi = (p: Penjualan) =>
   isResiKosong(p) && p.statusPengiriman !== 'Refund';
+
+/** Tingkat urgensi penjualan yang resinya belum diisi (indikator 3 hari):
+ * - normal     : hari ke-1 (hari penjualan diproses)  -> tombol biru
+ * - peringatan : hari ke-2                            -> tombol kuning
+ * - kritis     : hari ke-3 dan seterusnya             -> tombol merah */
+export type UrgensiResi = 'normal' | 'peringatan' | 'kritis';
+
+/** Umur penjualan dalam hari kalender WIB sejak diproses (0 = hari yang
+ * sama). Memakai waktu ISO dari database; teks tanggal hanya cadangan.
+ * null = tanggal tidak terbaca. */
+export const umurHariResi = (
+  p: Penjualan,
+  hariIni: number = hariIndexWib(),
+): number | null => {
+  let hariProses = hariIndexFromIso(p.tanggalIso);
+  if (hariProses === null && p.tanggalTransaksi) {
+    const d = parseTanggalIndo(p.tanggalTransaksi);
+    if (d) {
+      hariProses = Math.floor(
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000,
+      );
+    }
+  }
+  if (hariProses === null) return null;
+  return Math.max(0, hariIni - hariProses);
+};
+
+/** Urgensi resi berdasarkan umur: 0 hari -> normal, 1 -> peringatan,
+ * 2+ -> kritis. Tanggal tidak terbaca dianggap normal. */
+export const urgensiResi = (
+  p: Penjualan,
+  hariIni: number = hariIndexWib(),
+): UrgensiResi => {
+  const umur = umurHariResi(p, hariIni);
+  if (umur === null || umur < 1) return 'normal';
+  return umur === 1 ? 'peringatan' : 'kritis';
+};
 
 /** Member baru boleh Follow Up lagi setelah selang waktu ini, supaya
  * notifikasi ke Admin tidak dispam berulang-ulang. */
