@@ -5,6 +5,8 @@ import { Penjualan, tanggalSekarang } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
 import { FollowUpResi } from 'variables/dropshipResi';
+import { IklanTopUp } from 'variables/dropshipIklan';
+import { tanggalHariIni } from 'utils/iklanHelpers';
 import { useSyncedTable, SyncedSetter } from 'hooks/useSyncedTable';
 
 type AppDataContextType = {
@@ -18,6 +20,9 @@ type AppDataContextType = {
   setRefund: SyncedSetter<RefundRow>;
   followUps: FollowUpResi[];
   setFollowUps: SyncedSetter<FollowUpResi>;
+  /** Top Up iklan per toko. Super Admin: semua; Member: hanya miliknya (RLS). */
+  iklan: IklanTopUp[];
+  setIklan: SyncedSetter<IklanTopUp>;
   addPenjualanFromOrder: (order: OrderRow) => void;
   getTokoEmail: (namaToko: string) => string;
   getTokoOwner: (namaToko: string) => string;
@@ -197,6 +202,37 @@ const refundFromDb = (r: any): RefundRow => ({
   selesaiAt: r.selesai_at || undefined,
 });
 
+/* ============== Mapper: Iklan (Top Up) ============== */
+const iklanToDb = (t: IklanTopUp) => ({
+  id: t.id,
+  toko_id: t.tokoId ?? null,
+  nama_toko: t.namaToko,
+  owner_id: t.ownerId || null,
+  pemilik: t.pemilik,
+  jumlah: t.jumlah,
+  keterangan: t.keterangan || null,
+  // undefined (baris baru) -> tidak dikirim, DB pakai now()
+  tanggal: t.tanggalIso,
+});
+const iklanFromDb = (r: any): IklanTopUp => ({
+  id: String(r.id),
+  tokoId: r.toko_id ?? undefined,
+  namaToko: r.nama_toko || '',
+  ownerId: r.owner_id || undefined,
+  pemilik: r.pemilik || '',
+  jumlah: Number(r.jumlah) || 0,
+  keterangan: r.keterangan || undefined,
+  tanggal: r.tanggal
+    ? new Date(r.tanggal).toLocaleDateString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : tanggalHariIni(),
+  tanggalIso: r.tanggal || undefined,
+});
+
 /* ============== Mapper: Follow Up Resi ============== */
 const followUpToDb = (f: FollowUpResi) => ({
   id: f.id,
@@ -256,6 +292,14 @@ export const AppDataProvider = ({
     true,
   );
 
+  const [iklan, setIklan] = useSyncedTable<IklanTopUp>(
+    'iklan_topup',
+    [],
+    iklanToDb,
+    iklanFromDb,
+    true,
+  );
+
   const getTokoEmail = (namaToko: string): string => {
     const found = toko.find((t) => t.namaToko === namaToko);
     return found?.email || '';
@@ -310,6 +354,8 @@ export const AppDataProvider = ({
         setRefund,
         followUps,
         setFollowUps,
+        iklan,
+        setIklan,
         addPenjualanFromOrder,
         getTokoEmail,
         getTokoOwner,

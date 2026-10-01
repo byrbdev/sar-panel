@@ -17,7 +17,7 @@ import { useAuth } from 'context/AuthContext';
  * render — penting untuk performa saat data sudah banyak.
  */
 export const useScopedData = () => {
-  const { toko, orders, penjualan, refund, ...rest } = useAppData();
+  const { toko, orders, penjualan, refund, iklan, ...rest } = useAppData();
   const { profile } = useAuth();
 
   const isMember = profile?.role === 'member';
@@ -40,18 +40,25 @@ export const useScopedData = () => {
     [isMember, myId, refund],
   );
 
+  const scopedIklan = useMemo(
+    () => (isMember ? iklan.filter((t) => t.ownerId === myId) : iklan),
+    [isMember, myId, iklan],
+  );
+
   return {
     ...rest,
     toko: scopedToko,
     orders: scopedOrders,
     penjualan: scopedPenjualan,
     refund: scopedRefund,
+    iklan: scopedIklan,
     // data mentah (tidak difilter) — dipakai admin/super_admin, atau saat
     // perlu tahu daftar toko lengkap untuk keperluan dropdown, dll.
     allToko: toko,
     allOrders: orders,
     allPenjualan: penjualan,
     allRefund: refund,
+    allIklan: iklan,
     isMember,
   };
 };

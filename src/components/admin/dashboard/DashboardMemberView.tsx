@@ -6,6 +6,7 @@ import OmzetMingguan from 'components/admin/default/OmzetMingguan';
 import { useScopedData } from 'hooks/useScopedData';
 import { isInBulan } from 'utils/analisaHelpers';
 import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
+import { formatRupiahBersih, ringkasProfitBulan } from 'utils/iklanHelpers';
 import {
   MdAttachMoney,
   MdSavings,
@@ -18,7 +19,7 @@ import {
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const DashboardMemberView = () => {
-  const { toko, penjualan, orders, refund } = useScopedData();
+  const { toko, penjualan, orders, refund, iklan } = useScopedData();
   const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
   const penjualanBulanIni = penjualan.filter((p) =>
@@ -28,10 +29,14 @@ const DashboardMemberView = () => {
     isInBulan(r.tanggalIso, r.tanggal, bulanKey),
   );
   const omzetBulanIni = penjualanBulanIni.reduce((a, p) => a + p.hargaJual, 0);
-  const profitBulanIni = penjualanBulanIni.reduce(
-    (a, p) => a + (p.hargaJual - p.modalShopee),
-    0,
-  );
+  // Profit bersih = profit penjualan bulan ini - Top Up iklan bulan ini
+  // (bisa minus = hutang iklan; tertutup otomatis oleh penjualan berikutnya).
+  const profitBulanIni = ringkasProfitBulan(
+    penjualan,
+    iklan,
+    bulanKey,
+    toko,
+  ).profitBersih;
 
   return (
     <div>
@@ -49,7 +54,7 @@ const DashboardMemberView = () => {
         <Widget
           icon={<MdSavings className="h-6 w-6" />}
           title={'Profit Bersih'}
-          subtitle={formatRupiah(profitBulanIni)}
+          subtitle={formatRupiahBersih(profitBulanIni)}
         />
         <Widget
           icon={<MdShoppingBag className="h-7 w-7" />}
@@ -80,7 +85,7 @@ const DashboardMemberView = () => {
       )}
 
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-        <PenjualanChart data={penjualan} />
+        <PenjualanChart data={penjualan} iklan={iklan} />
         <OmzetMingguan data={penjualan} />
       </div>
     </div>

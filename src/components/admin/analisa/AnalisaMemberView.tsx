@@ -5,6 +5,12 @@ import LineChart from 'components/charts/LineChart';
 import { useAuth } from 'context/AuthContext';
 import { useBrutal } from 'context/BrutalContext';
 import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
+import {
+  formatRupiahBersih,
+  kurangiTrenDenganIklan,
+  topUpBulan,
+  totalTopUp,
+} from 'utils/iklanHelpers';
 import { useScopedData } from 'hooks/useScopedData';
 import {
   analisaBrutal,
@@ -35,7 +41,7 @@ const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const AnalisaMemberView = () => {
   const { profile } = useAuth();
-  const { penjualan: penjualanAll, refund: refundAll } = useScopedData();
+  const { penjualan: penjualanAll, refund: refundAll, iklan } = useScopedData();
   const { items: brutalItems } = useBrutal();
   const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
@@ -57,16 +63,23 @@ const AnalisaMemberView = () => {
   const summary = React.useMemo(
     () => ({
       omzet: penjualan.reduce((a, r) => a + r.hargaJual, 0),
-      profit: penjualan.reduce((a, r) => a + (r.hargaJual - r.modalShopee), 0),
+      // Profit bersih = profit penjualan - Top Up iklan bulan ini (bisa minus).
+      profit:
+        penjualan.reduce((a, r) => a + (r.hargaJual - r.modalShopee), 0) -
+        totalTopUp(topUpBulan(iklan, bulanKey)),
       transaksi: penjualan.length,
       refund: refund.length,
     }),
-    [penjualan, refund],
+    [penjualan, refund, iklan, bulanKey],
   );
 
   const trendBulanan = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualanAll), 6, bulanKey),
-    [penjualanAll, bulanKey],
+    () =>
+      kurangiTrenDenganIklan(
+        padOmzetBulanan(omzetPerBulan(penjualanAll), 6, bulanKey),
+        iklan,
+      ),
+    [penjualanAll, iklan, bulanKey],
   );
   const top10Produk = React.useMemo(
     () => topProdukTerlaris(penjualan, 10),
@@ -123,7 +136,7 @@ const AnalisaMemberView = () => {
           val >= 1000000 ? `${(val / 1000000).toFixed(1)}Jt` : `${val}`,
       },
     },
-    tooltip: { theme: 'dark', y: { formatter: (val: number) => formatRupiah(val) } },
+    tooltip: { theme: 'dark', y: { formatter: (val: number) => formatRupiahBersih(val) } },
     colors: ['#4318FF', '#6AD2FF'],
   };
 
@@ -160,9 +173,11 @@ const AnalisaMemberView = () => {
             <MdTrendingUp className="h-6 w-6 text-green-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Total Profit</p>
-            <p className="truncate text-lg font-bold text-green-500">
-              {formatRupiah(summary.profit)}
+            <p className="text-xs text-gray-600 dark:text-gray-400">Profit Bersih</p>
+            <p
+              className={`truncate text-lg font-bold ${summary.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {formatRupiahBersih(summary.profit)}
             </p>
           </div>
         </Card>

@@ -8,6 +8,12 @@ import { useMember } from 'context/MemberContext';
 import { useUI } from 'context/UIContext';
 import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import {
+  formatRupiahBersih,
+  kurangiTrenDenganIklan,
+  topUpBulan,
+  totalTopUp,
+} from 'utils/iklanHelpers';
+import {
   analisaBrutal,
   analisaPerPemilik,
   analisaProdukRefund,
@@ -40,7 +46,7 @@ import {
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const AnalisaSuperAdminView = () => {
-  const { penjualan, refund, toko } = useAppData();
+  const { penjualan, refund, toko, iklan } = useAppData();
   const { items: brutalItems } = useBrutal();
   const { member } = useMember();
   const { notify } = useUI();
@@ -73,29 +79,33 @@ const AnalisaSuperAdminView = () => {
 
   const summary = React.useMemo(() => {
     const omzet = dataPenjualan.reduce((a, r) => a + r.hargaJual, 0);
-    const profit = dataPenjualan.reduce(
-      (a, r) => a + (r.hargaJual - r.modalShopee),
-      0,
-    );
+    // Profit bersih = profit penjualan - Top Up iklan bulan ini (bisa minus).
+    const profit =
+      dataPenjualan.reduce((a, r) => a + (r.hargaJual - r.modalShopee), 0) -
+      totalTopUp(topUpBulan(iklan, bulanKey));
     return {
       omzet,
       profit,
       transaksi: dataPenjualan.length,
       refund: dataRefund.length,
     };
-  }, [dataPenjualan, dataRefund]);
+  }, [dataPenjualan, dataRefund, iklan, bulanKey]);
 
   const perPemilik = React.useMemo(
-    () => analisaPerPemilik(dataPenjualan, toko),
-    [dataPenjualan, toko],
+    () => analisaPerPemilik(dataPenjualan, toko, topUpBulan(iklan, bulanKey)),
+    [dataPenjualan, toko, iklan, bulanKey],
   );
   const top10Produk = React.useMemo(
     () => topProdukTerlaris(dataPenjualan, 10),
     [dataPenjualan],
   );
   const trendBulanan = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualan), 6, bulanKey), // trend selalu full history
-    [penjualan, bulanKey],
+    () =>
+      kurangiTrenDenganIklan(
+        padOmzetBulanan(omzetPerBulan(penjualan), 6, bulanKey), // trend selalu full history
+        iklan,
+      ),
+    [penjualan, iklan, bulanKey],
   );
   const brutalAnalisa = React.useMemo(
     () => analisaBrutal(brutalItems, penjualan, anggotaMap),
@@ -154,7 +164,7 @@ const AnalisaSuperAdminView = () => {
     },
     tooltip: {
       theme: 'dark',
-      y: { formatter: (val: number) => formatRupiah(val) },
+      y: { formatter: (val: number) => formatRupiahBersih(val) },
     },
     colors: ['#4318FF', '#6AD2FF'],
   };
@@ -182,9 +192,21 @@ const AnalisaSuperAdminView = () => {
       exportTim === 'semua' ? 'semua-tim' : anggotaMap[exportTim] || exportTim;
     const bulanLabel = exportBulan || 'semua-waktu';
 
+    // Top Up iklan ikut difilter dengan bulan & tim yang sama dengan penjualan.
+    let iklanFiltered = iklan;
+    if (exportBulan) {
+      iklanFiltered = iklanFiltered.filter(
+        (t) => bulanKeyOf(t.tanggalIso, t.tanggal) === exportBulan,
+      );
+    }
+    if (exportTim !== 'semua') {
+      iklanFiltered = iklanFiltered.filter((t) => t.ownerId === exportTim);
+    }
+
     await exportAnalisaToExcel({
       filtered,
       toko,
+      iklan: iklanFiltered,
       fileNameSuffix: `${bulanLabel}-${scopeLabel}`,
     });
     notify('File Excel berhasil diunduh.', 'success');
@@ -228,10 +250,12 @@ const AnalisaSuperAdminView = () => {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Total Profit
+              Profit Bersih
             </p>
-            <p className="truncate text-lg font-bold text-green-500">
-              {formatRupiah(summary.profit)}
+            <p
+              className={`truncate text-lg font-bold ${summary.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {formatRupiahBersih(summary.profit)}
             </p>
           </div>
         </Card>
@@ -343,7 +367,8 @@ const AnalisaSuperAdminView = () => {
         </div>
         <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
           Omzet & profit dari seluruh toko yang dimiliki orang yang sama
-          digabung jadi satu baris.
+          digabung jadi satu baris. Profit sudah dipotong Top Up iklan bulan
+          ini; minus berarti masih ada hutang iklan.
         </p>
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed">
@@ -394,8 +419,17 @@ const AnalisaSuperAdminView = () => {
                     <td className="truncate py-3 pr-2 text-xs font-bold text-navy-700 dark:text-white sm:text-sm">
                       {formatRupiah(t.omzet)}
                     </td>
-                    <td className="truncate py-3 pr-2 text-xs font-bold text-green-500 sm:text-sm">
-                      {formatRupiah(t.profit)}
+                    <td className="py-3 pr-2">
+                      <p
+                        className={`truncate text-xs font-bold sm:text-sm ${t.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                      >
+                        {formatRupiahBersih(t.profit)}
+                      </p>
+                      {t.topUp > 0 && (
+                        <p className="truncate text-[10px] text-gray-500 dark:text-gray-400">
+                          Iklan -{formatRupiahBersih(t.topUp)}
+                        </p>
+                      )}
                     </td>
                     <td className="truncate py-3 pr-2 text-xs text-navy-700 dark:text-white sm:text-sm">
                       {t.transaksi}

@@ -2,6 +2,7 @@ import type { Penjualan } from 'variables/dropshipPenjualan';
 import { jumlahLabel } from 'variables/dropshipPenjualan';
 import type { PemulihanRow } from 'variables/dropshipPemulihan';
 import { analisaPerPemilik, topProdukTerlaris } from 'utils/analisaHelpers';
+import type { IklanTopUp } from 'variables/dropshipIklan';
 
 const HEADER_FILL = 'FF4318FF';
 const HEADER_FONT = 'FFFFFFFF';
@@ -10,10 +11,12 @@ const CURRENCY_FMT = '#,##0';
 export const exportAnalisaToExcel = async (params: {
   filtered: Penjualan[];
   toko: PemulihanRow[];
+  /** Top Up iklan pada periode/tim yang sama; memotong profit per pemilik. */
+  iklan?: IklanTopUp[];
   fileNameSuffix: string;
 }) => {
   const ExcelJS = (await import('exceljs')).default;
-  const { filtered, toko, fileNameSuffix } = params;
+  const { filtered, toko, fileNameSuffix, iklan = [] } = params;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'SAR Panel By RB';
@@ -119,11 +122,13 @@ export const exportAnalisaToExcel = async (params: {
     { header: 'Jumlah Toko', key: 'jumlahToko', width: 14 },
     { header: 'Daftar Toko', key: 'daftarToko', width: 40 },
     { header: 'Omzet', key: 'omzet', width: 16 },
-    { header: 'Profit', key: 'profit', width: 16 },
+    { header: 'Profit Penjualan', key: 'profitKotor', width: 18 },
+    { header: 'Top Up Iklan', key: 'topUp', width: 16 },
+    { header: 'Profit Bersih', key: 'profit', width: 16 },
     { header: 'Transaksi', key: 'transaksi', width: 12 },
   ];
 
-  const perPemilik = analisaPerPemilik(filtered, toko);
+  const perPemilik = analisaPerPemilik(filtered, toko, iklan);
   perPemilik.forEach((p, i) => {
     wsPemilik.addRow({
       peringkat: i + 1,
@@ -131,12 +136,16 @@ export const exportAnalisaToExcel = async (params: {
       jumlahToko: p.jumlahToko,
       daftarToko: p.daftarToko.join(', '),
       omzet: p.omzet,
+      profitKotor: p.profitKotor,
+      topUp: p.topUp,
       profit: p.profit,
       transaksi: p.transaksi,
     });
   });
 
   const totalOmzetPemilik = perPemilik.reduce((a, p) => a + p.omzet, 0);
+  const totalProfitKotorPemilik = perPemilik.reduce((a, p) => a + p.profitKotor, 0);
+  const totalTopUpPemilik = perPemilik.reduce((a, p) => a + p.topUp, 0);
   const totalProfitPemilik = perPemilik.reduce((a, p) => a + p.profit, 0);
   const totalTransaksiPemilik = perPemilik.reduce((a, p) => a + p.transaksi, 0);
 
@@ -146,11 +155,17 @@ export const exportAnalisaToExcel = async (params: {
     jumlahToko: '',
     daftarToko: '',
     omzet: totalOmzetPemilik,
+    profitKotor: totalProfitKotorPemilik,
+    topUp: totalTopUpPemilik,
     profit: totalProfitPemilik,
     transaksi: totalTransaksiPemilik,
   });
 
-  styleSheet(wsPemilik, ['omzet', 'profit'], totalRowPemilik.number);
+  styleSheet(
+    wsPemilik,
+    ['omzet', 'profitKotor', 'topUp', 'profit'],
+    totalRowPemilik.number,
+  );
 
   /* ================= Sheet 3: Top Produk ================= */
   const wsProduk = wb.addWorksheet('Top Produk');

@@ -7,7 +7,7 @@ import {
   MdPointOfSale,
   MdLocalShipping,
   MdAssignmentReturn,
-  MdPeopleAlt,
+  MdCampaign,
   MdInsights,
   MdWhatshot,
   MdGroups,
@@ -51,10 +51,10 @@ const routes = [
     roles: ['super_admin', 'admin', 'member'],
   },
   {
-    name: 'Data Buyer',
+    name: 'Iklan',
     layout: '/admin',
-    path: 'data-buyer',
-    icon: <MdPeopleAlt className="h-6 w-6" />,
+    path: 'iklan',
+    icon: <MdCampaign className="h-6 w-6" />,
     roles: ['super_admin'],
   },
   {

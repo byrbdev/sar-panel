@@ -137,10 +137,12 @@ export async function POST(req: NextRequest) {
       { data: penjualanRows },
       { data: refundRows },
       { data: profileRows },
+      { data: iklanRows },
     ] = await Promise.all([
       supabaseAdmin.from('penjualan').select('*'),
       supabaseAdmin.from('refund').select('*'),
       supabaseAdmin.from('profiles').select('id, nama, role'),
+      supabaseAdmin.from('iklan_topup').select('*'),
     ]);
 
     const namaMember = new Map<string, string>();
@@ -184,9 +186,9 @@ export async function POST(req: NextRequest) {
     const R_W = [105, 160, 170, 130, 300, 190, 95, 120, 120];
     const M_HEAD = [
       'Nama Member', 'Jumlah Transaksi', 'Total Omzet', 'Total Modal',
-      'Total Profit', 'Total Refund',
+      'Profit Penjualan', 'Top Up Iklan', 'Profit Bersih', 'Total Refund',
     ];
-    const M_W = [180, 115, 135, 135, 135, 135];
+    const M_W = [180, 115, 135, 135, 140, 130, 140, 135];
 
     const P_START = 0;
     const R_START = P_START + P_HEAD.length + GAP;
@@ -466,14 +468,21 @@ export async function POST(req: NextRequest) {
     // ---------- Blok 3: Total Omzet & Profit per Member ----------
     const perMember = new Map<
       string,
-      { nama: string; transaksi: number; omzet: number; modal: number; refund: number }
+      {
+        nama: string;
+        transaksi: number;
+        omzet: number;
+        modal: number;
+        refund: number;
+        topUp: number;
+      }
     >();
     const getM = (ownerId: string | null) => {
       const key = ownerId || 'tanpa-member';
       if (!perMember.has(key)) {
         perMember.set(key, {
           nama: (ownerId && namaMember.get(ownerId)) || '(Tanpa Member)',
-          transaksi: 0, omzet: 0, modal: 0, refund: 0,
+          transaksi: 0, omzet: 0, modal: 0, refund: 0, topUp: 0,
         });
       }
       return perMember.get(key)!;
@@ -487,6 +496,13 @@ export async function POST(req: NextRequest) {
     refundBulanIni.forEach((r: any) => {
       getM(r.owner_id).refund += Number(r.omzet) || 0;
     });
+    // Top Up iklan bulan ini memotong profit member pemilik toko.
+    // Member yang belum punya penjualan tetap muncul (profit bersih minus).
+    (iklanRows || [])
+      .filter((t: any) => inThisMonth(t.tanggal))
+      .forEach((t: any) => {
+        getM(t.owner_id).topUp += Number(t.jumlah) || 0;
+      });
     const memberSorted = Array.from(perMember.values()).sort(
       (a, b) => b.omzet - a.omzet,
     );
@@ -494,16 +510,18 @@ export async function POST(req: NextRequest) {
     const gO = memberSorted.reduce((a, m) => a + m.omzet, 0);
     const gM = memberSorted.reduce((a, m) => a + m.modal, 0);
     const gR = memberSorted.reduce((a, m) => a + m.refund, 0);
+    const gI = memberSorted.reduce((a, m) => a + m.topUp, 0);
     renderBlock({
       start: M_START,
       title: `TOTAL OMZET & PROFIT PER MEMBER  |  ${bulanLabel.toUpperCase()}`,
       headers: M_HEAD,
       data: memberSorted.map((m) => [
-        m.nama, m.transaksi, m.omzet, m.modal, m.omzet - m.modal, m.refund,
+        m.nama, m.transaksi, m.omzet, m.modal, m.omzet - m.modal,
+        m.topUp, m.omzet - m.modal - m.topUp, m.refund,
       ]),
-      total: ['TOTAL', gT, gO, gM, gO - gM, gR],
+      total: ['TOTAL', gT, gO, gM, gO - gM, gI, gO - gM - gI, gR],
       theme: THEME_MEMBER,
-      currencyCols: [2, 3, 4, 5],
+      currencyCols: [2, 3, 4, 5, 6, 7],
       centerCols: [1],
       emptyText: '(Belum ada data member bulan ini)',
     });

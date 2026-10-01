@@ -1,5 +1,6 @@
 import { Penjualan, jumlahOf } from 'variables/dropshipPenjualan';
 import { RefundRow } from 'variables/dropshipRefund';
+import { IklanTopUp } from 'variables/dropshipIklan';
 import { BrutalItem } from 'variables/dropshipBrutal';
 import { PemulihanRow } from 'variables/dropshipPemulihan';
 import { bulanKeyFromIso, bulanKeyWib } from 'utils/bulanJakarta';
@@ -130,7 +131,12 @@ export type PemilikAnalisa = {
   jumlahToko: number;
   daftarToko: string[];
   omzet: number;
+  /** Profit BERSIH = profit penjualan - Top Up iklan (bisa minus = hutang). */
   profit: number;
+  /** Profit penjualan sebelum dipotong Top Up iklan. */
+  profitKotor: number;
+  /** Total Top Up iklan yang memotong profit pemilik ini. */
+  topUp: number;
   transaksi: number;
 };
 
@@ -142,28 +148,50 @@ export type PemilikAnalisa = {
 export const analisaPerPemilik = (
   data: Penjualan[],
   tokoList: PemulihanRow[],
+  /** Top Up iklan (sudah difilter ke periode yang sama dengan `data`). */
+  topups: IklanTopUp[] = [],
 ): PemilikAnalisa[] => {
   const map = new Map<string, PemilikAnalisa>();
+  const baru = (pemilik: string): PemilikAnalisa => ({
+    pemilik,
+    jumlahToko: 0,
+    daftarToko: [] as string[],
+    omzet: 0,
+    profit: 0,
+    profitKotor: 0,
+    topUp: 0,
+    transaksi: 0,
+  });
   data.forEach((row) => {
     const pemilik = getTokoOwner(row.namaToko, tokoList);
-    const existing = map.get(pemilik) || {
-      pemilik,
-      jumlahToko: 0,
-      daftarToko: [] as string[],
-      omzet: 0,
-      profit: 0,
-      transaksi: 0,
-    };
+    const existing = map.get(pemilik) || baru(pemilik);
     if (!existing.daftarToko.includes(row.namaToko)) {
       existing.daftarToko.push(row.namaToko);
       existing.jumlahToko = existing.daftarToko.length;
     }
     existing.omzet += row.hargaJual;
     existing.profit += row.hargaJual - row.modalShopee;
+    existing.profitKotor += row.hargaJual - row.modalShopee;
     existing.transaksi += 1;
     map.set(pemilik, existing);
   });
-  return Array.from(map.values()).sort((a, b) => b.omzet - a.omzet);
+  // Top Up iklan memotong profit pemiliknya. Pemilik yang belum punya
+  // penjualan tetap muncul (profit minus = hutang iklan).
+  topups.forEach((t) => {
+    const dariToko = getTokoOwner(t.namaToko, tokoList);
+    const pemilik = dariToko !== '-' ? dariToko : t.pemilik || '-';
+    const existing = map.get(pemilik) || baru(pemilik);
+    if (!existing.daftarToko.includes(t.namaToko)) {
+      existing.daftarToko.push(t.namaToko);
+      existing.jumlahToko = existing.daftarToko.length;
+    }
+    existing.topUp += t.jumlah;
+    existing.profit -= t.jumlah;
+    map.set(pemilik, existing);
+  });
+  return Array.from(map.values()).sort(
+    (a, b) => b.omzet - a.omzet || b.profit - a.profit,
+  );
 };
 
 export type ProdukAnalisa = {

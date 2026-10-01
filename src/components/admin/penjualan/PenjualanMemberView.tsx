@@ -17,6 +17,11 @@ import { useAuth } from 'context/AuthContext';
 import { useScopedData } from 'hooks/useScopedData';
 import { useUI } from 'context/UIContext';
 import { StatusPengiriman, Penjualan } from 'variables/dropshipPenjualan';
+import {
+  formatRupiahBersih,
+  topUpHasilFilter,
+  totalTopUp,
+} from 'utils/iklanHelpers';
 import { MdAdd, MdSearch, MdSend } from 'react-icons/md';
 
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
@@ -31,7 +36,7 @@ const statusStyle: Record<StatusPengiriman, string> = {
 const PenjualanMemberView = () => {
   const { profile } = useAuth();
   const { setOrders, orders: allOrders } = useAppData();
-  const { toko, penjualan, orders } = useScopedData();
+  const { toko, penjualan, orders, iklan } = useScopedData();
   const { notify } = useUI();
   const [search, setSearch] = React.useState('');
   const [tanggalFilter, setTanggalFilter] =
@@ -105,17 +110,32 @@ const PenjualanMemberView = () => {
     );
   });
 
-  const summary = React.useMemo(
-    () => ({
-      omzet: filteredPenjualan.reduce((a, r) => a + r.hargaJual, 0),
-      profit: filteredPenjualan.reduce(
-        (a, r) => a + (r.hargaJual - r.modalShopee),
-        0,
+  // Top Up iklan yang ikut hasil filter (tanggal + nama toko pada pencarian).
+  const topUpFiltered = React.useMemo(
+    () =>
+      topUpHasilFilter(
+        iklan,
+        (t) => matchTanggalFilter(t, tanggalFilter),
+        search,
       ),
-      menunggu: orders.length,
-    }),
-    [filteredPenjualan, orders],
+    [iklan, tanggalFilter, search],
   );
+
+  const summary = React.useMemo(() => {
+    const iklanTotal = totalTopUp(topUpFiltered);
+    return {
+      omzet: filteredPenjualan.reduce((a, r) => a + r.hargaJual, 0),
+      // Profit = profit penjualan hasil filter - Top Up iklan hasil filter
+      // (bisa minus = hutang iklan).
+      profit:
+        filteredPenjualan.reduce(
+          (a, r) => a + (r.hargaJual - r.modalShopee),
+          0,
+        ) - iklanTotal,
+      iklan: iklanTotal,
+      menunggu: orders.length,
+    };
+  }, [filteredPenjualan, topUpFiltered, orders]);
 
   return (
     <div className="mt-3 flex flex-col gap-5">
@@ -135,9 +155,16 @@ const PenjualanMemberView = () => {
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Profit (hasil filter)
             </p>
-            <p className="truncate text-lg font-bold text-green-500">
-              {formatRupiah(summary.profit)}
+            <p
+              className={`truncate text-lg font-bold ${summary.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {formatRupiahBersih(summary.profit)}
             </p>
+            {summary.iklan > 0 && (
+              <p className="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                Sudah dipotong iklan {formatRupiahBersih(summary.iklan)}
+              </p>
+            )}
           </div>
         </Card>
         <Card extra="!flex-row items-center gap-3 p-4">

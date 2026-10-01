@@ -13,6 +13,11 @@ import RefundForm, {
 } from 'components/admin/refund/RefundForm';
 import { Penjualan, StatusPengiriman } from 'variables/dropshipPenjualan';
 import { useAppData } from 'context/AppDataContext';
+import {
+  formatRupiahBersih,
+  topUpHasilFilter,
+  totalTopUp,
+} from 'utils/iklanHelpers';
 import { useUI } from 'context/UIContext';
 import { useMemberName } from 'hooks/useMemberName';
 import { usePagination } from 'hooks/usePagination';
@@ -50,6 +55,7 @@ const PenjualanAdminView = () => {
     setRefund,
     getTokoEmail,
     toko,
+    iklan,
   } = useAppData();
   const { notify, confirm } = useUI();
   const { resolve: resolveMember } = useMemberName();
@@ -118,17 +124,30 @@ const PenjualanAdminView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, tanggalFilter]);
 
-  const summary = React.useMemo(
-    () => ({
-      omzet: filteredData.reduce((a, r) => a + r.hargaJual, 0),
-      profit: filteredData.reduce(
-        (a, r) => a + (r.hargaJual - r.modalShopee),
-        0,
+  // Top Up iklan yang ikut hasil filter (tanggal + nama toko pada pencarian).
+  const topUpFiltered = React.useMemo(
+    () =>
+      topUpHasilFilter(
+        iklan,
+        (t) => matchTanggalFilter(t, tanggalFilter),
+        search,
       ),
-      total: filteredData.length,
-    }),
-    [filteredData],
+    [iklan, tanggalFilter, search],
   );
+
+  const summary = React.useMemo(() => {
+    const iklanTotal = totalTopUp(topUpFiltered);
+    return {
+      omzet: filteredData.reduce((a, r) => a + r.hargaJual, 0),
+      // Profit Bersih = profit penjualan hasil filter - Top Up iklan hasil
+      // filter (bisa minus = hutang iklan).
+      profit:
+        filteredData.reduce((a, r) => a + (r.hargaJual - r.modalShopee), 0) -
+        iklanTotal,
+      iklan: iklanTotal,
+      total: filteredData.length,
+    };
+  }, [filteredData, topUpFiltered]);
 
   const openAdd = () => {
     setEditId(null);
@@ -283,9 +302,16 @@ const PenjualanAdminView = () => {
             <p className="text-xs text-gray-600 dark:text-gray-400">
               Profit Bersih
             </p>
-            <p className="text-lg font-bold text-green-500">
-              {formatRupiah(summary.profit)}
+            <p
+              className={`text-lg font-bold ${summary.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {formatRupiahBersih(summary.profit)}
             </p>
+            {summary.iklan > 0 && (
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Sudah dipotong iklan {formatRupiahBersih(summary.iklan)}
+              </p>
+            )}
           </div>
         </Card>
         <Card extra="!flex-row items-center gap-3 p-4">

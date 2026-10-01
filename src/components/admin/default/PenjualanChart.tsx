@@ -13,6 +13,8 @@ import { useAppData } from 'context/AppDataContext';
 import { omzetPerBulan, padOmzetBulanan } from 'utils/analisaHelpers';
 import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
 import { Penjualan } from 'variables/dropshipPenjualan';
+import { IklanTopUp } from 'variables/dropshipIklan';
+import { kurangiTrenDenganIklan } from 'utils/iklanHelpers';
 
 const formatRupiahSingkat = (n: number) => {
   if (n >= 1000000) return `Rp${(n / 1000000).toFixed(1).replace('.', ',')} Jt`;
@@ -20,16 +22,22 @@ const formatRupiahSingkat = (n: number) => {
   return `Rp${n.toLocaleString('id-ID')}`;
 };
 
-const PenjualanChart = (props: { data?: Penjualan[] }) => {
-  const { penjualan: allPenjualan } = useAppData();
+const PenjualanChart = (props: { data?: Penjualan[]; iklan?: IklanTopUp[] }) => {
+  const { penjualan: allPenjualan, iklan: allIklan } = useAppData();
   const penjualan = props.data ?? allPenjualan;
+  const iklan = props.iklan ?? allIklan;
   const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
 
   // Grafik selalu berakhir di bulan berjalan (nilai 0 kalau belum ada
   // transaksi), sehingga "Bulan ini" tidak salah membaca bulan lalu.
+  // Profit di grafik = profit penjualan dikurangi Top Up iklan bulan yang sama.
   const trend = React.useMemo(
-    () => padOmzetBulanan(omzetPerBulan(penjualan).slice(-6), 6, bulanKey),
-    [penjualan, bulanKey],
+    () =>
+      kurangiTrenDenganIklan(
+        padOmzetBulanan(omzetPerBulan(penjualan).slice(-6), 6, bulanKey),
+        iklan,
+      ),
+    [penjualan, iklan, bulanKey],
   );
 
   const bulanIniOmzet = trend[trend.length - 1]?.omzet || 0;

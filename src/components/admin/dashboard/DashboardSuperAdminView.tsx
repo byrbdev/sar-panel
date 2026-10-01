@@ -7,6 +7,7 @@ import Widget from 'components/widget/Widget';
 import { useAppData } from 'context/AppDataContext';
 import { isInBulan } from 'utils/analisaHelpers';
 import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
+import { formatRupiahBersih, ringkasProfitBulan } from 'utils/iklanHelpers';
 import {
   MdAttachMoney,
   MdSavings,
@@ -19,7 +20,7 @@ import {
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const DashboardSuperAdminView = () => {
-  const { refund, penjualan, orders } = useAppData();
+  const { refund, penjualan, orders, iklan, toko } = useAppData();
   const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
   const penjualanBulanIni = penjualan.filter((p) =>
     isInBulan(p.tanggalIso, p.tanggalTransaksi, bulanKey),
@@ -28,10 +29,13 @@ const DashboardSuperAdminView = () => {
     isInBulan(r.tanggalIso, r.tanggal, bulanKey),
   );
   const omzetBulanIni = penjualanBulanIni.reduce((a, p) => a + p.hargaJual, 0);
-  const profitBulanIni = penjualanBulanIni.reduce(
-    (a, p) => a + (p.hargaJual - p.modalShopee),
-    0,
-  );
+  // Profit bersih semua member = profit penjualan - Top Up iklan bulan ini.
+  const profitBulanIni = ringkasProfitBulan(
+    penjualan,
+    iklan,
+    bulanKey,
+    toko,
+  ).profitBersih;
   const jumlahProsesRefund = refundBulanIni.filter(
     (r) => r.status === 'Proses',
   ).length;
@@ -48,7 +52,7 @@ const DashboardSuperAdminView = () => {
         <Widget
           icon={<MdSavings className="h-6 w-6" />}
           title={'Profit Bersih'}
-          subtitle={formatRupiah(profitBulanIni)}
+          subtitle={formatRupiahBersih(profitBulanIni)}
         />
         <Widget
           icon={<MdShoppingBag className="h-7 w-7" />}
