@@ -69,6 +69,21 @@ export const isInBulan = (
   bulanKey: string,
 ): boolean => bulanKeyOf(iso, tanggalIndo) === bulanKey;
 
+/**
+ * Apakah refund ini masih ditampilkan di halaman Refund pada bulan `bulanKey`?
+ * - Status Belum / Proses: SELALU tampil (masih harus ditindaklanjuti), meski
+ *   dibuat di bulan sebelumnya.
+ * - Status Selesai: hanya tampil di bulan refund itu dibuat, lalu otomatis
+ *   hilang begitu bulan berganti. Datanya tidak dihapus dari database.
+ * Tanggal tidak terbaca ('unknown') dibiarkan tampil supaya data tidak
+ * hilang diam-diam.
+ */
+export const refundTampilDiBulan = (r: RefundRow, bulanKey: string): boolean => {
+  if (r.status !== 'Selesai') return true;
+  const key = bulanKeyOf(r.tanggalIso, r.tanggal);
+  return key === 'unknown' || key === bulanKey;
+};
+
 /** Cari nama pemilik toko dari database Toko berdasarkan nama toko */
 export const getTokoOwner = (
   namaToko: string,

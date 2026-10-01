@@ -9,6 +9,8 @@ import Card from 'components/card';
 import ModalOverlay from 'components/modal/ModalOverlay';
 import RefundDetailModal from 'components/admin/refund/RefundDetailModal';
 import { useScopedData } from 'hooks/useScopedData';
+import { useBulanBerjalan } from 'hooks/useBulanBerjalan';
+import { refundTampilDiBulan } from 'utils/analisaHelpers';
 import { RefundRow, RefundStatus } from 'variables/dropshipRefund';
 import { MdSearch } from 'react-icons/md';
 
@@ -22,12 +24,18 @@ const statusStyle: Record<RefundStatus, string> = {
 
 const RefundMemberView = () => {
   const { refund: data } = useScopedData();
+  const bulanKey = useBulanBerjalan(); // ganti bulan otomatis tanpa refresh
   const [search, setSearch] = React.useState('');
   const [tanggalFilter, setTanggalFilter] =
     React.useState<TanggalFilterValue>(emptyTanggalFilter);
   const [selected, setSelected] = React.useState<RefundRow | null>(null);
 
+  // Refund Selesai dari bulan sebelumnya otomatis disembunyikan. Kalau filter
+  // tanggal dipakai, riwayat lama tetap bisa dilihat.
+  const filterAktif =
+    !!tanggalFilter.tanggal || !!tanggalFilter.bulan || !!tanggalFilter.tahun;
   const filtered = data.filter((r) => {
+    if (!filterAktif && !refundTampilDiBulan(r, bulanKey)) return false;
     if (!matchTanggalFilter(r.tanggal, tanggalFilter)) return false;
     const term = search.toLowerCase();
     if (!term) return true;
