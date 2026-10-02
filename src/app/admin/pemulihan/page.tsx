@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Card from 'components/card';
+import DendaTokoSection from 'components/admin/denda/DendaTokoSection';
 import { useAppData } from 'context/AppDataContext';
 import { useMember } from 'context/MemberContext';
 import { MdStorefront, MdPeople } from 'react-icons/md';
@@ -120,6 +121,9 @@ const TokoPage = () => {
           </div>
         )}
       </Card>
+
+      {/* Section Denda Toko (per bulan) */}
+      <DendaTokoSection />
     </div>
   );
 };

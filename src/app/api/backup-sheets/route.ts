@@ -54,6 +54,12 @@ const THEME_REFUND: Theme = {
   zebra: hex('#FFEFEF'),
   total: hex('#FFD3D3'),
 };
+const THEME_DENDA: Theme = {
+  section: hex('#E08A00'),
+  header: hex('#A85F00'),
+  zebra: hex('#FFF6E5'),
+  total: hex('#FFE2A8'),
+};
 const THEME_MEMBER: Theme = {
   section: hex('#05A672'),
   header: hex('#04704E'),
@@ -138,11 +144,13 @@ export async function POST(req: NextRequest) {
       { data: refundRows },
       { data: profileRows },
       { data: iklanRows },
+      { data: dendaRows },
     ] = await Promise.all([
       supabaseAdmin.from('penjualan').select('*'),
       supabaseAdmin.from('refund').select('*'),
       supabaseAdmin.from('profiles').select('id, nama, role'),
       supabaseAdmin.from('iklan_topup').select('*'),
+      supabaseAdmin.from('denda_toko').select('*'),
     ]);
 
     const namaMember = new Map<string, string>();
@@ -156,6 +164,11 @@ export async function POST(req: NextRequest) {
       .sort(byDateAsc('tanggal_transaksi'));
     const refundBulanIni = (refundRows || [])
       .filter((r: any) => inThisMonth(r.tanggal))
+      .sort(byDateAsc('tanggal'));
+
+    // Denda Toko bulan ini (murni pencatatan, tidak masuk hitungan profit).
+    const dendaBulanIni = (dendaRows || [])
+      .filter((d: any) => inThisMonth(d.tanggal))
       .sort(byDateAsc('tanggal'));
 
     const fmtTanggal = (iso: string) => {
@@ -193,7 +206,10 @@ export async function POST(req: NextRequest) {
     const P_START = 0;
     const R_START = P_START + P_HEAD.length + GAP;
     const M_START = R_START + R_HEAD.length + GAP;
-    const TOTAL_COLS = M_START + M_HEAD.length;
+    const D_HEAD = ['Tanggal', 'Nama Toko', 'Pemilik Toko', 'Keterangan', 'Jumlah Denda'];
+    const D_W = [105, 190, 150, 300, 135];
+    const D_START = M_START + M_HEAD.length + GAP;
+    const TOTAL_COLS = D_START + D_HEAD.length;
 
     const grid: any[][] = [];
     const put = (r: number, c: number, v: any) => {
@@ -526,6 +542,32 @@ export async function POST(req: NextRequest) {
       emptyText: '(Belum ada data member bulan ini)',
     });
 
+    // ---------- Blok 4: Denda Toko ----------
+    // Murni data: TIDAK dikurangkan dari omzet/profit blok mana pun.
+    let totalDendaB = 0;
+    const dendaData = dendaBulanIni.map((d: any) => {
+      const jumlah = Number(d.jumlah) || 0;
+      totalDendaB += jumlah;
+      return [
+        fmtTanggal(d.tanggal),
+        d.nama_toko || '-',
+        d.pemilik || namaMember.get(d.owner_id) || '-',
+        d.keterangan || '-',
+        jumlah,
+      ];
+    });
+    renderBlock({
+      start: D_START,
+      title: `DENDA TOKO BULAN ${bulanLabel.toUpperCase()}`,
+      headers: D_HEAD,
+      data: dendaData,
+      total: ['TOTAL', '', '', '', totalDendaB],
+      theme: THEME_DENDA,
+      currencyCols: [4],
+      centerCols: [0],
+      emptyText: '(Belum ada denda toko bulan ini)',
+    });
+
     // ---------- Lebar kolom, tinggi baris, freeze ----------
     const widths: number[] = [];
     P_W.forEach((w) => widths.push(w));
@@ -533,6 +575,8 @@ export async function POST(req: NextRequest) {
     R_W.forEach((w) => widths.push(w));
     for (let i = 0; i < GAP; i++) widths.push(28);
     M_W.forEach((w) => widths.push(w));
+    for (let i = 0; i < GAP; i++) widths.push(28);
+    D_W.forEach((w) => widths.push(w));
     widths.forEach((w, i) =>
       styles.push({
         updateDimensionProperties: {
@@ -642,6 +686,7 @@ export async function POST(req: NextRequest) {
         penjualan: penjualanBulanIni.length,
         refund: refundBulanIni.length,
         member: perMember.size,
+        denda: dendaBulanIni.length,
       },
       spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${sheetId}/edit#gid=${sheetIdNum}`,
     });

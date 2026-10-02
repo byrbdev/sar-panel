@@ -3,6 +3,8 @@ import { jumlahLabel } from 'variables/dropshipPenjualan';
 import type { PemulihanRow } from 'variables/dropshipPemulihan';
 import { analisaPerPemilik, topProdukTerlaris } from 'utils/analisaHelpers';
 import type { IklanTopUp } from 'variables/dropshipIklan';
+import type { DendaToko } from 'variables/dropshipDenda';
+import { bulanKeyDenda, labelBulanKey } from 'utils/dendaHelpers';
 
 const HEADER_FILL = 'FF4318FF';
 const HEADER_FONT = 'FFFFFFFF';
@@ -13,10 +15,12 @@ export const exportAnalisaToExcel = async (params: {
   toko: PemulihanRow[];
   /** Top Up iklan pada periode/tim yang sama; memotong profit per pemilik. */
   iklan?: IklanTopUp[];
+  /** Denda Toko pada periode/tim yang sama. Hanya sheet data, tidak memotong profit. */
+  denda?: DendaToko[];
   fileNameSuffix: string;
 }) => {
   const ExcelJS = (await import('exceljs')).default;
-  const { filtered, toko, fileNameSuffix, iklan = [] } = params;
+  const { filtered, toko, fileNameSuffix, iklan = [], denda = [] } = params;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'SAR Panel By RB';
@@ -196,6 +200,51 @@ export const exportAnalisaToExcel = async (params: {
   });
 
   styleSheet(wsProduk, [], totalRowProduk.number);
+
+  /* ================= Sheet 4: Denda Toko (per bulan) ================= */
+  // Murni pencatatan: tidak dikurangkan dari omzet/profit di sheet mana pun.
+  const wsDenda = wb.addWorksheet('Denda Toko');
+  wsDenda.columns = [
+    { header: 'Bulan', key: 'bulan', width: 18 },
+    { header: 'Tanggal', key: 'tanggal', width: 14 },
+    { header: 'Nama Toko', key: 'toko', width: 26 },
+    { header: 'Pemilik Toko', key: 'pemilik', width: 22 },
+    { header: 'Keterangan', key: 'keterangan', width: 44 },
+    { header: 'Jumlah Denda', key: 'jumlah', width: 18 },
+  ];
+
+  // Urut per bulan (lama -> baru) lalu tanggal, supaya terkelompok per bulan.
+  const dendaUrut = [...denda].sort((a, b) => {
+    const ka = bulanKeyDenda(a);
+    const kb = bulanKeyDenda(b);
+    if (ka !== kb) return ka < kb ? -1 : 1;
+    return (a.tanggalIso || '') < (b.tanggalIso || '') ? -1 : 1;
+  });
+  dendaUrut.forEach((d) => {
+    wsDenda.addRow({
+      bulan: labelBulanKey(bulanKeyDenda(d)),
+      tanggal: d.tanggal,
+      toko: d.namaToko,
+      pemilik: d.pemilik || '-',
+      keterangan: d.keterangan || '-',
+      jumlah: d.jumlah,
+    });
+  });
+  const totalRowDenda = wsDenda.addRow({
+    bulan: '',
+    tanggal: '',
+    toko: '',
+    pemilik: '',
+    keterangan: 'TOTAL',
+    jumlah: dendaUrut.reduce((a, d) => a + (Number(d.jumlah) || 0), 0),
+  });
+  styleSheet(
+    wsDenda,
+    ['jumlah'],
+    totalRowDenda.number,
+    ['keterangan', 'toko', 'pemilik'],
+    ['bulan', 'tanggal'],
+  );
 
   /* ================= Download ================= */
   const buffer = await wb.xlsx.writeBuffer();

@@ -46,7 +46,7 @@ import {
 const formatRupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 const AnalisaSuperAdminView = () => {
-  const { penjualan, refund, toko, iklan } = useAppData();
+  const { penjualan, refund, toko, iklan, denda } = useAppData();
   const { items: brutalItems } = useBrutal();
   const { member } = useMember();
   const { notify } = useUI();
@@ -203,10 +203,22 @@ const AnalisaSuperAdminView = () => {
       iklanFiltered = iklanFiltered.filter((t) => t.ownerId === exportTim);
     }
 
+    // Denda Toko ikut difilter bulan & tim yang sama (hanya data, tidak memotong profit).
+    let dendaFiltered = denda;
+    if (exportBulan) {
+      dendaFiltered = dendaFiltered.filter(
+        (d) => bulanKeyOf(d.tanggalIso, d.tanggal) === exportBulan,
+      );
+    }
+    if (exportTim !== 'semua') {
+      dendaFiltered = dendaFiltered.filter((d) => d.ownerId === exportTim);
+    }
+
     await exportAnalisaToExcel({
       filtered,
       toko,
       iklan: iklanFiltered,
+      denda: dendaFiltered,
       fileNameSuffix: `${bulanLabel}-${scopeLabel}`,
     });
     notify('File Excel berhasil diunduh.', 'success');
