@@ -120,20 +120,20 @@ select option {
  * mode. Dark mode dideteksi dari class `dark` di <html> ATAU <body>. */
 html {
   --sbm-track: #f4f7fe;
-  --sbm-thumb: #a3aed0;
-  --sbm-thumb-hover: #707eae;
+  --sbm-thumb: #7482b0;
+  --sbm-thumb-hover: #4f5d8f;
 }
 html.dark {
   --sbm-track: #0b1437;
-  --sbm-thumb: #3a4a85;
-  --sbm-thumb-hover: #5266b0;
+  --sbm-thumb: #5a6eb5;
+  --sbm-thumb-hover: #7b90d6;
   background-color: #0b1437;
   color-scheme: dark;
 }
 html:has(body.dark) {
   --sbm-track: #0b1437;
-  --sbm-thumb: #3a4a85;
-  --sbm-thumb-hover: #5266b0;
+  --sbm-thumb: #5a6eb5;
+  --sbm-thumb-hover: #7b90d6;
   background-color: #0b1437;
   color-scheme: dark;
 }
