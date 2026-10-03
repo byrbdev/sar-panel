@@ -113,9 +113,10 @@ const DendaPage = () => {
               Denda
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Menampilkan {labelBulanKey(bulanAktif)}. Ganti bulan otomatis
-              kosong lagi; pilih bulan lain untuk melihat riwayat. Denda hanya
-              pencatatan, tidak mengurangi omzet maupun profit.
+              Daftar denda tokomu bulan {labelBulanKey(bulanAktif)}. Setiap
+              awal bulan daftar ini mulai dari kosong lagi, dan catatan bulan
+              lalu tetap bisa dilihat lewat filter bulan. Nominal denda hanya
+              dicatat dan tidak mengurangi omzet maupun profit.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

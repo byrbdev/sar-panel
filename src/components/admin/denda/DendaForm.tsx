@@ -89,7 +89,7 @@ const DendaForm = (props: {
       />
 
       <p className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">
-        Denda hanya dicatat sebagai data. Tidak mengurangi omzet maupun profit.
+        Denda ini hanya dicatat, tidak mengurangi omzet maupun profit.
       </p>
     </div>
   );

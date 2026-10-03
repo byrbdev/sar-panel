@@ -144,9 +144,9 @@ const DendaTokoSection = () => {
             Denda Toko
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Menampilkan {labelBulanKey(bulanAktif)}. Pilih bulan lain untuk
-            melihat riwayat. Denda hanya pencatatan, tidak mengurangi omzet
-            maupun profit.
+            Daftar denda toko bulan {labelBulanKey(bulanAktif)}. Mau lihat
+            bulan sebelumnya? Pilih bulannya di kolom filter. Nominal denda
+            hanya dicatat dan tidak dikurangkan dari omzet maupun profit.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
