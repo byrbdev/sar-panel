@@ -134,3 +134,15 @@ html:has(body.dark) {
   background-color: #0b1437;
   color-scheme: dark;
 }
+
+/* Scrollbar utama dibuat lebih besar dengan properti standar (bukan
+ * ::-webkit-scrollbar) supaya pasti dipakai Chrome/Edge/Firefox. `auto` =
+ * ukuran bawaan browser (~15px), lebih besar dari `thin` di area lain. */
+html {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(112, 144, 176, 0.55) transparent;
+}
+html.dark,
+html:has(body.dark) {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
