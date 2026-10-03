@@ -165,39 +165,40 @@ const DendaTokoSection = () => {
         />
       </div>
       <Card extra="w-full h-full px-6 pb-6 sm:overflow-x-auto">
-        <div className="relative flex flex-col gap-4 pt-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0 xl:flex-1">
-            <div className="text-xl font-bold text-navy-700 dark:text-white">
-              Denda Toko
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="relative pt-4">
+          <div className="text-xl font-bold text-navy-700 dark:text-white">
+            Denda Toko
+          </div>
+          {/* Penjelasan & kontrol dalam satu baris, sejajar di tengah-tengah */}
+          <div className="mt-1 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400 xl:flex-1">
               Daftar denda toko bulan {labelBulanKey(bulanAktif)}. Mau lihat
               bulan sebelumnya? Pilih bulannya di kolom filter. Nominal denda
               hanya dicatat dan tidak dikurangkan dari omzet maupun profit.
             </p>
-          </div>
-          <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[220px]">
-              <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari toko, pemilik..."
-                className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
+            <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[220px]">
+                <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari toko, pemilik..."
+                  className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
+                />
+              </div>
+              <DendaFilterBulan
+                value={filterBulan}
+                onChange={setFilterBulan}
+                bulanBerjalan={bulanBerjalan}
               />
+              <button
+                onClick={openAdd}
+                className="linear flex h-11 flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+              >
+                <MdAdd className="h-5 w-5" />
+                Tambah Denda
+              </button>
             </div>
-            <DendaFilterBulan
-              value={filterBulan}
-              onChange={setFilterBulan}
-              bulanBerjalan={bulanBerjalan}
-            />
-            <button
-              onClick={openAdd}
-              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 h-11 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
-            >
-              <MdAdd className="h-5 w-5" />
-              Tambah Denda
-            </button>
           </div>
         </div>
 

@@ -107,34 +107,35 @@ const DendaPage = () => {
       </div>
 
       <Card extra="w-full h-full px-6 pb-6 sm:overflow-x-auto">
-        <div className="relative flex flex-col gap-4 pt-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0 xl:flex-1">
-            <div className="text-xl font-bold text-navy-700 dark:text-white">
-              Denda
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Daftar denda tokomu bulan {labelBulanKey(bulanAktif)}. Setiap
-              awal bulan daftar ini mulai dari kosong lagi, dan catatan bulan
-              lalu tetap bisa dilihat lewat filter bulan. Nominal denda hanya
-              dicatat dan tidak mengurangi omzet maupun profit.
-            </p>
+        <div className="relative pt-4">
+          <div className="text-xl font-bold text-navy-700 dark:text-white">
+            Denda
           </div>
-          <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <DendaFilterBulan
-              value={filterBulan}
-              onChange={setFilterBulan}
-              bulanBerjalan={bulanBerjalan}
-            />
-            <button
-              onClick={() => {
-                setForm(emptyDendaForm());
-                setFormOpen(true);
-              }}
-              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 h-11 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
-            >
-              <MdReportProblem className="h-5 w-5" />
-              Lapor Denda
-            </button>
+          {/* Penjelasan & kontrol dalam satu baris, sejajar di tengah-tengah */}
+          <div className="mt-1 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400 xl:flex-1">
+              Daftar denda tokomu bulan {labelBulanKey(bulanAktif)}. Setiap awal
+              bulan daftar ini mulai dari kosong lagi, dan catatan bulan lalu
+              tetap bisa dilihat lewat filter bulan. Nominal denda hanya dicatat
+              dan tidak mengurangi omzet maupun profit.
+            </p>
+            <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <DendaFilterBulan
+                value={filterBulan}
+                onChange={setFilterBulan}
+                bulanBerjalan={bulanBerjalan}
+              />
+              <button
+                onClick={() => {
+                  setForm(emptyDendaForm());
+                  setFormOpen(true);
+                }}
+                className="linear flex h-11 flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+              >
+                <MdReportProblem className="h-5 w-5" />
+                Lapor Denda
+              </button>
+            </div>
           </div>
         </div>
 
