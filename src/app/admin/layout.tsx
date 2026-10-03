@@ -16,6 +16,8 @@ import { AppDataProvider } from 'context/AppDataContext';
 import { UIProvider } from 'context/UIContext';
 import { BrutalProvider } from 'context/BrutalContext';
 import { MemberProvider } from 'context/MemberContext';
+import { ChatProvider } from 'context/ChatContext';
+import ChatWidget from 'components/chat/ChatWidget';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabaseClient';
 
@@ -105,6 +107,12 @@ export default function Admin({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+    {/* Chat pribadi antar pengguna (gaya WhatsApp): ikon di kanan bawah */}
+    {isSupabaseConfigured && (
+      <ChatProvider>
+        <ChatWidget />
+      </ChatProvider>
+    )}
     </BrutalProvider>
     </AppDataProvider>
     </MemberProvider>
