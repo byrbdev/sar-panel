@@ -217,22 +217,26 @@ const ChatWidget = () => {
 
   return (
     <>
-      {/* Tombol chat kanan bawah (diperkecil: 56px -> 48px) + badge belum dibaca */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Tutup chat' : 'Buka chat'}
-        className="linear fixed bottom-5 right-5 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30 transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
-      >
-        {open ? <MdClose className="h-6 w-6" /> : <MdChat className="h-6 w-6" />}
-        {!open && totalBelum > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white dark:border-navy-900">
-            {totalBelum > 99 ? '99+' : totalBelum}
-          </span>
-        )}
-      </button>
+      {/* Tombol chat kanan bawah + badge belum dibaca. Disembunyikan saat
+          panel terbuka (tidak ada tombol X; menutup lewat tombol kecilkan
+          di header panel). */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Buka chat"
+          className="linear fixed bottom-5 right-5 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30 transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+        >
+          <MdChat className="h-6 w-6" />
+          {totalBelum > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white dark:border-navy-900">
+              {totalBelum > 99 ? '99+' : totalBelum}
+            </span>
+          )}
+        </button>
+      )}
 
       {open && (
-        <div className="fixed bottom-[4.75rem] right-3 z-[60] flex h-[min(560px,calc(100dvh-6.5rem))] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-800 dark:shadow-none sm:right-5 md:w-[720px]">
+        <div className="fixed bottom-0 right-3 z-[60] flex h-[min(430px,calc(100dvh-2rem))] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-t-lg border border-b-0 border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-800 dark:shadow-none sm:right-5 md:w-[520px]">
           {/* Header putih ala Shopee: "Chat (n)" + tombol kecilkan.
               Di layar kecil disembunyikan saat percakapan terbuka
               (percakapan punya header sendiri). */}
@@ -264,7 +268,7 @@ const ChatWidget = () => {
             <div
               className={`${
                 lawan ? 'hidden md:flex' : 'flex'
-              } w-full flex-none flex-col border-gray-100 dark:border-white/10 md:w-[260px] md:border-r`}
+              } w-full flex-none flex-col border-gray-100 dark:border-white/10 md:w-[190px] md:border-r`}
             >
               <div className="flex flex-none items-center gap-2 px-3 py-2.5">
                 <div className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded border border-gray-200 px-2 focus-within:border-brand-500 dark:border-white/10 dark:focus-within:border-brand-300">
