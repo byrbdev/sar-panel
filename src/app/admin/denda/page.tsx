@@ -107,8 +107,8 @@ const DendaPage = () => {
       </div>
 
       <Card extra="w-full h-full px-6 pb-6 sm:overflow-x-auto">
-        <div className="relative flex flex-col gap-4 pt-4 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="relative flex flex-col gap-4 pt-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0 xl:flex-1">
             <div className="text-xl font-bold text-navy-700 dark:text-white">
               Denda
             </div>
@@ -119,7 +119,7 @@ const DendaPage = () => {
               dicatat dan tidak mengurangi omzet maupun profit.
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <DendaFilterBulan
               value={filterBulan}
               onChange={setFilterBulan}
@@ -130,7 +130,7 @@ const DendaPage = () => {
                 setForm(emptyDendaForm());
                 setFormOpen(true);
               }}
-              className="linear flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
             >
               <MdReportProblem className="h-5 w-5" />
               Lapor Denda

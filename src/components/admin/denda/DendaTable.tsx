@@ -1,6 +1,8 @@
 'use client';
 import React from 'react';
 import PaginationControl from 'components/pagination/PaginationControl';
+import ModalOverlay from 'components/modal/ModalOverlay';
+import DendaDetailModal from 'components/admin/denda/DendaDetailModal';
 import { usePagination } from 'hooks/usePagination';
 import { DendaToko } from 'variables/dropshipDenda';
 import { formatDenda, totalDenda } from 'utils/dendaHelpers';
@@ -21,6 +23,7 @@ const DendaTable = (props: {
   const { rows, showPemilik, onEdit, onDelete, emptyText } = props;
   const { page, totalPages, pageData, next, prev } = usePagination(rows, 10);
   const withAksi = !!(onEdit || onDelete);
+  const [detail, setDetail] = React.useState<DendaToko | null>(null);
 
   const cols = [
     { label: 'TANGGAL', hide: 'hidden sm:table-cell' },
@@ -63,7 +66,8 @@ const DendaTable = (props: {
               pageData.map((row) => (
                 <tr
                   key={row.id}
-                  className="transition duration-150 hover:bg-lightPrimary dark:hover:bg-navy-700"
+                  onClick={() => setDetail(row)}
+                  className="cursor-pointer transition duration-150 hover:bg-lightPrimary dark:hover:bg-navy-700"
                 >
                   <td className="hidden border-white/0 py-3 pr-2 sm:table-cell">
                     <p className="truncate text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
@@ -106,7 +110,10 @@ const DendaTable = (props: {
                       <div className="flex flex-nowrap items-center justify-center gap-1">
                         {onEdit && (
                           <button
-                            onClick={() => onEdit(row)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(row);
+                            }}
                             className="rounded-lg p-2 text-gray-600 transition duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
                           >
                             <MdEdit className="h-4 w-4" />
@@ -114,7 +121,10 @@ const DendaTable = (props: {
                         )}
                         {onDelete && (
                           <button
-                            onClick={() => onDelete(row)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(row);
+                            }}
                             className="rounded-lg p-2 text-red-500 transition duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
                           >
                             <MdDelete className="h-4 w-4" />
@@ -151,6 +161,15 @@ const DendaTable = (props: {
         onPrev={prev}
         onNext={next}
       />
+
+      {/* Detail Denda (read only) */}
+      <ModalOverlay
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title="Detail Denda"
+      >
+        {detail && <DendaDetailModal denda={detail} />}
+      </ModalOverlay>
     </>
   );
 };
