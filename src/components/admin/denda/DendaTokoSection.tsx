@@ -193,7 +193,7 @@ const DendaTokoSection = () => {
             />
             <button
               onClick={openAdd}
-              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 h-11 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
             >
               <MdAdd className="h-5 w-5" />
               Tambah Denda
