@@ -78,6 +78,12 @@ Simpan 3 nilai ini untuk Bagian 3 nanti: `GOOGLE_SHEET_ID`,
 
 ---
 
+### 2.4 Backup Otomatis (7 hari / bulanan)
+1. Di Vercel -> Settings -> Environment Variables, tambahkan `CRON_SECRET` (string acak panjang, mis. hasil `openssl rand -hex 32`), lalu **redeploy**.
+2. File `vercel.json` sudah berisi cron harian (`0 17 * * *` UTC = 00:00 WIB) yang memanggil `/api/backup-sheets/cron`. Vercel otomatis mengirim `Authorization: Bearer <CRON_SECRET>`.
+3. Super Admin memilih jadwal di Setting -> Backup ke Google Spreadsheet -> **Backup Otomatis** (Nonaktif / Tiap 7 hari / Tiap bulan). Tidak ada SQL baru; pengaturan disimpan di tabel `app_settings`.
+4. Tiap 7 hari = mem-backup bulan berjalan. Tiap bulan = mem-backup bulan yang baru berakhir (dijalankan pada pergantian bulan WIB).
+
 ## BAGIAN 3 — Push ke GitHub
 
 1. Extract file zip project ini ke folder di komputer kamu

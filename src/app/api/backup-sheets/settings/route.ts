@@ -36,7 +36,13 @@ export async function GET(req: NextRequest) {
   const { data } = await supabaseAdmin
     .from('app_settings')
     .select('key, value, updated_at')
-    .in('key', ['google_sheet_id', 'google_sheet_last_backup']);
+    .in('key', [
+      'google_sheet_id',
+      'google_sheet_last_backup',
+      'backup_auto_mode',
+      'backup_auto_last_run',
+      'backup_auto_last_status',
+    ]);
 
   const map: Record<string, string> = {};
   (data || []).forEach((r) => {
@@ -48,7 +54,20 @@ export async function GET(req: NextRequest) {
     serviceAccountEmail && process.env.GOOGLE_PRIVATE_KEY
   );
 
+  let autoStatus: any = null;
+  try {
+    autoStatus = map['backup_auto_last_status']
+      ? JSON.parse(map['backup_auto_last_status'])
+      : null;
+  } catch {
+    autoStatus = null;
+  }
+
   return NextResponse.json({
+    autoMode: map['backup_auto_mode'] || 'off',
+    autoLastRun: map['backup_auto_last_run'] || null,
+    autoStatus,
+    cronReady: !!process.env.CRON_SECRET,
     sheetId: map['google_sheet_id'] || '',
     lastBackupAt: map['google_sheet_last_backup'] || null,
     serviceAccountEmail,
@@ -66,22 +85,39 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const sheetId = String(body.sheetId || '').trim();
+  const now = new Date().toISOString();
+  const upsert = (key: string, value: string) =>
+    supabaseAdmin.from('app_settings').upsert({
+      key,
+      value,
+      updated_at: now,
+      updated_by: caller.userId,
+    });
 
+  // --- Jadwal backup otomatis (off / weekly / monthly) ---
+  if (body.autoMode !== undefined) {
+    const mode = String(body.autoMode);
+    if (!['off', 'weekly', 'monthly'].includes(mode)) {
+      return NextResponse.json({ error: 'Pilihan jadwal tidak valid.' }, { status: 400 });
+    }
+    const { error } = await upsert('backup_auto_mode', mode);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Baseline: hitung jadwal berikutnya mulai dari SEKARANG (bukan langsung
+    // backup saat tombol disimpan).
+    const { error: e2 } = await upsert('backup_auto_last_run', now);
+    if (e2) return NextResponse.json({ error: e2.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  // --- Sheet ID ---
+  const sheetId = String(body.sheetId || '').trim();
   if (!sheetId) {
     return NextResponse.json(
       { error: 'Sheet ID tidak boleh kosong.' },
       { status: 400 },
     );
   }
-
-  const { error } = await supabaseAdmin.from('app_settings').upsert({
-    key: 'google_sheet_id',
-    value: sheetId,
-    updated_at: new Date().toISOString(),
-    updated_by: caller.userId,
-  });
-
+  const { error } = await upsert('google_sheet_id', sheetId);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

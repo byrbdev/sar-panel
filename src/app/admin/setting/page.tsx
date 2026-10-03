@@ -12,10 +12,22 @@ import {
   MdCheckCircle,
   MdErrorOutline,
   MdOpenInNew,
+  MdSchedule,
 } from 'react-icons/md';
 import ChangePasswordCard from 'components/admin/profile/ChangePasswordCard';
 
+type AutoMode = 'off' | 'weekly' | 'monthly';
+
 type BackupSettings = {
+  autoMode: AutoMode;
+  autoLastRun: string | null;
+  autoStatus: {
+    ok: boolean;
+    at: string;
+    tabs?: string[];
+    error?: string;
+  } | null;
+  cronReady: boolean;
   sheetId: string;
   lastBackupAt: string | null;
   serviceAccountEmail: string;
@@ -35,6 +47,7 @@ const SettingPage = () => {
   const [settings, setSettings] = React.useState<BackupSettings | null>(null);
   const [sheetIdInput, setSheetIdInput] = React.useState('');
   const [savingSheetId, setSavingSheetId] = React.useState(false);
+  const [savingAuto, setSavingAuto] = React.useState(false);
 
   const getToken = async () => {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -96,6 +109,65 @@ const SettingPage = () => {
       setSavingSheetId(false);
     }
   };
+
+  const handleAutoMode = async (mode: AutoMode) => {
+    if (savingAuto || settings?.autoMode === mode) return;
+    setSavingAuto(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        notify('Sesi login tidak ditemukan. Silakan login ulang.', 'error');
+        return;
+      }
+      const res = await fetch('/api/backup-sheets/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ autoMode: mode }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        notify(json.error || 'Gagal menyimpan jadwal backup.', 'error');
+        return;
+      }
+      notify(
+        mode === 'off'
+          ? 'Backup otomatis dinonaktifkan.'
+          : `Backup otomatis ${mode === 'weekly' ? 'tiap 7 hari' : 'tiap bulan'} diaktifkan.`,
+        'success',
+      );
+      loadSettings();
+    } catch (e: any) {
+      notify(e?.message || 'Terjadi kesalahan.', 'error');
+    } finally {
+      setSavingAuto(false);
+    }
+  };
+
+  const fmtWaktu = (iso: string) =>
+    new Date(iso).toLocaleString('id-ID', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+      timeZone: 'Asia/Jakarta',
+    }) + ' WIB';
+
+  // Perkiraan jadwal berikutnya (cron jalan tiap hari sekitar 00:00 WIB).
+  const jadwalBerikutnya = (() => {
+    if (!settings || settings.autoMode === 'off' || !settings.autoLastRun) return null;
+    const last = new Date(settings.autoLastRun);
+    if (settings.autoMode === 'weekly') {
+      return new Date(last.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(
+        'id-ID',
+        { dateStyle: 'full', timeZone: 'Asia/Jakarta' },
+      );
+    }
+    const wib = new Date(last.getTime() + 7 * 60 * 60 * 1000);
+    return new Date(
+      Date.UTC(wib.getUTCFullYear(), wib.getUTCMonth() + 1, 1),
+    ).toLocaleDateString('id-ID', { dateStyle: 'full', timeZone: 'UTC' });
+  })();
 
   const copyEmail = () => {
     if (!settings?.serviceAccountEmail) return;
@@ -240,6 +312,75 @@ const SettingPage = () => {
               {savingSheetId ? 'Menyimpan...' : 'Simpan'}
             </button>
           </div>
+        </div>
+
+        {/* Backup otomatis */}
+        <div className="mb-5 rounded-xl border border-gray-200 p-4 dark:border-white/10">
+          <div className="mb-3 flex items-center gap-2">
+            <MdSchedule className="h-5 w-5 text-brand-500 dark:text-white" />
+            <p className="text-sm font-bold text-navy-700 dark:text-white">
+              Backup Otomatis
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {(
+              [
+                { v: 'off', t: 'Nonaktif', d: 'Backup hanya manual' },
+                { v: 'weekly', t: 'Tiap 7 hari', d: 'Mem-backup bulan berjalan' },
+                { v: 'monthly', t: 'Tiap bulan', d: 'Mem-backup bulan yang baru berakhir' },
+              ] as { v: AutoMode; t: string; d: string }[]
+            ).map((o) => {
+              const aktif = (settings?.autoMode || 'off') === o.v;
+              return (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => handleAutoMode(o.v)}
+                  disabled={savingAuto || !settings}
+                  className={`rounded-xl border p-3 text-left transition disabled:opacity-60 ${
+                    aktif
+                      ? 'border-brand-500 bg-lightPrimary dark:border-brand-400 dark:bg-navy-700'
+                      : 'border-gray-200 hover:bg-lightPrimary dark:border-white/10 dark:hover:bg-navy-700'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-navy-700 dark:text-white">
+                    {o.t}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{o.d}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {settings && settings.autoMode !== 'off' && (
+            <div className="mt-3 space-y-1 text-xs text-gray-600 dark:text-gray-300">
+              {jadwalBerikutnya && (
+                <p>
+                  Backup otomatis berikutnya: sekitar <b>{jadwalBerikutnya}</b>{' '}
+                  (dini hari WIB).
+                </p>
+              )}
+              {settings.autoStatus && (
+                <p
+                  className={
+                    settings.autoStatus.ok
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-500'
+                  }
+                >
+                  {settings.autoStatus.ok
+                    ? `Backup otomatis terakhir berhasil (${settings.autoStatus.tabs?.join(', ')}) - ${fmtWaktu(settings.autoStatus.at)}`
+                    : `Backup otomatis terakhir GAGAL - ${settings.autoStatus.error} (${fmtWaktu(settings.autoStatus.at)}). Akan dicoba lagi otomatis besok.`}
+                </p>
+              )}
+              {!settings.cronReady && (
+                <p className="text-amber-600 dark:text-amber-400">
+                  Catatan: env <code>CRON_SECRET</code> belum diset di server,
+                  jadi jadwal otomatis belum bisa berjalan.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <button
