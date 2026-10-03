@@ -5,13 +5,12 @@ import ModalOverlay from 'components/modal/ModalOverlay';
 import DendaDetailModal from 'components/admin/denda/DendaDetailModal';
 import { usePagination } from 'hooks/usePagination';
 import { DendaToko } from 'variables/dropshipDenda';
-import { formatDenda, totalDenda } from 'utils/dendaHelpers';
+import { formatDenda } from 'utils/dendaHelpers';
 import { MdDelete, MdEdit } from 'react-icons/md';
 
 /**
  * Tabel Denda Toko -- dipakai Super Admin (dengan kolom Pemilik + Aksi) dan
- * Member (tanpa keduanya). Baris TOTAL menjumlahkan semua baris hasil filter
- * (bukan hanya halaman yang tampil).
+ * Member (tanpa keduanya).
  */
 const DendaTable = (props: {
   rows: DendaToko[];
@@ -28,7 +27,9 @@ const DendaTable = (props: {
   const cols = [
     { label: 'TANGGAL', hide: 'hidden sm:table-cell' },
     { label: 'TOKO', hide: '' },
-    ...(showPemilik ? [{ label: 'PEMILIK', hide: 'hidden md:table-cell' }] : []),
+    ...(showPemilik
+      ? [{ label: 'PEMILIK', hide: 'hidden md:table-cell' }]
+      : []),
     { label: 'KETERANGAN', hide: 'hidden md:table-cell' },
     { label: 'JUMLAH DENDA', hide: '' },
     ...(withAksi ? [{ label: 'AKSI', hide: '' }] : []),
@@ -43,7 +44,9 @@ const DendaTable = (props: {
               {cols.map(({ label, hide }) => (
                 <th
                   key={label}
-                  className={`border-b-[1px] border-gray-200 pb-2 pr-2 pt-4 ${hide} ${label === 'AKSI' ? 'text-center' : 'text-start'}`}
+                  className={`border-b-[1px] border-gray-200 pb-2 pr-2 pt-4 ${hide} ${
+                    label === 'AKSI' ? 'text-center' : 'text-start'
+                  }`}
                 >
                   <p className="truncate text-xs font-bold text-gray-600 dark:text-white sm:text-sm">
                     {label}
@@ -137,22 +140,6 @@ const DendaTable = (props: {
               ))
             )}
           </tbody>
-          {rows.length > 0 && (
-            <tfoot>
-              <tr className="border-t-2 border-gray-200 dark:border-white/10">
-                <td
-                  colSpan={cols.length - 1 - (withAksi ? 1 : 0)}
-                  className="py-3 pr-2 text-end text-xs font-bold text-navy-700 dark:text-white sm:text-sm"
-                >
-                  TOTAL ({rows.length} denda)
-                </td>
-                <td className="py-3 pr-2 text-xs font-bold text-red-500 sm:text-sm">
-                  {formatDenda(totalDenda(rows))}
-                </td>
-                {withAksi && <td />}
-              </tr>
-            </tfoot>
-          )}
         </table>
       </div>
       <PaginationControl

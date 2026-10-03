@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Card from 'components/card';
+import Widget from 'components/widget/Widget';
 import ModalOverlay from 'components/modal/ModalOverlay';
 import DendaForm, {
   DendaFormValue,
@@ -18,8 +19,9 @@ import {
   formatDenda,
   labelBulanKey,
   tanggalHariIniDenda,
+  totalDenda,
 } from 'utils/dendaHelpers';
-import { MdAdd, MdSearch } from 'react-icons/md';
+import { MdAdd, MdGavel, MdReceiptLong, MdSearch } from 'react-icons/md';
 
 /**
  * Section "Denda Toko" di halaman Toko (Super Admin). Melihat semua denda
@@ -81,7 +83,10 @@ const DendaTokoSection = () => {
   const handleSave = async () => {
     if (!tokoDipilih) return notify('Pilih toko terlebih dahulu.', 'error');
     if (!ownerId)
-      return notify('Toko ini belum punya pemilik. Atur di tabel Toko.', 'error');
+      return notify(
+        'Toko ini belum punya pemilik. Atur di tabel Toko.',
+        'error',
+      );
     if (!form.jumlah || form.jumlah <= 0)
       return notify('Jumlah denda harus lebih dari 0.', 'error');
 
@@ -116,7 +121,9 @@ const DendaTokoSection = () => {
     notify(
       editId
         ? 'Denda berhasil diperbarui.'
-        : `Denda ${formatDenda(form.jumlah)} untuk ${tokoDipilih.namaToko} tercatat.`,
+        : `Denda ${formatDenda(form.jumlah)} untuk ${
+            tokoDipilih.namaToko
+          } tercatat.`,
       'success',
     );
     setFormOpen(false);
@@ -125,93 +132,118 @@ const DendaTokoSection = () => {
 
   const handleDelete = async (row: DendaToko) => {
     const ok = await confirm(
-      `Denda ${formatDenda(row.jumlah)} untuk toko "${row.namaToko}" akan dihapus dari database.`,
+      `Denda ${formatDenda(row.jumlah)} untuk toko "${
+        row.namaToko
+      }" akan dihapus dari database.`,
       { title: 'Hapus Denda?', confirmText: 'Ya, Hapus', danger: true },
     );
     if (!ok) return;
-    const result = await setDenda((prev) => prev.filter((d) => d.id !== row.id));
+    const result = await setDenda((prev) =>
+      prev.filter((d) => d.id !== row.id),
+    );
     notify(
-      result.ok ? 'Denda berhasil dihapus.' : result.errors[0] || 'Gagal menghapus.',
+      result.ok
+        ? 'Denda berhasil dihapus.'
+        : result.errors[0] || 'Gagal menghapus.',
       result.ok ? 'info' : 'error',
     );
   };
 
   return (
-    <Card extra="mt-5 w-full h-full px-6 pb-6 sm:overflow-x-auto">
-      <div className="relative flex flex-col gap-4 pt-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="min-w-0 xl:flex-1">
-          <div className="text-xl font-bold text-navy-700 dark:text-white">
-            Denda Toko
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Daftar denda toko bulan {labelBulanKey(bulanAktif)}. Mau lihat
-            bulan sebelumnya? Pilih bulannya di kolom filter. Nominal denda
-            hanya dicatat dan tidak dikurangkan dari omzet maupun profit.
-          </p>
-        </div>
-        <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[220px]">
-            <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari toko, pemilik..."
-              className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
-            />
-          </div>
-          <DendaFilterBulan
-            value={filterBulan}
-            onChange={setFilterBulan}
-            bulanBerjalan={bulanBerjalan}
-          />
-          <button
-            onClick={openAdd}
-            className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
-          >
-            <MdAdd className="h-5 w-5" />
-            Tambah Denda
-          </button>
-        </div>
-      </div>
-
-      <DendaTable
-        rows={rows}
-        showPemilik
-        onEdit={openEdit}
-        onDelete={handleDelete}
-        emptyText={`Belum ada denda di ${labelBulanKey(bulanAktif)}.`}
-      />
-
-      <ModalOverlay
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        title={editId ? 'Edit Denda Toko' : 'Tambah Denda Toko'}
-      >
-        <DendaForm
-          value={form}
-          onChange={setForm}
-          tokoOptions={toko.map((t) => t.namaToko)}
-          showPemilik
-          pemilik={namaPemilik}
-          tanpaPemilik={!!tokoDipilih && !ownerId}
+    <div className="mt-5 flex flex-col gap-5">
+      {/* Badge ringkasan sesuai bulan & pencarian yang sedang tampil */}
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <Widget
+          icon={<MdGavel className="h-7 w-7" />}
+          title={`Total Denda ${labelBulanKey(bulanAktif)}`}
+          subtitle={formatDenda(totalDenda(rows))}
         />
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={() => setFormOpen(false)}
-            className="linear rounded-lg bg-lightPrimary px-6 py-2.5 text-sm font-medium text-gray-600 transition duration-200 hover:bg-gray-100 active:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/20"
-          >
-            Batal
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="linear rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 disabled:opacity-60 dark:bg-brand-400 dark:hover:bg-brand-300"
-          >
-            {saving ? 'Menyimpan...' : editId ? 'Simpan Perubahan' : 'Simpan Denda'}
-          </button>
+        <Widget
+          icon={<MdReceiptLong className="h-6 w-6" />}
+          title="Jumlah Denda"
+          subtitle={`${rows.length} denda`}
+        />
+      </div>
+      <Card extra="w-full h-full px-6 pb-6 sm:overflow-x-auto">
+        <div className="relative flex flex-col gap-4 pt-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0 xl:flex-1">
+            <div className="text-xl font-bold text-navy-700 dark:text-white">
+              Denda Toko
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Daftar denda toko bulan {labelBulanKey(bulanAktif)}. Mau lihat
+              bulan sebelumnya? Pilih bulannya di kolom filter. Nominal denda
+              hanya dicatat dan tidak dikurangkan dari omzet maupun profit.
+            </p>
+          </div>
+          <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex h-11 items-center gap-2 rounded-lg bg-lightPrimary px-3 dark:!bg-navy-700 sm:w-[220px]">
+              <MdSearch className="h-5 w-5 text-gray-500 dark:text-gray-300" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari toko, pemilik..."
+                className="h-full w-full bg-white/0 text-sm text-navy-700 outline-none placeholder:text-gray-500 dark:!bg-navy-700 dark:text-white dark:placeholder:text-gray-400"
+              />
+            </div>
+            <DendaFilterBulan
+              value={filterBulan}
+              onChange={setFilterBulan}
+              bulanBerjalan={bulanBerjalan}
+            />
+            <button
+              onClick={openAdd}
+              className="linear flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300"
+            >
+              <MdAdd className="h-5 w-5" />
+              Tambah Denda
+            </button>
+          </div>
         </div>
-      </ModalOverlay>
-    </Card>
+
+        <DendaTable
+          rows={rows}
+          showPemilik
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          emptyText={`Belum ada denda di ${labelBulanKey(bulanAktif)}.`}
+        />
+
+        <ModalOverlay
+          open={formOpen}
+          onClose={() => setFormOpen(false)}
+          title={editId ? 'Edit Denda Toko' : 'Tambah Denda Toko'}
+        >
+          <DendaForm
+            value={form}
+            onChange={setForm}
+            tokoOptions={toko.map((t) => t.namaToko)}
+            showPemilik
+            pemilik={namaPemilik}
+            tanpaPemilik={!!tokoDipilih && !ownerId}
+          />
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={() => setFormOpen(false)}
+              className="linear rounded-lg bg-lightPrimary px-6 py-2.5 text-sm font-medium text-gray-600 transition duration-200 hover:bg-gray-100 active:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/20"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="linear rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 disabled:opacity-60 dark:bg-brand-400 dark:hover:bg-brand-300"
+            >
+              {saving
+                ? 'Menyimpan...'
+                : editId
+                ? 'Simpan Perubahan'
+                : 'Simpan Denda'}
+            </button>
+          </div>
+        </ModalOverlay>
+      </Card>
+    </div>
   );
 };
 
