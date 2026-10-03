@@ -115,39 +115,31 @@ select option {
   background-color: var(--sb-thumb-hover);
 }
 
-/* Scrollbar utama halaman (dashboard dll.): lebih lebar & jelas terlihat.
- * Area scroll lain (overlay, widget chat, tabel) tetap tipis di atas. */
+/* Scrollbar utama halaman (dashboard dll.): sedikit lebih lebar, warna SAMA
+ * dengan scrollbar overlay/chat (memakai variabel --sb-thumb). Class `dark`
+ * dipasang di <body>, sedangkan scrollbar utama milik <html>, sehingga mode
+ * gelap dideteksi lewat :has(). */
+html:has(body.dark) {
+  --sb-thumb: rgba(255, 255, 255, 0.18);
+  --sb-thumb-hover: rgba(255, 255, 255, 0.35);
+}
 html::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 html::-webkit-scrollbar-track {
-  background: rgba(112, 144, 176, 0.12);
+  background: transparent;
 }
 html::-webkit-scrollbar-thumb {
-  background-color: rgba(112, 144, 176, 0.6);
+  background-color: var(--sb-thumb);
   border-radius: 9999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
 }
 html::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(112, 144, 176, 0.85);
-}
-html:has(body.dark)::-webkit-scrollbar-track,
-html.dark::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
-}
-html:has(body.dark)::-webkit-scrollbar-thumb,
-html.dark::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-html:has(body.dark)::-webkit-scrollbar-thumb:hover,
-html.dark::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: var(--sb-thumb-hover);
 }
 @supports not selector(::-webkit-scrollbar) {
   html {
     scrollbar-width: auto;
-    scrollbar-color: rgba(112, 144, 176, 0.6) rgba(112, 144, 176, 0.12);
+    scrollbar-color: var(--sb-thumb) transparent;
   }
 }
