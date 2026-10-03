@@ -81,3 +81,36 @@ select option {
   background-color: #111c44; /* navy-800 */
   color: #ffffff;
 }
+
+/* ===== Scrollbar kustom (tipis & minimalis) untuk semua area scroll ===== */
+:root {
+  --sb-thumb: rgba(112, 144, 176, 0.35);
+  --sb-thumb-hover: rgba(112, 144, 176, 0.6);
+}
+.dark {
+  --sb-thumb: rgba(255, 255, 255, 0.18);
+  --sb-thumb-hover: rgba(255, 255, 255, 0.35);
+}
+/* Firefox saja (Chrome/Safari memakai ::-webkit-scrollbar di bawah, karena
+ * Chrome baru mengabaikan ::-webkit-scrollbar jika scrollbar-width diset) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb) transparent;
+  }
+}
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover);
+}

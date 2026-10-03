@@ -236,7 +236,7 @@ const ChatWidget = () => {
       )}
 
       {open && (
-        <div className="fixed bottom-0 right-3 z-[60] flex h-[min(430px,calc(100dvh-2rem))] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-t-lg border border-b-0 border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-800 dark:shadow-none sm:right-5 md:w-[520px]">
+        <div className="fixed bottom-0 right-3 z-[60] flex h-[min(560px,calc(100dvh-6.5rem))] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-t-lg border border-b-0 border-gray-200 bg-white shadow-3xl shadow-shadow-500 dark:border-white/10 dark:bg-navy-800 dark:shadow-none sm:right-5 md:w-[720px]">
           {/* Header putih ala Shopee: "Chat (n)" + tombol kecilkan.
               Di layar kecil disembunyikan saat percakapan terbuka
               (percakapan punya header sendiri). */}
@@ -268,7 +268,7 @@ const ChatWidget = () => {
             <div
               className={`${
                 lawan ? 'hidden md:flex' : 'flex'
-              } w-full flex-none flex-col border-gray-100 dark:border-white/10 md:w-[190px] md:border-r`}
+              } w-full flex-none flex-col border-gray-100 dark:border-white/10 md:w-[260px] md:border-r`}
             >
               <div className="flex flex-none items-center gap-2 px-3 py-2.5">
                 <div className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded border border-gray-200 px-2 focus-within:border-brand-500 dark:border-white/10 dark:focus-within:border-brand-300">
