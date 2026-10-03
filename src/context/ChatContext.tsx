@@ -36,6 +36,8 @@ type ChatContextType = {
   messages: ChatMessage[];
   kontak: KontakRingkas[];
   totalBelum: number;
+  /** id pengguna yang sedang online (login + tab website sedang terlihat). */
+  online: Set<string>;
   kirim: (lawanId: string, isi: string, balasId?: number) => Promise<KirimHasil>;
   tandaiDibaca: (lawanId: string) => Promise<void>;
 };
@@ -75,6 +77,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [tersedia, setTersedia] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [online, setOnline] = useState<Set<string>>(new Set());
   const meRef = useRef(me);
   meRef.current = me;
 
@@ -168,6 +171,57 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [me, muat]);
 
+  // Status online (Supabase Realtime Presence). Seorang pengguna dianggap
+  // ONLINE selama minimal satu tab websitenya sedang terlihat (visible) dan
+  // tersambung. Tab disembunyikan / pindah tab / ditutup / logout / koneksi
+  // putus -> presence dilepas -> OFFLINE. Banyak tab = online selama ada
+  // satu yang aktif (tiap tab punya koneksi sendiri dengan key yang sama).
+  useEffect(() => {
+    if (!me) return;
+    const channel = supabase.channel('presence:sar-panel', {
+      config: { presence: { key: me } },
+    });
+    let terpasang = false;
+
+    const sinkron = () => {
+      const state = channel.presenceState();
+      setOnline(new Set(Object.keys(state)));
+    };
+    const pasang = async () => {
+      if (terpasang) return;
+      terpasang = true;
+      await channel.track({ at: new Date().toISOString() });
+    };
+    const lepas = async () => {
+      if (!terpasang) return;
+      terpasang = false;
+      await channel.untrack();
+    };
+    const sesuaikan = () => {
+      if (document.visibilityState === 'visible') pasang();
+      else lepas();
+    };
+
+    channel
+      .on('presence', { event: 'sync' }, sinkron)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          terpasang = false; // koneksi (ulang) -> pasang lagi bila tab terlihat
+          sesuaikan();
+        }
+      });
+
+    document.addEventListener('visibilitychange', sesuaikan);
+    window.addEventListener('pagehide', lepas);
+
+    return () => {
+      document.removeEventListener('visibilitychange', sesuaikan);
+      window.removeEventListener('pagehide', lepas);
+      supabase.removeChannel(channel);
+      setOnline(new Set());
+    };
+  }, [me]);
+
   const kirim = useCallback(
     async (lawanId: string, isi: string, balasId?: number): Promise<KirimHasil> => {
       const teks = isi.trim();
@@ -232,6 +286,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         messages,
         kontak,
         totalBelum,
+        online,
         kirim,
         tandaiDibaca,
       }}

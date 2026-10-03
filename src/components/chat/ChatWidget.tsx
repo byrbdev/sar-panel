@@ -37,13 +37,33 @@ import {
  * latar. Catatan: palet Tailwind proyek ini menimpa bawaan dan TIDAK punya
  * `transparent`/`black`, jadi bagian itu ditulis dengan nilai arbitrer. */
 
-const Avatar = ({ kecil = false }: { kecil?: boolean }) => (
-  <div
-    className={`flex flex-none items-center justify-center rounded-full bg-lightPrimary text-brand-500 dark:bg-navy-700 dark:text-white ${
-      kecil ? 'h-9 w-9' : 'h-10 w-10'
-    }`}
-  >
-    <MdPerson className={kecil ? 'h-6 w-6' : 'h-7 w-7'} />
+/** Avatar + titik status: hijau = online (login & tab website terbuka),
+ * abu-abu = offline. */
+const Avatar = ({
+  kecil = false,
+  online = false,
+  bgTitik = 'border-white dark:border-navy-800',
+}: {
+  kecil?: boolean;
+  online?: boolean;
+  bgTitik?: string;
+}) => (
+  <div className="relative flex-none">
+    <div
+      className={`flex items-center justify-center rounded-full bg-lightPrimary text-brand-500 dark:bg-navy-700 dark:text-white ${
+        kecil ? 'h-9 w-9' : 'h-10 w-10'
+      }`}
+    >
+      <MdPerson className={kecil ? 'h-6 w-6' : 'h-7 w-7'} />
+    </div>
+    <span
+      role="img"
+      aria-label={online ? 'Online' : 'Offline'}
+      title={online ? 'Online' : 'Offline'}
+      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 ${bgTitik} ${
+        online ? 'bg-green-500' : 'bg-gray-500'
+      }`}
+    />
   </div>
 );
 
@@ -82,6 +102,7 @@ const ChatWidget = () => {
     messages,
     kontak,
     totalBelum,
+    online,
     kirim,
     tandaiDibaca,
   } = useChat();
@@ -317,7 +338,14 @@ const ChatWidget = () => {
                           aktif ? 'bg-lightPrimary dark:bg-navy-700' : ''
                         }`}
                       >
-                        <Avatar />
+                        <Avatar
+                          online={online.has(k.id)}
+                          bgTitik={
+                            aktif
+                              ? 'border-lightPrimary dark:border-navy-700'
+                              : 'border-white dark:border-navy-800'
+                          }
+                        />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline justify-between gap-2">
                             <p className="truncate text-sm font-bold text-navy-700 dark:text-white">
@@ -406,13 +434,22 @@ const ChatWidget = () => {
                     >
                       <MdArrowBack className="h-5 w-5" />
                     </button>
-                    <Avatar kecil />
+                    <Avatar kecil online={online.has(lawan.id)} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold leading-tight text-navy-700 dark:text-white">
                         {lawan.nama}
                       </p>
                       <p className="text-xs leading-tight text-gray-700 dark:text-gray-400">
-                        {LABEL_ROLE[lawan.role]}
+                        {LABEL_ROLE[lawan.role]} ·{' '}
+                        <span
+                          className={
+                            online.has(lawan.id)
+                              ? 'font-medium text-green-500'
+                              : ''
+                          }
+                        >
+                          {online.has(lawan.id) ? 'Online' : 'Offline'}
+                        </span>
                       </p>
                     </div>
                     <button
