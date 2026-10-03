@@ -12,4 +12,10 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 export const supabase = createBrowserClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-anon-key',
+  {
+    // Heartbeat realtime dijalankan di Web Worker supaya tidak ikut diperlambat
+    // browser saat tab berada di latar belakang. Tanpa ini koneksi bisa putus
+    // dan status online (chat) berubah jadi offline padahal tab masih terbuka.
+    realtime: { worker: true },
+  },
 );

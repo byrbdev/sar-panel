@@ -171,51 +171,53 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [me, muat]);
 
-  // Status online (Supabase Realtime Presence). Seorang pengguna dianggap
-  // ONLINE selama minimal satu tab websitenya sedang terlihat (visible) dan
-  // tersambung. Tab disembunyikan / pindah tab / ditutup / logout / koneksi
-  // putus -> presence dilepas -> OFFLINE. Banyak tab = online selama ada
-  // satu yang aktif (tiap tab punya koneksi sendiri dengan key yang sama).
+  // Status online (Supabase Realtime Presence). Seorang pengguna ONLINE selama
+  // websitenya masih terbuka di browser (login + tab ada), walaupun tab sedang
+  // tidak dilihat / pindah ke tab lain. OFFLINE hanya bila semua tab website
+  // ditutup, logout, atau koneksi putus. Banyak tab = online selama ada satu
+  // yang terbuka (tiap tab punya koneksi sendiri dengan key yang sama).
   useEffect(() => {
     if (!me) return;
     const channel = supabase.channel('presence:sar-panel', {
       config: { presence: { key: me } },
     });
-    let terpasang = false;
+    let tersambung = false;
 
     const sinkron = () => {
       const state = channel.presenceState();
       setOnline(new Set(Object.keys(state)));
     };
     const pasang = async () => {
-      if (terpasang) return;
-      terpasang = true;
+      if (!tersambung) return;
       await channel.track({ at: new Date().toISOString() });
     };
+    // Tab ditutup / halaman ditinggalkan -> langsung offline tanpa menunggu timeout.
     const lepas = async () => {
-      if (!terpasang) return;
-      terpasang = false;
+      if (!tersambung) return;
       await channel.untrack();
     };
-    const sesuaikan = () => {
+    // Kembali ke halaman (pindah tab balik / dari cache browser) -> pastikan
+    // status online terpasang lagi.
+    const aktifLagi = () => {
       if (document.visibilityState === 'visible') pasang();
-      else lepas();
     };
 
-    channel
-      .on('presence', { event: 'sync' }, sinkron)
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          terpasang = false; // koneksi (ulang) -> pasang lagi bila tab terlihat
-          sesuaikan();
-        }
-      });
+    channel.on('presence', { event: 'sync' }, sinkron).subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        tersambung = true;
+        pasang();
+      } else {
+        tersambung = false;
+      }
+    });
 
-    document.addEventListener('visibilitychange', sesuaikan);
+    document.addEventListener('visibilitychange', aktifLagi);
+    window.addEventListener('pageshow', pasang);
     window.addEventListener('pagehide', lepas);
 
     return () => {
-      document.removeEventListener('visibilitychange', sesuaikan);
+      document.removeEventListener('visibilitychange', aktifLagi);
+      window.removeEventListener('pageshow', pasang);
       window.removeEventListener('pagehide', lepas);
       supabase.removeChannel(channel);
       setOnline(new Set());
