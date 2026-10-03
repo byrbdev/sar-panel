@@ -135,14 +135,45 @@ html:has(body.dark) {
   color-scheme: dark;
 }
 
-/* Scrollbar utama dibuat lebih besar dengan properti standar (bukan
- * ::-webkit-scrollbar) supaya pasti dipakai Chrome/Edge/Firefox. `auto` =
- * ukuran bawaan browser (~15px), lebih besar dari `thin` di area lain. */
+/* Scrollbar utama: ukuran di antara `thin` dan `auto`. Chrome/Edge mengabaikan
+ * ::-webkit-scrollbar bila scrollbar-width / scrollbar-color diset pada elemen
+ * yang sama, jadi untuk <html> keduanya dikembalikan ke `auto` dan ukuran
+ * diatur lewat ::-webkit-scrollbar (lebar 12px; ubah angkanya untuk
+ * menyesuaikan). Firefox tidak mengenal ::-webkit-scrollbar, jadi dibuat
+ * terpisah di bawah. */
 html {
   scrollbar-width: auto;
-  scrollbar-color: rgba(112, 144, 176, 0.55) transparent;
+  scrollbar-color: auto;
 }
-html.dark,
-html:has(body.dark) {
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+html::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+html::-webkit-scrollbar-track,
+html::-webkit-scrollbar-corner {
+  background: transparent;
+}
+html::-webkit-scrollbar-thumb {
+  background-color: rgba(112, 144, 176, 0.55);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  min-height: 40px;
+}
+html.dark::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  background-clip: padding-box;
+}
+html:has(body.dark)::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  background-clip: padding-box;
+}
+@-moz-document url-prefix() {
+  html {
+    scrollbar-color: rgba(112, 144, 176, 0.55) transparent;
+  }
+  html.dark,
+  html:has(body.dark) {
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
 }
